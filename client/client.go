@@ -17,9 +17,9 @@ type PingResponse struct {
 // ServiceResponse is the response for a single service
 // URL: https://api.firehydrant.io/v1/services
 type ServiceResponse struct {
-	ID      string            `json:"id"`
-	Slug    string            `json:"slug"`
-	Name    string            `json:"name"`
-	Summary string            `json:"summary"`
-	Labels  map[string]string `json:"labels"`
+	ID          string            `json:"id"`
+	Slug        string            `json:"slug"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Labels      map[string]string `json:"labels"`
 }

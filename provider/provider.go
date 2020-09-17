@@ -83,13 +83,13 @@ func dataSourceService() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"service": {
-				Type:     schema.TypeMap,
+			"name": {
+				Type:     schema.TypeString,
 				Computed: true,
-				Elem: &schema.Schema{
-					Type:      schema.TypeString,
-					Sensitive: true,
-				},
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -115,12 +115,14 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 	})
 
 	svc := map[string]string{
-		"name":    r.Name,
-		"summary": r.Summary,
+		"name":        r.Name,
+		"description": r.Description,
 	}
 
-	if err := d.Set("service", svc); err != nil {
-		return diag.FromErr(err)
+	for key, val := range svc {
+		if err := d.Set(key, val); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	d.SetId(r.ID)
