@@ -9,17 +9,24 @@ type Actor struct {
 }
 
 // PingResponse is the response the ping endpoint gives from FireHydrant
-// URL: https://api.firehydrant.io/v1/ping
+// URL: GET https://api.firehydrant.io/v1/ping
 type PingResponse struct {
 	Actor Actor `json:"actor"`
 }
 
 // ServiceResponse is the response for a single service
-// URL: https://api.firehydrant.io/v1/services
+// URL: GET https://api.firehydrant.io/v1/services
 type ServiceResponse struct {
 	ID          string            `json:"id"`
 	Slug        string            `json:"slug"`
 	Name        string            `json:"name"`
 	Description string            `json:"description"`
 	Labels      map[string]string `json:"labels"`
+}
+
+// CreateServiceRequest is the payload for creating a service
+// URL: POST https://api.firehydrant.io/v1/serices
+type CreateServiceRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }

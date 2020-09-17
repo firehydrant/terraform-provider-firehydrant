@@ -47,6 +47,9 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("FIREHYDRANT_BASE_URL", "https://api.firehydrant.io/v1/"),
 			},
 		},
+		ResourcesMap: map[string]*schema.Resource{
+			"firehydrant_service": resourceService(),
+		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"firehydrant_service": dataSourceService(),
 		},
@@ -97,7 +100,13 @@ func dataSourceService() *schema.Resource {
 
 func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	apiClient := m.(*sling.Sling)
-	serviceID := d.Get("id").(string)
+
+	var serviceID string
+	if id, ok := d.Get("id").(string); ok {
+		serviceID = id
+	} else {
+		serviceID = d.Id()
+	}
 
 	var r client.ServiceResponse
 	_, err := apiClient.Get("services/").Get(serviceID).Receive(&r, nil)
@@ -107,13 +116,6 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	var ds diag.Diagnostics
-
-	ds = append(ds, diag.Diagnostic{
-		Severity: diag.Warning,
-		Detail:   fmt.Sprintf("%+v", r),
-		Summary:  fmt.Sprintf("%+v", r),
-	})
-
 	svc := map[string]string{
 		"name":        r.Name,
 		"description": r.Description,
@@ -127,5 +129,49 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 
 	d.SetId(r.ID)
 
+	return ds
+}
+
+func resourceService() *schema.Resource {
+	return &schema.Resource{
+		CreateContext: resourceFireHydrantService,
+		ReadContext:   dataFireHydrantService,
+		DeleteContext: dataFireHydrantService,
+		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+		},
+	}
+}
+
+func resourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	apiClient := m.(*sling.Sling)
+	serviceName := d.Get("name").(string)
+	serviceDescription := d.Get("description").(string)
+
+	r := client.CreateServiceRequest{
+		Name:        serviceName,
+		Description: serviceDescription,
+	}
+
+	var newService client.ServiceResponse
+	_, err := apiClient.Post("services").BodyJSON(&r).Receive(&newService, nil)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId(newService.ID)
+	d.Set("name", newService.Name)
+	d.Set("description", newService.Description)
+
+	var ds diag.Diagnostics
 	return ds
 }
