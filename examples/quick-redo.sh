@@ -1,3 +1,5 @@
+set -ex
+
 pushd ../
 make install
 popd

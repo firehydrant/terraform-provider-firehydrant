@@ -25,8 +25,15 @@ type ServiceResponse struct {
 }
 
 // CreateServiceRequest is the payload for creating a service
-// URL: POST https://api.firehydrant.io/v1/serices
+// URL: POST https://api.firehydrant.io/v1/services
 type CreateServiceRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// UpdateServiceRequest is the payload for updating a service
+// URL: PATCH https://api.firehydrant.io/v1/services/{id}
+type UpdateServiceRequest struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }

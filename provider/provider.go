@@ -102,14 +102,15 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 	apiClient := m.(*sling.Sling)
 
 	var serviceID string
-	if id, ok := d.Get("id").(string); ok {
+	if id := d.Id(); id != "" {
 		serviceID = id
 	} else {
-		serviceID = d.Id()
+		serviceID = d.Get("id").(string)
 	}
 
 	var r client.ServiceResponse
-	_, err := apiClient.Get("services/").Get(serviceID).Receive(&r, nil)
+	req := apiClient.Get("services/").Get(serviceID)
+	_, err := req.Receive(&r, nil)
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -132,27 +133,53 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 	return ds
 }
 
+func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	apiClient := m.(*sling.Sling)
+	serviceID := d.Id()
+
+	var r client.ServiceResponse
+	req := apiClient.Get("services").Get(serviceID)
+	_, err := req.Receive(&r, nil)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var ds diag.Diagnostics
+	svc := map[string]string{
+		"name":        r.Name,
+		"description": r.Description,
+	}
+
+	for key, val := range svc {
+		if err := d.Set(key, val); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return ds
+}
+
 func resourceService() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceFireHydrantService,
-		ReadContext:   dataFireHydrantService,
-		DeleteContext: dataFireHydrantService,
+		CreateContext: createResourceFireHydrantService,
+		UpdateContext: updateResourceFireHydrantService,
+		ReadContext:   readResourceFireHydrantService,
+		DeleteContext: deleteResourceFireHydrantService,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
 			},
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
 			},
 		},
 	}
 }
 
-func resourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	apiClient := m.(*sling.Sling)
 	serviceName := d.Get("name").(string)
 	serviceDescription := d.Get("description").(string)
@@ -174,4 +201,37 @@ func resourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m i
 
 	var ds diag.Diagnostics
 	return ds
+}
+
+func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	apiClient := m.(*sling.Sling)
+	serviceID := d.Id()
+	serviceName := d.Get("name").(string)
+	serviceDescription := d.Get("description").(string)
+
+	r := client.UpdateServiceRequest{
+		Name:        serviceName,
+		Description: serviceDescription,
+	}
+
+	var updatedService client.ServiceResponse
+	_, err := apiClient.Patch("services/").Patch(serviceID).BodyJSON(&r).Receive(&updatedService, nil)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	var ds diag.Diagnostics
+	return ds
+}
+
+func deleteResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	apiClient := m.(*sling.Sling)
+	serviceID := d.Id()
+
+	_, err := apiClient.Delete(fmt.Sprintf("services/%s", serviceID)).ReceiveSuccess(nil)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId("")
+	return diag.Diagnostics{}
 }
