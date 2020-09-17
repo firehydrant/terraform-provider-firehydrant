@@ -127,11 +127,3 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 
 	return ds
 }
-
-/*
-
-data "firehydrant_service", "monolith" {
-	id = "monolith"
-}
-
-*/
