@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/client"
+	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	"github.com/pkg/errors"
 
-	"github.com/dghubble/sling"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -61,21 +61,17 @@ func setupFireHydrantContext(ctx context.Context, rd *schema.ResourceData) (inte
 	apiKey := rd.Get(apiKeyName).(string)
 	fireHydrantBaseURL := rd.Get(firehydrantBaseURLName).(string)
 
-	apiClient := sling.New().Base(fireHydrantBaseURL).
-		Set("User-Agent", fmt.Sprintf("%s (%s)", UserAgentPrefix, Version)).
-		Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
+	ac, err := firehydrant.NewRestClient(apiKey, firehydrant.WithBaseURL(fireHydrantBaseURL))
+	if err != nil {
+		return nil, diag.FromErr(errors.Wrap(err, "could not initialize API client"))
+	}
 
-	var pr client.PingResponse
-	resp, err := apiClient.Get("ping").Receive(&pr, nil)
+	_, err = ac.Ping()
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}
 
-	if resp.StatusCode != 200 {
-		return nil, diag.FromErr(fmt.Errorf("Invalid response code from FireHydrant API: %d", resp.StatusCode))
-	}
-
-	return apiClient, nil
+	return ac, nil
 }
 
 func dataSourceService() *schema.Resource {
@@ -99,19 +95,10 @@ func dataSourceService() *schema.Resource {
 }
 
 func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	apiClient := m.(*sling.Sling)
+	ac := m.(firehydrant.Client)
+	serviceID := d.Get("id").(string)
 
-	var serviceID string
-	if id := d.Id(); id != "" {
-		serviceID = id
-	} else {
-		serviceID = d.Get("id").(string)
-	}
-
-	var r client.ServiceResponse
-	req := apiClient.Get("services/").Get(serviceID)
-	_, err := req.Receive(&r, nil)
-
+	r, err := ac.GetService(serviceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,12 +121,13 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 }
 
 func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	apiClient := m.(*sling.Sling)
+	ac := m.(firehydrant.Client)
 	serviceID := d.Id()
 
-	var r client.ServiceResponse
-	req := apiClient.Get("services").Get(serviceID)
-	_, err := req.Receive(&r, nil)
+	r, err := ac.GetService(serviceID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -180,17 +168,16 @@ func resourceService() *schema.Resource {
 }
 
 func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	apiClient := m.(*sling.Sling)
+	ac := m.(firehydrant.Client)
 	serviceName := d.Get("name").(string)
 	serviceDescription := d.Get("description").(string)
 
-	r := client.CreateServiceRequest{
+	r := firehydrant.CreateServiceRequest{
 		Name:        serviceName,
 		Description: serviceDescription,
 	}
 
-	var newService client.ServiceResponse
-	_, err := apiClient.Post("services").BodyJSON(&r).Receive(&newService, nil)
+	newService, err := ac.CreateService(r)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -204,30 +191,29 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 }
 
 func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	apiClient := m.(*sling.Sling)
+	ac := m.(firehydrant.Client)
 	serviceID := d.Id()
 	serviceName := d.Get("name").(string)
 	serviceDescription := d.Get("description").(string)
 
-	r := client.UpdateServiceRequest{
+	r := firehydrant.UpdateServiceRequest{
 		Name:        serviceName,
 		Description: serviceDescription,
 	}
 
-	var updatedService client.ServiceResponse
-	_, err := apiClient.Patch("services/").Patch(serviceID).BodyJSON(&r).Receive(&updatedService, nil)
+	_, err := ac.UpdateService(serviceID, r)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	var ds diag.Diagnostics
-	return ds
+
+	return diag.Diagnostics{}
 }
 
 func deleteResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	apiClient := m.(*sling.Sling)
+	ac := m.(firehydrant.Client)
 	serviceID := d.Id()
 
-	_, err := apiClient.Delete(fmt.Sprintf("services/%s", serviceID)).ReceiveSuccess(nil)
+	err := ac.DeleteService(serviceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
