@@ -27,8 +27,6 @@ var Version = fmt.Sprintf("%d.%d.%d", MajorVersion, MinorVersion, PatchVersion)
 type APIClient struct {
 	baseURL string
 	token   string
-
-	client *sling.Sling
 }
 
 const (
@@ -36,13 +34,29 @@ const (
 	DefaultBaseURL = "https://api.firehydrant.io/v1/"
 )
 
+var _ Client = &APIClient{}
+
 // Client is the client that makes requests to FireHydrant
 type Client interface {
 	Ping(ctx context.Context) (*PingResponse, error)
+
+	// Services
 	GetService(ctx context.Context, id string) (*ServiceResponse, error)
 	CreateService(ctx context.Context, req CreateServiceRequest) (*ServiceResponse, error)
 	UpdateService(ctx context.Context, serviceID string, req UpdateServiceRequest) (*ServiceResponse, error)
 	DeleteService(ctx context.Context, serviceID string) error
+
+	// Environments
+	GetEnvironment(ctx context.Context, id string) (*EnvironmentResponse, error)
+	CreateEnvironment(ctx context.Context, req CreateEnvironmentRequest) (*EnvironmentResponse, error)
+	UpdateEnvironment(ctx context.Context, id string, req UpdateEnvironmentRequest) (*EnvironmentResponse, error)
+	DeleteEnvironment(ctx context.Context, id string) error
+
+	// Functionalities
+	GetFunctionality(ctx context.Context, id string) (*FunctionalityResponse, error)
+	CreateFunctionality(ctx context.Context, req CreateFunctionalityRequest) (*FunctionalityResponse, error)
+	UpdateFunctionality(ctx context.Context, id string, req UpdateFunctionalityRequest) (*FunctionalityResponse, error)
+	DeleteFunctionality(ctx context.Context, id string) error
 }
 
 // OptFunc is a function that sets a setting on a client
@@ -69,11 +83,13 @@ func NewRestClient(token string, opts ...OptFunc) (*APIClient, error) {
 		}
 	}
 
-	c.client = sling.New().Base(c.baseURL).
+	return c, nil
+}
+
+func (c *APIClient) client() *sling.Sling {
+	return sling.New().Base(c.baseURL).
 		Set("User-Agent", fmt.Sprintf("%s (%s)", UserAgentPrefix, Version)).
 		Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
-
-	return c, nil
 }
 
 // Ping hits and verifies the HTTP of FireHydrant
@@ -81,7 +97,7 @@ func NewRestClient(token string, opts ...OptFunc) (*APIClient, error) {
 func (c *APIClient) Ping(ctx context.Context) (*PingResponse, error) {
 	res := &PingResponse{}
 
-	if _, err := c.client.Get("ping").Receive(res, nil); err != nil {
+	if _, err := c.client().Get("ping").Receive(res, nil); err != nil {
 		return nil, errors.Wrap(err, "could not ping")
 	}
 
@@ -93,7 +109,7 @@ func (c *APIClient) Ping(ctx context.Context) (*PingResponse, error) {
 func (c *APIClient) GetService(ctx context.Context, id string) (*ServiceResponse, error) {
 	res := &ServiceResponse{}
 
-	if _, err := c.client.Get("services/"+id).Receive(res, nil); err != nil {
+	if _, err := c.client().Get("services/"+id).Receive(res, nil); err != nil {
 		return nil, errors.Wrap(err, "could not get service")
 	}
 
@@ -105,7 +121,7 @@ func (c *APIClient) GetService(ctx context.Context, id string) (*ServiceResponse
 func (c *APIClient) CreateService(ctx context.Context, createReq CreateServiceRequest) (*ServiceResponse, error) {
 	res := &ServiceResponse{}
 
-	if _, err := c.client.Post("services").BodyJSON(&createReq).Receive(res, nil); err != nil {
+	if _, err := c.client().Post("services").BodyJSON(&createReq).Receive(res, nil); err != nil {
 		return nil, errors.Wrap(err, "could not create service")
 	}
 
@@ -117,7 +133,7 @@ func (c *APIClient) CreateService(ctx context.Context, createReq CreateServiceRe
 func (c *APIClient) UpdateService(ctx context.Context, serviceID string, updateReq UpdateServiceRequest) (*ServiceResponse, error) {
 	res := &ServiceResponse{}
 
-	if _, err := c.client.Patch("services/"+serviceID).BodyJSON(&updateReq).Receive(res, nil); err != nil {
+	if _, err := c.client().Patch("services/"+serviceID).BodyJSON(&updateReq).Receive(res, nil); err != nil {
 		return nil, errors.Wrap(err, "could not update service")
 	}
 
@@ -127,7 +143,99 @@ func (c *APIClient) UpdateService(ctx context.Context, serviceID string, updateR
 // DeleteService updates a old spankin service in FireHydrant
 // TODO: Check failure case
 func (c *APIClient) DeleteService(ctx context.Context, serviceID string) error {
-	if _, err := c.client.Delete("services/"+serviceID).Receive(nil, nil); err != nil {
+	if _, err := c.client().Delete("services/"+serviceID).Receive(nil, nil); err != nil {
+		return errors.Wrap(err, "could not delete service")
+	}
+
+	return nil
+}
+
+// GetEnvironment retrieves an environment from the FireHydrant API
+func (c *APIClient) GetEnvironment(ctx context.Context, id string) (*EnvironmentResponse, error) {
+	var env EnvironmentResponse
+
+	resp, err := c.client().Get("environments/"+id).Receive(&env, nil)
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("status code was not a 200, got %d", resp.StatusCode)
+	}
+
+	if err != nil {
+		return nil, errors.Wrap(err, "could not retrieve environment")
+	}
+
+	return &env, nil
+}
+
+// CreateEnvironment creates an environment
+func (c *APIClient) CreateEnvironment(ctx context.Context, req CreateEnvironmentRequest) (*EnvironmentResponse, error) {
+	res := &EnvironmentResponse{}
+
+	if _, err := c.client().Post("environments").BodyJSON(&req).Receive(res, nil); err != nil {
+		return nil, errors.Wrap(err, "could not create environment")
+	}
+
+	return res, nil
+}
+
+func (c *APIClient) UpdateEnvironment(ctx context.Context, id string, req UpdateEnvironmentRequest) (*EnvironmentResponse, error) {
+	res := &EnvironmentResponse{}
+
+	if _, err := c.client().Patch("environments/"+id).BodyJSON(&req).Receive(res, nil); err != nil {
+		return nil, errors.Wrap(err, "could not update environment")
+	}
+
+	return res, nil
+}
+
+func (c *APIClient) DeleteEnvironment(ctx context.Context, id string) error {
+	if _, err := c.client().Delete("environments/"+id).Receive(nil, nil); err != nil {
+		return errors.Wrap(err, "could not delete service")
+	}
+
+	return nil
+}
+
+// GetFunctionality retrieves an functionality from the FireHydrant API
+func (c *APIClient) GetFunctionality(ctx context.Context, id string) (*FunctionalityResponse, error) {
+	var fun FunctionalityResponse
+
+	resp, err := c.client().Get("functionalities/"+id).Receive(&fun, nil)
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("status code was not a 200, got %d", resp.StatusCode)
+	}
+
+	if err != nil {
+		return nil, errors.Wrap(err, "could not retrieve functionality")
+	}
+
+	return &fun, nil
+}
+
+// CreateFunctionality creates an functionality
+func (c *APIClient) CreateFunctionality(ctx context.Context, req CreateFunctionalityRequest) (*FunctionalityResponse, error) {
+	res := &FunctionalityResponse{}
+
+	if _, err := c.client().Post("functionalities").BodyJSON(&req).Receive(res, nil); err != nil {
+		return nil, errors.Wrap(err, "could not create functionality")
+	}
+
+	return res, nil
+}
+
+func (c *APIClient) UpdateFunctionality(ctx context.Context, id string, req UpdateFunctionalityRequest) (*FunctionalityResponse, error) {
+	res := &FunctionalityResponse{}
+
+	if _, err := c.client().Patch("functionalities/"+id).BodyJSON(&req).Receive(res, nil); err != nil {
+		return nil, errors.Wrap(err, "could not update functionality")
+	}
+
+	return res, nil
+}
+
+func (c *APIClient) DeleteFunctionality(ctx context.Context, id string) error {
+	if _, err := c.client().Delete("functionalities/"+id).Receive(nil, nil); err != nil {
 		return errors.Wrap(err, "could not delete service")
 	}
 

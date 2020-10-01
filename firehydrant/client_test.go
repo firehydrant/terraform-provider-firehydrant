@@ -1,8 +1,11 @@
 package firehydrant
 
 import (
+	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 )
 
@@ -32,7 +35,7 @@ func TestClientInitialization(t *testing.T) {
 		return
 	}
 
-	res, err := c.Ping()
+	res, err := c.Ping(context.TODO())
 	if err != nil {
 		t.Fatalf("Received error hitting ping endpoint: %s", err.Error())
 	}
@@ -78,7 +81,7 @@ func TestGetService(t *testing.T) {
 	}
 
 	testServiceID := "test-service-id"
-	res, err := c.GetService(testServiceID)
+	res, err := c.GetService(context.TODO(), testServiceID)
 	if err != nil {
 		t.Fatalf("Received error hitting ping endpoint: %s", err.Error())
 	}
@@ -120,9 +123,9 @@ func TestCreateService(t *testing.T) {
 	}
 
 	testServiceID := "test-service-id"
-	res, err := c.GetService(testServiceID)
+	res, err := c.GetService(context.TODO(), testServiceID)
 	if err != nil {
-		t.Fatalf("Received error hitting ping endpoint: %s", err.Error())
+		t.Fatalf("Received error hitting get service endpoint: %s", err.Error())
 	}
 
 	serviceID := res.ID
@@ -138,5 +141,100 @@ func TestCreateService(t *testing.T) {
 
 	if expected := "Chow Hall"; expected != serviceName {
 		t.Fatalf("Expected %s, Got: %s for service name", expected, serviceName)
+	}
+}
+
+func TestGetEnvironment(t *testing.T) {
+	var requestPathRcvd string
+
+	expectedEnvironment := EnvironmentResponse{
+		ID:          "test-id",
+		Name:        "test environment",
+		Description: "this environment causes people to forget to share their screen",
+	}
+
+	h := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		requestPathRcvd = req.URL.Path
+
+		if err := json.NewEncoder(w).Encode(expectedEnvironment); err != nil {
+			panic(err)
+		}
+	})
+	ts := httptest.NewServer(h)
+
+	defer ts.Close()
+
+	testToken := "testing-123"
+	c, err := NewRestClient(testToken, WithBaseURL(ts.URL))
+
+	if err != nil {
+		t.Fatalf("Received error initializing API client: %s", err.Error())
+		return
+	}
+
+	res, err := c.GetEnvironment(context.TODO(), expectedEnvironment.ID)
+	if err != nil {
+		t.Fatalf("Received error hitting environment get endpoint: %s", err.Error())
+	}
+
+	if expected := "/environments/" + expectedEnvironment.ID; expected != requestPathRcvd {
+		t.Fatalf("Expected %s, Got: %s for request path", expected, requestPathRcvd)
+	}
+
+	if !reflect.DeepEqual(&expectedEnvironment, res) {
+		t.Fatalf("Expected %+v, Got: %+v for response", expectedEnvironment, res)
+	}
+}
+
+func TestCreateEnvironment(t *testing.T) {
+	var requestPathRcvd string
+
+	req := CreateEnvironmentRequest{
+		Name:        "test environment",
+		Description: "this environment causes people to forget to share their screen",
+	}
+
+	resp := EnvironmentResponse{
+		ID:          "test-id",
+		Name:        req.Name,
+		Description: req.Description,
+	}
+
+	var rcvdEnv EnvironmentResponse
+
+	h := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		requestPathRcvd = req.URL.Path
+
+		if err := json.NewDecoder(req.Body).Decode(&rcvdEnv); err != nil {
+			panic(err)
+		}
+
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			panic(err)
+		}
+	})
+	ts := httptest.NewServer(h)
+
+	defer ts.Close()
+
+	testToken := "testing-123"
+	c, err := NewRestClient(testToken, WithBaseURL(ts.URL))
+
+	if err != nil {
+		t.Fatalf("Received error initializing API client: %s", err.Error())
+		return
+	}
+
+	res, err := c.CreateEnvironment(context.TODO(), req)
+	if err != nil {
+		t.Fatalf("Received error hitting environment create endpoint: %s", err.Error())
+	}
+
+	if expected := "/environments"; expected != requestPathRcvd {
+		t.Fatalf("Expected %s, Got: %s for request path", expected, requestPathRcvd)
+	}
+
+	if !reflect.DeepEqual(&resp, res) {
+		t.Fatalf("Expected %+v, Got: %+v for response", resp, res)
 	}
 }

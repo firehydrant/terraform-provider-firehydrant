@@ -48,10 +48,14 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"firehydrant_service": resourceService(),
+			"firehydrant_service":       resourceService(),
+			"firehydrant_environment":   resourceEnvironment(),
+			"firehydrant_functionality": resourceFunctionality(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"firehydrant_service": dataSourceService(),
+			"firehydrant_service":       dataSourceService(),
+			"firehydrant_environment":   dataSourceEnvironment(),
+			"firehydrant_functionality": dataSourceFunctionality(),
 		},
 		ConfigureContextFunc: setupFireHydrantContext,
 	}
