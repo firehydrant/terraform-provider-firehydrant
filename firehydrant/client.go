@@ -178,6 +178,7 @@ func (c *APIClient) CreateEnvironment(ctx context.Context, req CreateEnvironment
 	return res, nil
 }
 
+// UpdateEnvironment updates a environment in FireHydrant
 func (c *APIClient) UpdateEnvironment(ctx context.Context, id string, req UpdateEnvironmentRequest) (*EnvironmentResponse, error) {
 	res := &EnvironmentResponse{}
 
@@ -188,6 +189,7 @@ func (c *APIClient) UpdateEnvironment(ctx context.Context, id string, req Update
 	return res, nil
 }
 
+// DeleteEnvironment deletes a environment record from FireHydrant
 func (c *APIClient) DeleteEnvironment(ctx context.Context, id string) error {
 	if _, err := c.client().Delete("environments/"+id).Receive(nil, nil); err != nil {
 		return errors.Wrap(err, "could not delete service")
@@ -224,6 +226,7 @@ func (c *APIClient) CreateFunctionality(ctx context.Context, req CreateFunctiona
 	return res, nil
 }
 
+// UpdateFunctionality updates a functionality in FireHydrant
 func (c *APIClient) UpdateFunctionality(ctx context.Context, id string, req UpdateFunctionalityRequest) (*FunctionalityResponse, error) {
 	res := &FunctionalityResponse{}
 
@@ -234,6 +237,7 @@ func (c *APIClient) UpdateFunctionality(ctx context.Context, id string, req Upda
 	return res, nil
 }
 
+// DeleteFunctionality deletes a functionality record from FireHydrant
 func (c *APIClient) DeleteFunctionality(ctx context.Context, id string) error {
 	if _, err := c.client().Delete("functionalities/"+id).Receive(nil, nil); err != nil {
 		return errors.Wrap(err, "could not delete service")
