@@ -20,6 +20,12 @@ const (
 	UserAgentPrefix = "firehydrant-terraform-provider"
 )
 
+type NotFound string
+
+func (nf NotFound) Error() string {
+	return string(nf)
+}
+
 // Version is the semver of this provider
 var Version = fmt.Sprintf("%d.%d.%d", MajorVersion, MinorVersion, PatchVersion)
 
@@ -108,9 +114,13 @@ func (c *APIClient) Ping(ctx context.Context) (*PingResponse, error) {
 // TODO: Check failure case
 func (c *APIClient) GetService(ctx context.Context, id string) (*ServiceResponse, error) {
 	res := &ServiceResponse{}
-
-	if _, err := c.client().Get("services/"+id).Receive(res, nil); err != nil {
+	resp, err := c.client().Get("services/"+id).Receive(res, nil)
+	if err != nil {
 		return nil, errors.Wrap(err, "could not get service")
+	}
+
+	if resp.StatusCode == 404 {
+		return nil, NotFound(fmt.Sprintf("Could not find service with ID %s", id))
 	}
 
 	return res, nil
