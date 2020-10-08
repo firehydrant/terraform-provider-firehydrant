@@ -34,6 +34,7 @@ func TestAccService(t *testing.T) {
 				Config: testServiceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testServiceExists("firehydrant_service.terraform-acceptance-test-service"),
+					resource.TestCheckResourceAttr("firehydrant_service.terraform-acceptance-test-service", "name", rName),
 				),
 			},
 		},
@@ -72,13 +73,9 @@ func testServiceExists(resourceName string) resource.TestCheckFunc {
 			return err
 		}
 
-		svc, err := c.GetService(context.TODO(), rs.Primary.ID)
+		_, err = c.GetService(context.TODO(), rs.Primary.ID)
 		if err != nil {
 			return err
-		}
-
-		if expected, got := rs.Primary.Attributes["name"], svc.Name; expected != got {
-			return fmt.Errorf("Expected name %s, got %s", expected, got)
 		}
 
 		return nil
