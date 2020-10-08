@@ -62,6 +62,9 @@ const testServiceConfigTemplate = `
 resource "firehydrant_service" "terraform-acceptance-test-service" {
 	name = "%s"
 	description = "%s description"
+	labels = {
+		key1 = "value1"
+	}
 }
 `
 

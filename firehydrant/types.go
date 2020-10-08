@@ -19,15 +19,17 @@ type PingResponse struct {
 // CreateServiceRequest is the payload for creating a service
 // URL: POST https://api.firehydrant.io/v1/services
 type CreateServiceRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Labels      map[string]string `json:"labels,omitempty"`
 }
 
 // UpdateServiceRequest is the payload for updating a service
 // URL: PATCH https://api.firehydrant.io/v1/services/{id}
 type UpdateServiceRequest struct {
-	Name        string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
+	Name        string            `json:"name,omitempty"`
+	Description string            `json:"description,omitempty"`
+	Labels      map[string]string `json:"labels,omitempty"`
 }
 
 // ServiceResponse is the payload for retrieving a service

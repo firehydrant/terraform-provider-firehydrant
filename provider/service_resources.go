@@ -24,6 +24,10 @@ func resourceService() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"labels": {
+				Type:     schema.TypeMap,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -53,17 +57,19 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
+	d.Set("labels", r.Labels)
+
 	return ds
 }
 
 func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	ac := m.(firehydrant.Client)
-	serviceName := d.Get("name").(string)
-	serviceDescription := d.Get("description").(string)
+	labels := convertStringMap(d.Get("labels").(map[string]interface{}))
 
 	r := firehydrant.CreateServiceRequest{
-		Name:        serviceName,
-		Description: serviceDescription,
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
+		Labels:      labels,
 	}
 
 	newService, err := ac.CreateService(ctx, r)
@@ -74,6 +80,7 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	d.SetId(newService.ID)
 	d.Set("name", newService.Name)
 	d.Set("description", newService.Description)
+	d.Set("labels", newService.Labels)
 
 	var ds diag.Diagnostics
 	return ds
@@ -81,16 +88,14 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 
 func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	ac := m.(firehydrant.Client)
-	serviceID := d.Id()
-	serviceName := d.Get("name").(string)
-	serviceDescription := d.Get("description").(string)
 
 	r := firehydrant.UpdateServiceRequest{
-		Name:        serviceName,
-		Description: serviceDescription,
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
+		Labels:      convertStringMap(d.Get("labels").(map[string]interface{})),
 	}
 
-	_, err := ac.UpdateService(ctx, serviceID, r)
+	_, err := ac.UpdateService(ctx, d.Id(), r)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -109,4 +114,13 @@ func deleteResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId("")
 	return diag.Diagnostics{}
+}
+
+func convertStringMap(sm map[string]interface{}) map[string]string {
+	m := map[string]string{}
+	for k, v := range sm {
+		m[k] = v.(string)
+	}
+
+	return m
 }
