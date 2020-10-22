@@ -23,6 +23,18 @@ func resourceFunctionality() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"services": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -60,6 +72,15 @@ func createResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 	r := firehydrant.CreateFunctionalityRequest{
 		Name:        name,
 		Description: description,
+		Services:    []firehydrant.FunctionalityService{},
+	}
+
+	services := d.Get("services").([]interface{})
+	for _, svc := range services {
+		data := svc.(map[string]interface{})
+		r.Services = append(r.Services, firehydrant.FunctionalityService{
+			ID: data["id"].(string),
+		})
 	}
 
 	resource, err := ac.CreateFunctionality(ctx, r)

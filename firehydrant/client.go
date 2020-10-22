@@ -48,6 +48,7 @@ type Client interface {
 
 	// Services
 	GetService(ctx context.Context, id string) (*ServiceResponse, error)
+	GetServices(ctx context.Context, req *ServiceQuery) (*ServicesResponse, error)
 	CreateService(ctx context.Context, req CreateServiceRequest) (*ServiceResponse, error)
 	UpdateService(ctx context.Context, serviceID string, req UpdateServiceRequest) (*ServiceResponse, error)
 	DeleteService(ctx context.Context, serviceID string) error
@@ -121,6 +122,17 @@ func (c *APIClient) GetService(ctx context.Context, id string) (*ServiceResponse
 
 	if resp.StatusCode == 404 {
 		return nil, NotFound(fmt.Sprintf("Could not find service with ID %s", id))
+	}
+
+	return res, nil
+}
+
+// GetServices retrieves a list of services based on a service query
+func (c *APIClient) GetServices(ctx context.Context, req *ServiceQuery) (*ServicesResponse, error) {
+	res := &ServicesResponse{}
+	_, err := c.client().Get("services").QueryStruct(req).Receive(res, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get service")
 	}
 
 	return res, nil

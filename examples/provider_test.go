@@ -48,6 +48,12 @@ func TestAccService(t *testing.T) {
 					resource.TestCheckResourceAttr("firehydrant_service.terraform-acceptance-test-service", "description", rNameUpdated+" description"),
 				),
 			},
+			{
+				Config: testServiceDataSourceConfig(rNameUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.firehydrant_services.services", "services.0.name", rNameUpdated),
+				),
+			},
 		},
 	})
 }
@@ -65,6 +71,31 @@ resource "firehydrant_service" "terraform-acceptance-test-service" {
 	labels = {
 		key1 = "value1"
 	}
+}
+`
+
+func testServiceDataSourceConfig(rName string) string {
+	return fmt.Sprintf(testServiceDataSourceConfigTemplate, rName, rName)
+}
+
+const testServiceDataSourceConfigTemplate = `
+resource "firehydrant_service" "terraform-acceptance-test-service" {
+	name = "%s"
+	description = "whatever"
+	labels = {
+		key1 = "value1"
+	}
+}
+
+data "firehydrant_services" "services" {
+	query = "%s"
+	labels = {
+		key1 = "value1"
+	}
+}
+
+output "services" {
+	value = data.firehydrant_services.services
 }
 `
 

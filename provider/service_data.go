@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// Singular services data source
 func dataSourceService() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataFireHydrantService,
@@ -24,6 +25,42 @@ func dataSourceService() *schema.Resource {
 			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+		},
+	}
+}
+
+func dataSourceServices() *schema.Resource {
+	return &schema.Resource{
+		ReadContext: dataFireHydrantServices,
+		Schema: map[string]*schema.Schema{
+			"query": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"labels": {
+				Type:     schema.TypeMap,
+				Optional: true,
+			},
+			"services": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"description": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -51,6 +88,47 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	d.SetId(r.ID)
+
+	return ds
+}
+
+// Multiple services data source
+func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ac := m.(firehydrant.Client)
+
+	query := d.Get("query").(string)
+	labels := d.Get("labels").(map[string]interface{})
+
+	ls := firehydrant.LabelsSelector{}
+	for k, v := range labels {
+		ls[k] = v.(string)
+	}
+
+	r, err := ac.GetServices(ctx, &firehydrant.ServiceQuery{
+		Query:          query,
+		LabelsSelector: ls,
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	services := make([]interface{}, 0)
+
+	for _, svc := range r.Services {
+		values := map[string]interface{}{
+			"id":          svc.ID,
+			"name":        svc.Name,
+			"description": svc.Description,
+		}
+		services = append(services, values)
+	}
+
+	if err := d.Set("services", services); err != nil {
+		return diag.FromErr(err)
+	}
+
+	var ds diag.Diagnostics
+	d.SetId("does-not-matter")
 
 	return ds
 }
