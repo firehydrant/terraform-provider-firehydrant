@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"log"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -31,6 +32,10 @@ func resourceFunctionality() *schema.Resource {
 						"id": {
 							Type:     schema.TypeString,
 							Required: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 					},
 				},
@@ -62,6 +67,16 @@ func readResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resourc
 		}
 	}
 
+	svcs := make([]interface{}, len(r.Services))
+	for index, s := range r.Services {
+		log.Println("[DEBUG] (Read) Service Name: " + s.Name)
+		svcs[index] = map[string]interface{}{
+			"id":   s.ID,
+			"name": s.Name,
+		}
+	}
+	d.Set("services", svcs)
+
 	return ds
 }
 
@@ -92,6 +107,16 @@ func createResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 	d.Set("name", resource.Name)
 	d.Set("description", resource.Description)
 
+	svcs := make([]interface{}, len(resource.Services))
+	for index, s := range resource.Services {
+		svcs[index] = map[string]interface{}{
+			"id":   s.ID,
+			"name": s.Name,
+		}
+		log.Println("[DEBUG] (Create) Service Name: " + s.Name)
+	}
+	d.Set("services", svcs)
+
 	var ds diag.Diagnostics
 	return ds
 }
@@ -107,10 +132,28 @@ func updateResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 		Description: description,
 	}
 
-	_, err := ac.UpdateFunctionality(ctx, id, r)
+	services := d.Get("services").([]interface{})
+	for _, svc := range services {
+		data := svc.(map[string]interface{})
+		r.Services = append(r.Services, firehydrant.FunctionalityService{
+			ID: data["id"].(string),
+		})
+	}
+
+	functionality, err := ac.UpdateFunctionality(ctx, id, r)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	svcs := make([]interface{}, len(functionality.Services))
+	for index, s := range functionality.Services {
+		svcs[index] = map[string]interface{}{
+			"id":   s.ID,
+			"name": s.Name,
+		}
+		log.Println("[DEBUG] (Update) Service Name: " + s.Name)
+	}
+	d.Set("services", svcs)
 
 	return diag.Diagnostics{}
 }

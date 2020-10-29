@@ -26,10 +26,6 @@ data "firehydrant_services" "logging-in-services" {
   query = "kube-system"
 }
 
-output "oauth2-name" {
-  value = data.firehydrant_services.logging-in-services
-}
-
 resource "firehydrant_functionality" "logging-in-2" {
   name = "Logging In (from TF) 2"
 

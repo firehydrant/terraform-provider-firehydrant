@@ -3,6 +3,7 @@ package firehydrant
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/dghubble/sling"
 	"github.com/pkg/errors"
@@ -226,8 +227,8 @@ func (c *APIClient) GetFunctionality(ctx context.Context, id string) (*Functiona
 
 	resp, err := c.client().Get("functionalities/"+id).Receive(&fun, nil)
 
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("status code was not a 200, got %d", resp.StatusCode)
+	if resp.StatusCode == 404 {
+		return nil, NotFound(fmt.Sprintf("Could not find functionality with ID %s", id))
 	}
 
 	if err != nil {
@@ -244,6 +245,8 @@ func (c *APIClient) CreateFunctionality(ctx context.Context, req CreateFunctiona
 	if _, err := c.client().Post("functionalities").BodyJSON(&req).Receive(res, nil); err != nil {
 		return nil, errors.Wrap(err, "could not create functionality")
 	}
+
+	log.Println("[DEBUG] Functionality!", res.Services)
 
 	return res, nil
 }
