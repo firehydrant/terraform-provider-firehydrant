@@ -136,3 +136,36 @@ type UpdateFunctionalityRequest struct {
 	Description string                 `json:"description,omitempty"`
 	Services    []FunctionalityService `json:"services,omitempty"`
 }
+
+// TeamResponse is the payload for a single environment
+// URL: GET https://api.firehydrant.io/v1/functionalities/{id}
+type TeamResponse struct {
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Slug        string            `json:"slug"`
+	Services    []ServiceResponse `json:"services"`
+	CreatedAt   time.Time         `json:"created_at"`
+	UpdatedAt   time.Time         `json:"updated_at"`
+}
+
+// CreateTeamRequest is the payload for creating a service
+// URL: POST https://api.firehydrant.io/v1/services
+type CreateTeamRequest struct {
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	ServiceIDs  []string `json:"service_ids,omitempty"`
+}
+
+// TeamService represents a service when creating a functionality
+type TeamService struct {
+	ID string `json:"id"`
+}
+
+// UpdateTeamRequest is the payload for updating a environment
+// URL: PATCH https://api.firehydrant.io/v1/environments/{id}
+type UpdateTeamRequest struct {
+	Name        string   `json:"name,omitempty"`
+	Description string   `json:"description,omitempty"`
+	ServiceIDs  []string `json:"service_ids,omitempty"`
+}

@@ -65,6 +65,12 @@ type Client interface {
 	CreateFunctionality(ctx context.Context, req CreateFunctionalityRequest) (*FunctionalityResponse, error)
 	UpdateFunctionality(ctx context.Context, id string, req UpdateFunctionalityRequest) (*FunctionalityResponse, error)
 	DeleteFunctionality(ctx context.Context, id string) error
+
+	// Teams
+	GetTeam(ctx context.Context, id string) (*TeamResponse, error)
+	CreateTeam(ctx context.Context, req CreateTeamRequest) (*TeamResponse, error)
+	UpdateTeam(ctx context.Context, id string, req UpdateTeamRequest) (*TeamResponse, error)
+	DeleteTeam(ctx context.Context, id string) error
 }
 
 // OptFunc is a function that sets a setting on a client
@@ -265,6 +271,56 @@ func (c *APIClient) UpdateFunctionality(ctx context.Context, id string, req Upda
 // DeleteFunctionality deletes a functionality record from FireHydrant
 func (c *APIClient) DeleteFunctionality(ctx context.Context, id string) error {
 	if _, err := c.client().Delete("functionalities/"+id).Receive(nil, nil); err != nil {
+		return errors.Wrap(err, "could not delete service")
+	}
+
+	return nil
+}
+
+// GetTeam retrieves an team from the FireHydrant API
+func (c *APIClient) GetTeam(ctx context.Context, id string) (*TeamResponse, error) {
+	var fun TeamResponse
+
+	resp, err := c.client().Get("teams/"+id).Receive(&fun, nil)
+
+	if resp.StatusCode == 404 {
+		return nil, NotFound(fmt.Sprintf("Could not find team with ID %s", id))
+	}
+
+	if err != nil {
+		return nil, errors.Wrap(err, "could not retrieve team")
+	}
+
+	return &fun, nil
+}
+
+// CreateTeam creates an team
+func (c *APIClient) CreateTeam(ctx context.Context, req CreateTeamRequest) (*TeamResponse, error) {
+	res := &TeamResponse{}
+
+	if _, err := c.client().Post("teams").BodyJSON(&req).Receive(res, nil); err != nil {
+		return nil, errors.Wrap(err, "could not create team")
+	}
+
+	log.Println("[DEBUG] Team!", res.Services)
+
+	return res, nil
+}
+
+// UpdateTeam updates a team in FireHydrant
+func (c *APIClient) UpdateTeam(ctx context.Context, id string, req UpdateTeamRequest) (*TeamResponse, error) {
+	res := &TeamResponse{}
+
+	if _, err := c.client().Patch("teams/"+id).BodyJSON(&req).Receive(res, nil); err != nil {
+		return nil, errors.Wrap(err, "could not update team")
+	}
+
+	return res, nil
+}
+
+// DeleteTeam deletes a team record from FireHydrant
+func (c *APIClient) DeleteTeam(ctx context.Context, id string) error {
+	if _, err := c.client().Delete("teams/"+id).Receive(nil, nil); err != nil {
 		return errors.Wrap(err, "could not delete service")
 	}
 
