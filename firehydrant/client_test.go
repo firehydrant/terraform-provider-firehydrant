@@ -83,7 +83,7 @@ func TestGetService(t *testing.T) {
 	}
 
 	testServiceID := "test-service-id"
-	res, err := c.GetService(context.TODO(), testServiceID)
+	res, err := c.Services().Get(context.TODO(), testServiceID)
 	if err != nil {
 		t.Fatalf("Received error hitting ping endpoint: %s", err.Error())
 	}
@@ -125,7 +125,7 @@ func TestCreateService(t *testing.T) {
 	}
 
 	testServiceID := "test-service-id"
-	res, err := c.GetService(context.TODO(), testServiceID)
+	res, err := c.Services().Get(context.TODO(), testServiceID)
 	if err != nil {
 		t.Fatalf("Received error hitting get service endpoint: %s", err.Error())
 	}
@@ -285,7 +285,7 @@ func TestGetServices(t *testing.T) {
 
 	t.Log(vs)
 
-	_, err = c.GetServices(context.TODO(), qry)
+	_, err = c.Services().Get(context.TODO(), qry)
 	if err != nil {
 		t.Fatalf("Received error hitting ping endpoint: %s", err.Error())
 	}

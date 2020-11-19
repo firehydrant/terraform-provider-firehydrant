@@ -47,12 +47,9 @@ var _ Client = &APIClient{}
 type Client interface {
 	Ping(ctx context.Context) (*PingResponse, error)
 
-	// Services
-	GetService(ctx context.Context, id string) (*ServiceResponse, error)
-	GetServices(ctx context.Context, req *ServiceQuery) (*ServicesResponse, error)
-	CreateService(ctx context.Context, req CreateServiceRequest) (*ServiceResponse, error)
-	UpdateService(ctx context.Context, serviceID string, req UpdateServiceRequest) (*ServiceResponse, error)
-	DeleteService(ctx context.Context, serviceID string) error
+	Services() ServicesClient
+	Runbooks() RunbooksClient
+	RunbookActions() RunbookActionsClient
 
 	// Environments
 	GetEnvironment(ctx context.Context, id string) (*EnvironmentResponse, error)
@@ -71,6 +68,12 @@ type Client interface {
 	CreateTeam(ctx context.Context, req CreateTeamRequest) (*TeamResponse, error)
 	UpdateTeam(ctx context.Context, id string, req UpdateTeamRequest) (*TeamResponse, error)
 	DeleteTeam(ctx context.Context, id string) error
+
+	// Severities
+	GetSeverity(ctx context.Context, slug string) (*SeverityResponse, error)
+	CreateSeverity(ctx context.Context, req CreateSeverityRequest) (*SeverityResponse, error)
+	UpdateSeverity(ctx context.Context, slug string, req UpdateSeverityRequest) (*SeverityResponse, error)
+	DeleteSeverity(ctx context.Context, slug string) error
 }
 
 // OptFunc is a function that sets a setting on a client
@@ -118,43 +121,18 @@ func (c *APIClient) Ping(ctx context.Context) (*PingResponse, error) {
 	return res, nil
 }
 
-// GetService retrieves a service from the FireHydrant API
-// TODO: Check failure case
-func (c *APIClient) GetService(ctx context.Context, id string) (*ServiceResponse, error) {
-	res := &ServiceResponse{}
-	resp, err := c.client().Get("services/"+id).Receive(res, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get service")
-	}
-
-	if resp.StatusCode == 404 {
-		return nil, NotFound(fmt.Sprintf("Could not find service with ID %s", id))
-	}
-
-	return res, nil
+// Services returns a ServicesClient interface for interacting with services in FireHydrant
+func (c *APIClient) Services() ServicesClient {
+	return &RESTServicesClient{client: c}
 }
 
-// GetServices retrieves a list of services based on a service query
-func (c *APIClient) GetServices(ctx context.Context, req *ServiceQuery) (*ServicesResponse, error) {
-	res := &ServicesResponse{}
-	_, err := c.client().Get("services").QueryStruct(req).Receive(res, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get service")
-	}
-
-	return res, nil
+// Runbooks returns a RunbooksClient interface for interacting with runbooks in FireHydrant
+func (c *APIClient) Runbooks() RunbooksClient {
+	return &RESTRunbooksClient{client: c}
 }
 
-// CreateService creates a brand spankin new service in FireHydrant
-// TODO: Check failure case
-func (c *APIClient) CreateService(ctx context.Context, createReq CreateServiceRequest) (*ServiceResponse, error) {
-	res := &ServiceResponse{}
-
-	if _, err := c.client().Post("services").BodyJSON(&createReq).Receive(res, nil); err != nil {
-		return nil, errors.Wrap(err, "could not create service")
-	}
-
-	return res, nil
+func (c *APIClient) RunbookActions() RunbookActionsClient {
+	return &RESTRunbookActionsClient{client: c}
 }
 
 // UpdateService updates a old spankin service in FireHydrant
@@ -321,6 +299,54 @@ func (c *APIClient) UpdateTeam(ctx context.Context, id string, req UpdateTeamReq
 // DeleteTeam deletes a team record from FireHydrant
 func (c *APIClient) DeleteTeam(ctx context.Context, id string) error {
 	if _, err := c.client().Delete("teams/"+id).Receive(nil, nil); err != nil {
+		return errors.Wrap(err, "could not delete service")
+	}
+
+	return nil
+}
+
+// GetSeverity retrieves an severity from the FireHydrant API
+func (c *APIClient) GetSeverity(ctx context.Context, slug string) (*SeverityResponse, error) {
+	var fun SeverityResponse
+
+	resp, err := c.client().Get("severities/"+slug).Receive(&fun, nil)
+
+	if resp.StatusCode == 404 {
+		return nil, NotFound(fmt.Sprintf("Could not find severity with ID %s", slug))
+	}
+
+	if err != nil {
+		return nil, errors.Wrap(err, "could not retrieve severity")
+	}
+
+	return &fun, nil
+}
+
+// CreateSeverity creates an severity
+func (c *APIClient) CreateSeverity(ctx context.Context, req CreateSeverityRequest) (*SeverityResponse, error) {
+	res := &SeverityResponse{}
+
+	if _, err := c.client().Post("severities").BodyJSON(&req).Receive(res, nil); err != nil {
+		return nil, errors.Wrap(err, "could not create severity")
+	}
+
+	return res, nil
+}
+
+// UpdateSeverity updates a severity in FireHydrant
+func (c *APIClient) UpdateSeverity(ctx context.Context, slug string, req UpdateSeverityRequest) (*SeverityResponse, error) {
+	res := &SeverityResponse{}
+
+	if _, err := c.client().Patch("severities/"+slug).BodyJSON(&req).Receive(res, nil); err != nil {
+		return nil, errors.Wrap(err, "could not update severity")
+	}
+
+	return res, nil
+}
+
+// DeleteSeverity deletes a severity record from FireHydrant
+func (c *APIClient) DeleteSeverity(ctx context.Context, slug string) error {
+	if _, err := c.client().Delete("severities/"+slug).Receive(nil, nil); err != nil {
 		return errors.Wrap(err, "could not delete service")
 	}
 

@@ -36,7 +36,7 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 	ac := m.(firehydrant.Client)
 	serviceID := d.Id()
 
-	r, err := ac.GetService(ctx, serviceID)
+	r, err := ac.Services().Get(ctx, serviceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -72,7 +72,7 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 		Labels:      labels,
 	}
 
-	newService, err := ac.CreateService(ctx, r)
+	newService, err := ac.Services().Create(ctx, r)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -95,7 +95,7 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 		Labels:      convertStringMap(d.Get("labels").(map[string]interface{})),
 	}
 
-	_, err := ac.UpdateService(ctx, d.Id(), r)
+	_, err := ac.Services().Update(ctx, d.Id(), r)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -107,20 +107,11 @@ func deleteResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	ac := m.(firehydrant.Client)
 	serviceID := d.Id()
 
-	err := ac.DeleteService(ctx, serviceID)
+	err := ac.Services().Delete(ctx, serviceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId("")
 	return diag.Diagnostics{}
-}
-
-func convertStringMap(sm map[string]interface{}) map[string]string {
-	m := map[string]string{}
-	for k, v := range sm {
-		m[k] = v.(string)
-	}
-
-	return m
 }

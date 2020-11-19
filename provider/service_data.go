@@ -70,7 +70,7 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 	ac := m.(firehydrant.Client)
 	serviceID := d.Get("id").(string)
 
-	r, err := ac.GetService(ctx, serviceID)
+	r, err := ac.Services().Get(ctx, serviceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -104,7 +104,7 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 		ls[k] = v.(string)
 	}
 
-	r, err := ac.GetServices(ctx, &firehydrant.ServiceQuery{
+	r, err := ac.Services().List(ctx, &firehydrant.ServiceQuery{
 		Query:          query,
 		LabelsSelector: ls,
 	})

@@ -52,12 +52,16 @@ func Provider() *schema.Provider {
 			"firehydrant_environment":   resourceEnvironment(),
 			"firehydrant_functionality": resourceFunctionality(),
 			"firehydrant_team":          resourceTeam(),
+			"firehydrant_severity":      resourceSeverity(),
+			"firehydrant_runbook":       resourceRunbook(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"firehydrant_service":       dataSourceService(),
-			"firehydrant_services":      dataSourceServices(),
-			"firehydrant_environment":   dataSourceEnvironment(),
-			"firehydrant_functionality": dataSourceFunctionality(),
+			"firehydrant_service":        dataSourceService(),
+			"firehydrant_services":       dataSourceServices(),
+			"firehydrant_environment":    dataSourceEnvironment(),
+			"firehydrant_functionality":  dataSourceFunctionality(),
+			"firehydrant_runbook":        dataSourceRunbook(),
+			"firehydrant_runbook_action": dataSourceRunbookAction(),
 		},
 		ConfigureContextFunc: setupFireHydrantContext,
 	}
@@ -78,4 +82,13 @@ func setupFireHydrantContext(ctx context.Context, rd *schema.ResourceData) (inte
 	}
 
 	return ac, nil
+}
+
+func convertStringMap(sm map[string]interface{}) map[string]string {
+	m := map[string]string{}
+	for k, v := range sm {
+		m[k] = v.(string)
+	}
+
+	return m
 }

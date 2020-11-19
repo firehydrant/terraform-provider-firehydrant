@@ -39,3 +39,23 @@ resource "firehydrant_functionality" "logging-in-2" {
     }
   }
 }
+
+resource "firehydrant_runbook" "default-process" {
+  name = "Default IR Process"
+
+  steps = [
+    {
+      name = "Create Incident Channel"
+      action_id = data.firehydrant_action.create-incident-channel
+      data = {
+        channel_format = "-inc-123"
+      }
+    }
+  ]
+}
+
+data "firehydrant_action" "create-incident-channel" {
+  slug = "create_incident_channel"
+  type = "incident"
+  integration_slug = "slack"
+}
