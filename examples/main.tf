@@ -40,22 +40,30 @@ resource "firehydrant_functionality" "logging-in-2" {
   }
 }
 
-resource "firehydrant_runbook" "default-process" {
-  name = "Default IR Process"
-
-  steps = [
-    {
-      name = "Create Incident Channel"
-      action_id = data.firehydrant_action.create-incident-channel
-      data = {
-        channel_format = "-inc-123"
-      }
-    }
-  ]
+resource "firehydrant_severity" "sev1" {
+  slug = "SEV1TF"
 }
 
-data "firehydrant_action" "create-incident-channel" {
+resource "firehydrant_runbook" "default-process-tf" {
+  name = "Default IR Process (from tf)"
+  type = "incident"
+
+  severities {
+    id = firehydrant_severity.sev1.slug
+  }
+
+  steps {
+    name = "Create Incident Channel"
+    action_id = data.firehydrant_runbook_action.create-incident-channel.id
+    config = {
+      channel_name_format = "-inc-123"
+    }
+  }
+}
+
+data "firehydrant_runbook_action" "create-incident-channel" {
   slug = "create_incident_channel"
   type = "incident"
   integration_slug = "slack"
 }
+

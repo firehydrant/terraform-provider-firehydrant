@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -27,6 +26,58 @@ func resourceRunbook() *schema.Resource {
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"severities": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"steps": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"step_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"action_id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"config": {
+							Type:     schema.TypeMap,
+							Optional: true,
+						},
+						"automatic": {
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+						"repeats": {
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+						"repeats_duration": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"delation_duration": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -56,6 +107,10 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
+	if err := convertRunbookToState(r, d); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return ds
 }
 
@@ -69,17 +124,39 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 		Type:        typ,
 	}
 
+	steps := d.Get("steps").([]interface{})
+	for _, step := range steps {
+		s := step.(map[string]interface{})
+
+		r.Steps = append(r.Steps, firehydrant.RunbookStep{
+			Name:     s["name"].(string),
+			ActionID: s["action_id"].(string),
+			Config:   convertStringMap(s["config"].(map[string]interface{})),
+		})
+	}
+
+	severities := d.Get("severities").([]interface{})
+	for _, sev := range severities {
+		s := sev.(map[string]interface{})
+
+		r.Severities = append(r.Severities, firehydrant.RunbookRelation{
+			ID: s["id"].(string),
+		})
+	}
+
 	resource, err := ac.Runbooks().Create(ctx, r)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	fmt.Printf("[DEBUG] Runbook value: %#v\n", resource)
-
 	d.SetId(resource.ID)
 	d.Set("name", resource.Name)
 	d.Set("type", resource.Type)
 	d.Set("description", resource.Description)
+
+	if err := convertRunbookToState(resource, d); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diag.Diagnostics{}
 }
@@ -93,6 +170,26 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	r := firehydrant.UpdateRunbookRequest{
 		Name:        name,
 		Description: description,
+	}
+
+	steps := d.Get("steps").([]interface{})
+	for _, step := range steps {
+		s := step.(map[string]interface{})
+
+		r.Steps = append(r.Steps, firehydrant.RunbookStep{
+			Name:     s["name"].(string),
+			ActionID: s["action_id"].(string),
+			Config:   convertStringMap(s["config"].(map[string]interface{})),
+		})
+	}
+
+	severities := d.Get("severities").([]interface{})
+	for _, sev := range severities {
+		s := sev.(map[string]interface{})
+
+		r.Severities = append(r.Severities, firehydrant.RunbookRelation{
+			ID: s["id"].(string),
+		})
 	}
 
 	_, err := ac.Runbooks().Update(ctx, id, r)
@@ -113,4 +210,37 @@ func deleteResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId("")
 	return diag.Diagnostics{}
+}
+
+func convertRunbookToState(runbook *firehydrant.RunbookResponse, d *schema.ResourceData) error {
+	resourceSteps := make([]interface{}, len(runbook.Steps))
+	for index, s := range runbook.Steps {
+		stepConfig := map[string]interface{}{}
+		for k, v := range s.Config {
+			stepConfig[k] = v
+		}
+
+		resourceSteps[index] = map[string]interface{}{
+			"step_id":   s.StepID,
+			"name":      s.Name,
+			"action_id": s.ActionID,
+			"config":    stepConfig,
+		}
+	}
+
+	if err := d.Set("steps", resourceSteps); err != nil {
+		return err
+	}
+
+	sevs := make([]interface{}, len(runbook.Severities))
+	for index, s := range runbook.Severities {
+		sevs[index] = map[string]interface{}{
+			"id": s.ID,
+		}
+	}
+	if err := d.Set("severities", sevs); err != nil {
+		return err
+	}
+
+	return nil
 }

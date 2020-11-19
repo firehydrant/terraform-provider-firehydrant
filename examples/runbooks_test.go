@@ -25,6 +25,12 @@ func TestAccRunbooks(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "name", rName),
 					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "description", "this is my description"),
+					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "severities.#", "1"),
+					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "severities.0.id", "SEV1TFACCTEST"),
+					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "steps.#", "1"),
+					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "steps.0.name", "Create Incident Channel"),
+					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "steps.0.config.channel_name_format", "-inc-{{ number }}"),
+					resource.TestCheckResourceAttrSet("firehydrant_runbook.default-incident-process", "steps.0.step_id"),
 				),
 			},
 			{
@@ -71,10 +77,32 @@ func testRunbookDataConfig(rName string) string {
 }
 
 const testRunbookResourceConfigTpl = `
+data "firehydrant_runbook_action" "create-incident-channel" {
+	slug = "create_incident_channel"
+	integration_slug = "slack"
+	type = "incident"
+}
+
+resource "firehydrant_severity" "sev1" {
+  slug = "SEV1TFACCTEST"
+}
+
 resource "firehydrant_runbook" "default-incident-process" {
 	name = "%s"
 	type = "incident"
 	description = "this is my description"
+
+	severities {
+		id = firehydrant_severity.sev1.slug
+	}
+
+	steps {
+		name = "Create Incident Channel"
+		action_id = data.firehydrant_runbook_action.create-incident-channel.id
+		config = {
+			channel_name_format = "-inc-{{ number }}"
+		}
+	}
 }
 `
 
@@ -84,7 +112,11 @@ func testRunbookResourceConfig(rName string) string {
 
 func testRunbookDoesNotExist(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs := s.RootModule().Resources[resourceName]
+		rs, ok := s.RootModule().Resources[resourceName]
+
+		if !ok {
+			return nil
+		}
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("ID was not set")

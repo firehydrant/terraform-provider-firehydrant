@@ -15,6 +15,27 @@ type CreateRunbookRequest struct {
 	Name        string `json:"name"`
 	Type        string `json:"type"`
 	Description string `json:"description"`
+
+	Severities []RunbookRelation `json:"severities"`
+
+	Steps []RunbookStep `json:"steps,omitempty"`
+}
+
+// RunbookRelation associates a runbook to a type in FireHydrant (such as a severity)
+type RunbookRelation struct {
+	ID string `json:"id"`
+}
+
+// RunbookStep is a step inside of a runbook that can automate something (like creating a incident slack channel)
+type RunbookStep struct {
+	Name            string            `json:"name"`
+	ActionID        string            `json:"action_id"`
+	StepID          string            `json:"step_id,omitempty"`
+	Config          map[string]string `json:"config,omitempty"`
+	Automatic       bool              `json:"automatic,omitempty"`
+	Repeats         bool              `json:"repeats,omitempty"`
+	RepeatsDuration string            `json:"repeats_duration,omitempty"`
+	DelayDuration   string            `json:"delay_duration,omitempty"`
 }
 
 // UpdateRunbookRequest is the payload for updating a service
@@ -22,18 +43,23 @@ type CreateRunbookRequest struct {
 type UpdateRunbookRequest struct {
 	Name        string            `json:"name,omitempty"`
 	Description string            `json:"description,omitempty"`
-	Labels      map[string]string `json:"labels,omitempty"`
+	Steps       []RunbookStep     `json:"steps,omitempty"`
+	Severities  []RunbookRelation `json:"severities"`
 }
 
 // RunbookResponse is the payload for retrieving a service
 // URL: GET https://api.firehydrant.io/v1/runbooks/{id}
 type RunbookResponse struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Type        string    `json:"type"`
-	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          string        `json:"id"`
+	Name        string        `json:"name"`
+	Type        string        `json:"type"`
+	Description string        `json:"description"`
+	Steps       []RunbookStep `json:"steps"`
+
+	Severities []RunbookRelation `json:"severities"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // RunbooksClient is an interface for interacting with runbooks on FireHydrant
@@ -82,6 +108,14 @@ func (c *RESTRunbooksClient) Create(ctx context.Context, createReq CreateRunbook
 
 	if resp.StatusCode != 201 {
 		return nil, fmt.Errorf("error creating runbook: status %d", resp.StatusCode)
+	}
+
+	res, err = c.Update(ctx, res.ID, UpdateRunbookRequest{
+		Steps:      createReq.Steps,
+		Severities: createReq.Severities,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "could not update created runbook")
 	}
 
 	return res, nil
