@@ -57,7 +57,9 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	d.Set("labels", r.Labels)
+	if err := d.Set("labels", r.Labels); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ds
 }
@@ -78,12 +80,18 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(newService.ID)
-	d.Set("name", newService.Name)
-	d.Set("description", newService.Description)
-	d.Set("labels", newService.Labels)
 
-	var ds diag.Diagnostics
-	return ds
+	attributes := map[string]interface{}{
+		"name":        newService.Name,
+		"description": newService.Description,
+		"labels":      newService.Labels,
+	}
+
+	if err := setAttributesFromMap(d, attributes); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diag.Diagnostics{}
 }
 
 func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

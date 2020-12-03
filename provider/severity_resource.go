@@ -68,7 +68,10 @@ func createResourceFireHydrantSeverity(ctx context.Context, d *schema.ResourceDa
 	}
 
 	d.SetId(resource.Slug)
-	d.Set("description", resource.Description)
+
+	if err := d.Set("description", resource.Description); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diag.Diagnostics{}
 }

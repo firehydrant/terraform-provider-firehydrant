@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"log"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -69,13 +68,15 @@ func readResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, m 
 
 	svcs := make([]interface{}, len(r.Services))
 	for index, s := range r.Services {
-		log.Println("[DEBUG] (Read) Service Name: " + s.Name)
 		svcs[index] = map[string]interface{}{
 			"id":   s.ID,
 			"name": s.Name,
 		}
 	}
-	d.Set("services", svcs)
+
+	if err := d.Set("services", svcs); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ds
 }
@@ -102,8 +103,15 @@ func createResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	d.SetId(resource.ID)
-	d.Set("name", resource.Name)
-	d.Set("description", resource.Description)
+
+	attributes := map[string]interface{}{
+		"name":        resource.Name,
+		"description": resource.Description,
+	}
+
+	if err := setAttributesFromMap(d, attributes); err != nil {
+		return diag.FromErr(err)
+	}
 
 	svcs := make([]interface{}, len(resource.Services))
 	for index, s := range resource.Services {
@@ -111,9 +119,11 @@ func createResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 			"id":   s.ID,
 			"name": s.Name,
 		}
-		log.Println("[DEBUG] (Create) Service Name: " + s.Name)
 	}
-	d.Set("services", svcs)
+
+	if err := d.Set("services", svcs); err != nil {
+		return diag.FromErr(err)
+	}
 
 	var ds diag.Diagnostics
 	return ds
@@ -147,9 +157,11 @@ func updateResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 			"id":   s.ID,
 			"name": s.Name,
 		}
-		log.Println("[DEBUG] (Update) Service Name: " + s.Name)
 	}
-	d.Set("services", svcs)
+
+	if err := d.Set("services", svcs); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diag.Diagnostics{}
 }

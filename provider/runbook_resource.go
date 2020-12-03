@@ -150,9 +150,16 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(resource.ID)
-	d.Set("name", resource.Name)
-	d.Set("type", resource.Type)
-	d.Set("description", resource.Description)
+
+	attributes := map[string]interface{}{
+		"name":        resource.Name,
+		"type":        resource.Type,
+		"description": resource.Description,
+	}
+
+	if err := setAttributesFromMap(d, attributes); err != nil {
+		return diag.FromErr(err)
+	}
 
 	if err := convertRunbookToState(resource, d); err != nil {
 		return diag.FromErr(err)

@@ -285,7 +285,7 @@ func TestGetServices(t *testing.T) {
 
 	t.Log(vs)
 
-	_, err = c.Services().Get(context.TODO(), qry)
+	_, err = c.Services().List(context.TODO(), qry)
 	if err != nil {
 		t.Fatalf("Received error hitting ping endpoint: %s", err.Error())
 	}

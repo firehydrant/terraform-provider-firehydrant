@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -68,11 +69,16 @@ func createResourceFireHydrantEnvironment(ctx context.Context, d *schema.Resourc
 	}
 
 	d.SetId(resource.ID)
-	d.Set("name", resource.Name)
-	d.Set("description", resource.Description)
 
-	var ds diag.Diagnostics
-	return ds
+	attributes := map[string]interface{}{
+		"name":        resource.Name,
+		"description": resource.Description,
+	}
+	if err := setAttributesFromMap(d, attributes); err != nil {
+		return diag.FromErr(fmt.Errorf("could not set attributes: %w", err))
+	}
+
+	return diag.Diagnostics{}
 }
 
 func updateResourceFireHydrantEnvironment(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

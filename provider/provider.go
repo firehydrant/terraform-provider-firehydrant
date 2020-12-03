@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
-	"github.com/pkg/errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -73,7 +72,7 @@ func setupFireHydrantContext(ctx context.Context, rd *schema.ResourceData) (inte
 
 	ac, err := firehydrant.NewRestClient(apiKey, firehydrant.WithBaseURL(fireHydrantBaseURL))
 	if err != nil {
-		return nil, diag.FromErr(errors.Wrap(err, "could not initialize API client"))
+		return nil, diag.FromErr(fmt.Errorf("could not initialize API client: %w", err))
 	}
 
 	_, err = ac.Ping(ctx)
@@ -91,4 +90,14 @@ func convertStringMap(sm map[string]interface{}) map[string]string {
 	}
 
 	return m
+}
+
+func setAttributesFromMap(d *schema.ResourceData, sm map[string]interface{}) error {
+	for k, v := range sm {
+		if err := d.Set(k, v); err != nil {
+			return fmt.Errorf("could not set key %s: %w", k, err)
+		}
+	}
+
+	return nil
 }

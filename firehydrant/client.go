@@ -3,7 +3,6 @@ package firehydrant
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/dghubble/sling"
 	"github.com/pkg/errors"
@@ -230,8 +229,6 @@ func (c *APIClient) CreateFunctionality(ctx context.Context, req CreateFunctiona
 		return nil, errors.Wrap(err, "could not create functionality")
 	}
 
-	log.Println("[DEBUG] Functionality!", res.Services)
-
 	return res, nil
 }
 
@@ -279,8 +276,6 @@ func (c *APIClient) CreateTeam(ctx context.Context, req CreateTeamRequest) (*Tea
 	if _, err := c.client().Post("teams").BodyJSON(&req).Receive(res, nil); err != nil {
 		return nil, errors.Wrap(err, "could not create team")
 	}
-
-	log.Println("[DEBUG] Team!", res.Services)
 
 	return res, nil
 }
