@@ -306,7 +306,7 @@ func (c *APIClient) GetSeverity(ctx context.Context, slug string) (*SeverityResp
 
 	resp, err := c.client().Get("severities/"+slug).Receive(&fun, nil)
 
-	if resp.StatusCode == 404 {
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, NotFound(fmt.Sprintf("Could not find severity with ID %s", slug))
 	}
 
@@ -321,8 +321,13 @@ func (c *APIClient) GetSeverity(ctx context.Context, slug string) (*SeverityResp
 func (c *APIClient) CreateSeverity(ctx context.Context, req CreateSeverityRequest) (*SeverityResponse, error) {
 	res := &SeverityResponse{}
 
-	if _, err := c.client().Post("severities").BodyJSON(&req).Receive(res, nil); err != nil {
+	resp, err := c.client().Post("severities").BodyJSON(&req).Receive(res, nil)
+	if err != nil {
 		return nil, errors.Wrap(err, "could not create severity")
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, fmt.Errorf("Could not create severity %s", req.Slug)
 	}
 
 	return res, nil
