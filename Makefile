@@ -1,6 +1,6 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
-HOSTNAME=firehydrant.com
-NAMESPACE=twitch
+HOSTNAME=registry.terraform.io
+NAMESPACE=firehydrant
 NAME=firehydrant
 BINARY=terraform-provider-${NAME}
 VERSION=0.1.0

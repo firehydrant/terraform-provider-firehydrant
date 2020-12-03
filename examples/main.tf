@@ -10,60 +10,106 @@ terraform {
 provider "firehydrant" {
 }
 
-resource "firehydrant_service" "paddy-cake-paddy-cake" {
-  name = "Whatever"
 
+resource "firehydrant_environment" "production" {
+  name = "FireHydrant Production"
+}
+
+resource "firehydrant_environment" "staging" {
+  name = "FireHydrant Staging"
+}
+
+resource "firehydrant_service" "laddertruck-web" {
+  name = "Laddertruck (web)"
   labels = {
-    mykey = "myvalue"
+    stack = "rails"
+    version = "5.2.x"
   }
 }
 
-data "firehydrant_service" "oauth2-proxy" {
-  id = "2177ce81-b6b6-4063-af73-6c881c8b9899"
+resource "firehydrant_service" "laddertruck-pubsub" {
+  name = "Laddertruck (pubsub)"
+  labels = {
+    stack = "rails"
+    version = "5.2.x"
+  }
 }
 
-data "firehydrant_services" "logging-in-services" {
-  query = "kube-system"
+resource "firehydrant_functionality" "incident-management" {
+  name = "Incident Management"
+
+  services {
+    id = firehydrant_service.laddertruck-web.id
+  }
+
+  services {
+    id = firehydrant_service.laddertruck-pubsub.id
+  }
 }
 
-resource "firehydrant_functionality" "logging-in-2" {
-  name = "Logging In (from TF) 2"
+resource "firehydrant_team" "firefighters" {
+  name = "Firefighters"
 
-  dynamic "services" {
-    for_each = [for s in data.firehydrant_services.logging-in-services.services: {
-      id = s.id
-    }]
+  services {
+    id = firehydrant_service.laddertruck-web.id
+  }
 
-    content {
-      id = services.value.id
-    }
+  services {
+    id = firehydrant_service.laddertruck-pubsub.id
   }
 }
 
 resource "firehydrant_severity" "sev1" {
-  slug = "SEV1TF"
+  slug = "SEV1"
 }
 
-resource "firehydrant_runbook" "default-process-tf" {
-  name = "Default IR Process (from tf)"
+resource "firehydrant_severity" "sev2" {
+  slug = "SEV2"
+}
+
+resource "firehydrant_severity" "sev3" {
+  slug = "SEV3"
+}
+
+resource "firehydrant_severity" "sev4" {
+  slug = "SEV4"
+}
+
+resource "firehydrant_severity" "sev5" {
+  slug = "SEV5"
+}
+
+data "firehydrant_runbook_action" "email-notification" {
+  slug = "email_notification"
+  type = "incident"
+  integration_slug = "patchy"
+}
+
+resource "firehydrant_runbook" "default-process" {
+  name = "Default Incident Management"
+  description = "This is the default incident management runbook"
   type = "incident"
 
   severities {
     id = firehydrant_severity.sev1.slug
   }
 
+  severities {
+    id = firehydrant_severity.sev2.slug
+  }
+
+  severities {
+    id = firehydrant_severity.sev3.slug
+  }
+
   steps {
-    name = "Create Incident Channel"
-    action_id = data.firehydrant_runbook_action.create-incident-channel.id
+    name = "Send a notification"
+    action_id = data.firehydrant_runbook_action.email-notification.id
+    automatic = true
     config = {
-      channel_name_format = "-inc-123"
+      email_address = "robert+terraform@firehydrant.io"
+      subject = "An incident has been declared!"
+      default_message = "A really bad incident has been declared!"
     }
   }
 }
-
-data "firehydrant_runbook_action" "create-incident-channel" {
-  slug = "create_incident_channel"
-  type = "incident"
-  integration_slug = "slack"
-}
-
