@@ -129,9 +129,10 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 		s := step.(map[string]interface{})
 
 		r.Steps = append(r.Steps, firehydrant.RunbookStep{
-			Name:     s["name"].(string),
-			ActionID: s["action_id"].(string),
-			Config:   convertStringMap(s["config"].(map[string]interface{})),
+			Name:      s["name"].(string),
+			ActionID:  s["action_id"].(string),
+			Automatic: s["automatic"].(bool),
+			Config:    convertStringMap(s["config"].(map[string]interface{})),
 		})
 	}
 
@@ -184,9 +185,10 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 		s := step.(map[string]interface{})
 
 		r.Steps = append(r.Steps, firehydrant.RunbookStep{
-			Name:     s["name"].(string),
-			ActionID: s["action_id"].(string),
-			Config:   convertStringMap(s["config"].(map[string]interface{})),
+			Name:      s["name"].(string),
+			ActionID:  s["action_id"].(string),
+			Automatic: s["automatic"].(bool),
+			Config:    convertStringMap(s["config"].(map[string]interface{})),
 		})
 	}
 
@@ -232,6 +234,7 @@ func convertRunbookToState(runbook *firehydrant.RunbookResponse, d *schema.Resou
 			"name":      s.Name,
 			"action_id": s.ActionID,
 			"config":    stepConfig,
+			"automatic": s.Automatic,
 		}
 	}
 
