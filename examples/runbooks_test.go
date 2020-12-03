@@ -66,16 +66,6 @@ data "firehydrant_runbook_action" "create-incident-channel" {
 }
 `
 
-const testRunbookDataConfigTpl = `
-data "firehydrant_runbook" "default-runbook" {
-	id = "%s"
-}
-`
-
-func testRunbookDataConfig(rName string) string {
-	return fmt.Sprintf(testRunbookDataConfigTpl, rName)
-}
-
 const testRunbookResourceConfigTpl = `
 data "firehydrant_runbook_action" "create-incident-channel" {
 	slug = "create_incident_channel"

@@ -168,9 +168,9 @@ func updateResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 
 func deleteResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	ac := m.(firehydrant.Client)
-	TeamID := d.Id()
+	teamID := d.Id()
 
-	err := ac.DeleteTeam(ctx, TeamID)
+	err := ac.DeleteTeam(ctx, teamID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
