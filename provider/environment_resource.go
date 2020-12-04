@@ -11,6 +11,7 @@ import (
 
 func resourceEnvironment() *schema.Resource {
 	return &schema.Resource{
+		Description:   "FireHydrant environments are used to tag incidents with where they are occurring.",
 		CreateContext: createResourceFireHydrantEnvironment,
 		UpdateContext: updateResourceFireHydrantEnvironment,
 		ReadContext:   readResourceFireHydrantEnvironment,
