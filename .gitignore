@@ -3,3 +3,4 @@
 crash.log
 terraform.tfstate
 *.tfstate.backup
+dist/
