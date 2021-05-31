@@ -3,6 +3,7 @@ package firehydrant
 import (
 	"fmt"
 	"net/url"
+	"sort"
 	"strings"
 	"time"
 
@@ -63,8 +64,16 @@ type LabelsSelector map[string]string
 // https://github.com/google/go-querystring/blob/v1.0.0/query/encode.go#L39
 func (sq LabelsSelector) EncodeValues(key string, v *url.Values) error {
 	var labels []string
-	for k, val := range sq {
-		labels = append(labels, fmt.Sprintf("%s=%s", k, val))
+
+	keys, i := make([]string, len(sq)), 0
+	for k := range sq {
+		keys[i] = k
+		i++
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		labels = append(labels, fmt.Sprintf("%s=%s", k, sq[k]))
 	}
 
 	v.Set(key, strings.Join(labels, ","))
