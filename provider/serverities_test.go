@@ -30,13 +30,16 @@ func TestAccSeverities(t *testing.T) {
 					resource.TestCheckResourceAttr("firehydrant_severity.terraform-acceptance-test-severity", "slug", strings.ToUpper(rName)),
 				),
 			},
-			{
-				Config: testSeverityConfig(rNameUpdated),
-				Check: resource.ComposeTestCheckFunc(
-					testSeverityExists("firehydrant_severity.terraform-acceptance-test-severity"),
-					resource.TestCheckResourceAttr("firehydrant_severity.terraform-acceptance-test-severity", "slug", strings.ToUpper(rNameUpdated)),
-				),
-			},
+			// TODO(bobbytables): Updating severities in Terraform is currently problematic because FireHydrant uses
+			// slugs as the IDs and those are stored in Terraform state as the resource ID. Since updates can change a slug but terraform updates _wont_
+			// update the resource with the new slug as the ID, it's technically not possible to perform a slug update in Terraform against FireHydrant.
+			// {
+			// 	Config: testSeverityConfig(rNameUpdated),
+			// 	Check: resource.ComposeTestCheckFunc(
+			// 		testSeverityExists("firehydrant_severity.terraform-acceptance-test-severity"),
+			// 		resource.TestCheckResourceAttr("firehydrant_severity.terraform-acceptance-test-severity", "slug", strings.ToUpper(rNameUpdated)),
+			// 	),
+			// },
 		},
 	})
 }
@@ -48,7 +51,7 @@ resource "firehydrant_severity" "terraform-acceptance-test-severity" {
 `
 
 func testSeverityConfig(rName string) string {
-	return fmt.Sprintf(testSeverityConfigTemplate, rName)
+	return fmt.Sprintf(testSeverityConfigTemplate, strings.ToUpper(rName))
 }
 
 func testSeverityExists(resourceName string) resource.TestCheckFunc {

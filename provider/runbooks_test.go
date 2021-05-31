@@ -25,8 +25,6 @@ func TestAccRunbooks(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "name", rName),
 					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "description", "this is my description"),
-					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "severities.#", "1"),
-					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "severities.0.id", "SEV1TFACCTEST"),
 					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "steps.#", "1"),
 					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "steps.0.name", "Create Incident Channel"),
 					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "steps.0.config.channel_name_format", "-inc-{{ number }}"),
@@ -81,10 +79,6 @@ resource "firehydrant_runbook" "default-incident-process" {
 	name = "%s"
 	type = "incident"
 	description = "this is my description"
-
-	severities {
-		id = firehydrant_severity.sev1.slug
-	}
 
 	steps {
 		name = "Create Incident Channel"
