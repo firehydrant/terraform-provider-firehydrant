@@ -1,6 +1,6 @@
 module github.com/firehydrant/terraform-provider-firehydrant
 
-go 1.15
+go 1.16
 
 require (
 	github.com/bxcodec/faker/v3 v3.5.0
