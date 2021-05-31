@@ -15,6 +15,9 @@ func resourceService() *schema.Resource {
 		UpdateContext: updateResourceFireHydrantService,
 		ReadContext:   readResourceFireHydrantService,
 		DeleteContext: deleteResourceFireHydrantService,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,

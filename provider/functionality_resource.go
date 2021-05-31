@@ -14,6 +14,9 @@ func resourceFunctionality() *schema.Resource {
 		UpdateContext: updateResourceFireHydrantFunctionality,
 		ReadContext:   readResourceFireHydrantFunctionality,
 		DeleteContext: deleteResourceFireHydrantFunctionality,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
