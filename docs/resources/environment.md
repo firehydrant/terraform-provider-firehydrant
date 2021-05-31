@@ -22,4 +22,3 @@ FireHydrant environments are used to tag incidents with where they are occurring
 - **description** (String, Optional)
 - **id** (String, Optional) The ID of this resource.
 
-

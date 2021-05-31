@@ -26,6 +26,9 @@ func resourceEnvironment() *schema.Resource {
 				Optional: true,
 			},
 		},
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 	}
 }
 
