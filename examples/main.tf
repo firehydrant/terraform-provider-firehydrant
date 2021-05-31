@@ -10,12 +10,6 @@ terraform {
 provider "firehydrant" {
 }
 
-data "firehydrant_runbook_action" "email-notification" {
-  slug = "email_notification"
-  type = "incident"
-  integration_slug = "patchy"
-}
-
 resource "firehydrant_environment" "production" {
     name = "Production"
 }
