@@ -16,3 +16,6 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+      env:
+        TF_ACC: "true"
+        FIREHYDRANT_API_KEY: ${{ secrets.FIREHYDRANT_API_KEY }}
