@@ -14,6 +14,9 @@ func resourceSeverity() *schema.Resource {
 		UpdateContext: updateResourceFireHydrantSeverity,
 		ReadContext:   readResourceFireHydrantSeverity,
 		DeleteContext: deleteResourceFireHydrantSeverity,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"slug": {
 				Type:     schema.TypeString,

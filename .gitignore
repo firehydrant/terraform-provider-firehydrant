@@ -1,6 +1,6 @@
 .vscode
 .terraform
 crash.log
-terraform.tfstate
-*.tfstate.backup
+examples/terraform.tfstate
+**/*/*.tfstate.backup
 dist/
