@@ -1,4 +1,4 @@
-package examples
+package provider
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
-	"github.com/firehydrant/terraform-provider-firehydrant/provider"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -18,7 +17,7 @@ import (
 func defaultProviderFactories() map[string]func() (*schema.Provider, error) {
 	return map[string]func() (*schema.Provider, error){
 		"firehydrant": func() (*schema.Provider, error) {
-			return provider.Provider(), nil
+			return Provider(), nil
 		},
 	}
 }
