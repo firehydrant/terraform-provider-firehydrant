@@ -26,6 +26,10 @@ func dataSourceService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"service_tier": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -59,6 +63,10 @@ func dataSourceServices() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"service_tier": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -77,8 +85,9 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 
 	var ds diag.Diagnostics
 	svc := map[string]string{
-		"name":        r.Name,
-		"description": r.Description,
+		"name":         r.Name,
+		"description":  r.Description,
+		"service_tier": r.ServiceTier,
 	}
 
 	for key, val := range svc {
