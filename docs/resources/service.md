@@ -21,6 +21,7 @@ description: |-
 
 - **description** (String, Optional)
 - **id** (String, Optional) The ID of this resource.
+- **service_tier** (Integer, Optional) The Service Tier of this resource - between 1 - 5.
 - **labels** (Map of String, Optional)
 
 
