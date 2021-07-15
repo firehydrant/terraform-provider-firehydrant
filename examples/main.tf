@@ -17,6 +17,7 @@ resource "firehydrant_environment" "production" {
 resource "firehydrant_service" "heimdall" {
     name   = "Heimdall"
     labels = {}
+    service_tier = 4
 }
 
 
