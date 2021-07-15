@@ -74,12 +74,11 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	ac := m.(firehydrant.Client)
 	labels := convertStringMap(d.Get("labels").(map[string]interface{}))
-	serviceTier := d.Get("service_tier").(int)
 
 	r := firehydrant.CreateServiceRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
-		ServiceTier: serviceTier,
+		ServiceTier: d.Get("service_tier").(int),
 		Labels:      labels,
 	}
 
