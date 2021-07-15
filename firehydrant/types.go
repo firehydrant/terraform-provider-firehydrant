@@ -29,7 +29,7 @@ type PingResponse struct {
 type CreateServiceRequest struct {
 	Name        string            `json:"name"`
 	Description string            `json:"description"`
-	ServiceTier int             `json:"service_tier,int,omitempty"`
+	ServiceTier int               `json:"service_tier,int,omitempty"`
 	Labels      map[string]string `json:"labels,omitempty"`
 }
 
@@ -38,7 +38,7 @@ type CreateServiceRequest struct {
 type UpdateServiceRequest struct {
 	Name        string            `json:"name,omitempty"`
 	Description string            `json:"description,omitempty"`
-	ServiceTier int             `json:"service_tier,int,omitempty"`
+	ServiceTier int               `json:"service_tier,int,omitempty"`
 	Labels      map[string]string `json:"labels,omitempty"`
 }
 
@@ -48,7 +48,7 @@ type ServiceResponse struct {
 	ID          string            `json:"id"`
 	Name        string            `json:"name"`
 	Description string            `json:"description"`
-	ServiceTier int             `json:"string,service_tier"`
+	ServiceTier int               `json:"service_tier"`
 	Slug        string            `json:"slug"`
 	CreatedAt   time.Time         `json:"created_at"`
 	UpdatedAt   time.Time         `json:"updated_at"`

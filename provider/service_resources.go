@@ -68,6 +68,10 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	if err := d.Set("service_tier", r.ServiceTier); err != nil {
+		return diag.FromErr(err)
+  	}
+
 	return ds
 }
 
