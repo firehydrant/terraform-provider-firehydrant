@@ -51,7 +51,7 @@ func TestAccService(t *testing.T) {
 				Config: testServiceDataSourceConfig(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.firehydrant_services.services", "services.0.name", rNameUpdated),
-					resource.TestCheckResourceAttr("firehydrant_service.terraform-acceptance-test-service", "services.0.service_tier", rNameUpdated),
+					resource.TestCheckResourceAttr("data.firehydrant_services.services", "services.0.service_tier", "5"),
 				),
 			},
 		},
@@ -94,7 +94,6 @@ data "firehydrant_services" "services" {
 	labels = {
 		key1 = "value1"
 	}
-	service_tier = 5
 }
 
 output "services" {

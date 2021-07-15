@@ -27,7 +27,7 @@ func dataSourceService() *schema.Resource {
 				Computed: true,
 			},
 			"service_tier": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 		},
@@ -64,7 +64,7 @@ func dataSourceServices() *schema.Resource {
 							Computed: true,
 						},
 						"service_tier": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 					},
@@ -84,9 +84,10 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	var ds diag.Diagnostics
-	svc := map[string]string{
+	svc := map[string]interface{}{
 		"name":         r.Name,
 		"description":  r.Description,
+		"service_tier": r.ServiceTier,
 	}
 
 	for key, val := range svc {
@@ -124,9 +125,10 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 
 	for _, svc := range r.Services {
 		values := map[string]interface{}{
-			"id":          svc.ID,
-			"name":        svc.Name,
-			"description": svc.Description,
+			"id":           svc.ID,
+			"name":         svc.Name,
+			"description":  svc.Description,
+			"service_tier": svc.ServiceTier,
 		}
 		services = append(services, values)
 	}
