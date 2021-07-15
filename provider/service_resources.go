@@ -34,6 +34,7 @@ func resourceService() *schema.Resource {
 			"service_tier": {
 				Type:     schema.TypeInt,
 				Optional: true,
+				Default: 5,
 			},
 		},
 	}
@@ -53,9 +54,10 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 	}
 
 	var ds diag.Diagnostics
-	svc := map[string]string{
-		"name":        r.Name,
-		"description": r.Description,
+	svc := map[string]interface{}{
+		"name":         r.Name,
+		"description":  r.Description,
+		"service_tier": r.ServiceTier,
 	}
 
 	for key, val := range svc {
@@ -67,10 +69,6 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 	if err := d.Set("labels", r.Labels); err != nil {
 		return diag.FromErr(err)
 	}
-
-	if err := d.Set("service_tier", r.ServiceTier); err != nil {
-		return diag.FromErr(err)
-  	}
 
 	return ds
 }
