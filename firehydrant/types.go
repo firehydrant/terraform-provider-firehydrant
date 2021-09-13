@@ -31,6 +31,12 @@ type CreateServiceRequest struct {
 	Description string            `json:"description"`
 	ServiceTier int               `json:"service_tier,int,omitempty"`
 	Labels      map[string]string `json:"labels,omitempty"`
+	Owner       *ServiceTeam       `json:"owner,omitempty"`
+}
+
+// ServiceTeam represents a team when creating a service
+type ServiceTeam struct {
+	ID string `json:"id"`
 }
 
 // UpdateServiceRequest is the payload for updating a service
@@ -40,6 +46,7 @@ type UpdateServiceRequest struct {
 	Description string            `json:"description,omitempty"`
 	ServiceTier int               `json:"service_tier,int,omitempty"`
 	Labels      map[string]string `json:"labels,omitempty"`
+	Owner       *ServiceTeam      `json:"owner"`
 }
 
 // ServiceResponse is the payload for retrieving a service
@@ -53,12 +60,13 @@ type ServiceResponse struct {
 	CreatedAt   time.Time         `json:"created_at"`
 	UpdatedAt   time.Time         `json:"updated_at"`
 	Labels      map[string]string `json:"labels"`
+	Owner       *TeamResponse     `json:"owner"`
 }
 
 // ServiceQuery is the query used to search for services
 type ServiceQuery struct {
 	Query          string         `url:"query,omitempty"`
-	ServiceTier    int          `url:"int,service_tier,omitempty"`
+	ServiceTier    int            `url:"int,service_tier,omitempty"`
 	LabelsSelector LabelsSelector `url:"labels,omitempty"`
 }
 

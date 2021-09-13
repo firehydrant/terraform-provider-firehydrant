@@ -5,3 +5,4 @@ examples/terraform.tfstate
 **/*/*.tfstate.backup
 dist/
 terraform-provider-firehydrant
+.idea

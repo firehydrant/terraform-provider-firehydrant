@@ -34,7 +34,24 @@ func resourceService() *schema.Resource {
 			"service_tier": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				Default: 5,
+				Default:  5,
+			},
+			"owner": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -70,6 +87,18 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	if r.Owner.ID != "" {
+		o := []map[string]interface{}{
+			{
+				"id":   r.Owner.ID,
+				"name": r.Owner.Name,
+			},
+		}
+
+		if err := d.Set("owner", o); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	return ds
 }
 
@@ -84,6 +113,11 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 		Labels:      labels,
 	}
 
+	if o, ok := d.GetOk("owner"); ok {
+		os := o.([]interface{})[0].(map[string]interface{})
+		r.Owner = &firehydrant.ServiceTeam{ID: os["id"].(string)}
+	}
+
 	newService, err := ac.Services().Create(ctx, r)
 	if err != nil {
 		return diag.FromErr(err)
@@ -92,14 +126,26 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	d.SetId(newService.ID)
 
 	attributes := map[string]interface{}{
-		"name":        newService.Name,
-		"description": newService.Description,
-		"labels":      newService.Labels,
+		"name":         newService.Name,
+		"description":  newService.Description,
+		"labels":       newService.Labels,
 		"service_tier": newService.ServiceTier,
 	}
 
 	if err := setAttributesFromMap(d, attributes); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if newService.Owner.ID != "" {
+		o := []map[string]interface{}{
+			{
+				"id":   newService.Owner.ID,
+				"name": newService.Owner.Name,
+			},
+		}
+		if err := d.Set("owner", o); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return diag.Diagnostics{}
@@ -113,6 +159,11 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 		Description: d.Get("description").(string),
 		ServiceTier: d.Get("service_tier").(int),
 		Labels:      convertStringMap(d.Get("labels").(map[string]interface{})),
+	}
+
+	if o, ok := d.GetOk("owner"); ok {
+		os := o.([]interface{})[0].(map[string]interface{})
+		r.Owner = &firehydrant.ServiceTeam{ID: os["id"].(string)}
 	}
 
 	_, err := ac.Services().Update(ctx, d.Id(), r)
@@ -135,5 +186,3 @@ func deleteResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	d.SetId("")
 	return diag.Diagnostics{}
 }
-
-
