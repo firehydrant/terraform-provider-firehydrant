@@ -26,6 +26,7 @@ type RunbookAction struct {
 
 type RunbookActionsQuery struct {
 	Type string `url:"type,omitempty"`
+	Depaginate string `url:"per_page,omitempty"`
 }
 
 // RunbooksClient is an interface for interacting with runbooks on FireHydrant
@@ -47,7 +48,7 @@ func (c *RESTRunbookActionsClient) restClient() *sling.Sling {
 // Get returns a runbook action from the FireHydrant API
 func (c *RESTRunbookActionsClient) Get(ctx context.Context, typ, integrationAndSlug string) (*RunbookAction, error) {
 	res := &RunbookActionsResponse{}
-	query := RunbookActionsQuery{Type: typ}
+	query := RunbookActionsQuery{Type: typ, Depaginate: "40"}
 	_, err := c.restClient().Get("runbooks/actions").QueryStruct(query).Receive(res, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get runbook")
