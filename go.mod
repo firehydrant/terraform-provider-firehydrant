@@ -7,7 +7,6 @@ require (
 	github.com/bxcodec/faker/v3 v3.5.0
 	github.com/dghubble/sling v1.4.0
 	github.com/fatih/color v1.13.0 // indirect
-	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-querystring v1.1.0
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-hclog v1.0.0 // indirect
@@ -20,7 +19,6 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/oklog/run v1.1.0 // indirect
-	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0
 	github.com/zclconf/go-cty v1.10.0 // indirect
