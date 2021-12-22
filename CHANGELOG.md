@@ -6,6 +6,10 @@ BUG FIXES:
 FEATURES:
 * CHANGELOG.md added to track contents of each release
 
+IMPROVEMENTS
+* The `examples` directory now is separated by resource and includes more and extended examples of `service` resources
+
+## 0.1.3
 FEATURES:
 * Automated release process using GitHub Actions
 * Added `service_tier` to service resource
