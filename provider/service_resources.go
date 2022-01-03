@@ -34,7 +34,64 @@ func resourceService() *schema.Resource {
 			"service_tier": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				Default: 5,
+				Default:  5,
+			},
+			"functionalities": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"summary": {
+							Type:     schema.TypeString,
+							Required: false,
+						},
+						"id": {
+							Type:     schema.TypeString,
+							Required: false,
+						},
+					},
+				},
+			},
+			"links": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Required: false,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"href_url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"icon_url": {
+							Type:     schema.TypeString,
+							Required: false,
+						},
+					},
+				},
+			},
+			"teams": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"alert_on_add": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 			},
 		},
 	}
@@ -58,12 +115,54 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 		"name":         r.Name,
 		"description":  r.Description,
 		"service_tier": r.ServiceTier,
+		"alert_on_add": r.AlertOnAdd,
 	}
 
 	for key, val := range svc {
 		if err := d.Set(key, val); err != nil {
 			return diag.FromErr(err)
 		}
+	}
+
+	functionalities := make([]interface{}, len(*r.Functionalities))
+	for index, f := range *r.Functionalities {
+
+		functionalities[index] = map[string]interface{}{
+			"id":          f.ID,
+			"name":        f.Name,
+			"summary":     f.Summary,
+			"description": f.Description,
+		}
+	}
+
+	if err := d.Set("functionalities", functionalities); err != nil {
+		return diag.FromErr(err)
+	}
+
+	links := make([]interface{}, len(*r.Links))
+	for index, l := range *r.Links {
+
+		functionalities[index] = map[string]interface{}{
+			"id":       l.ID,
+			"name":     l.Name,
+			"href_url": l.HrefURL,
+			"icon_url": l.IconURL,
+		}
+	}
+
+	if err := d.Set("links", links); err != nil {
+		return diag.FromErr(err)
+	}
+
+	teams := make([]interface{}, len(*r.Teams))
+	for index, l := range *r.Teams {
+		functionalities[index] = map[string]interface{}{
+			"id": l.ID,
+		}
+	}
+
+	if err := d.Set("teams", teams); err != nil {
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("labels", r.Labels); err != nil {
@@ -82,6 +181,40 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 		Description: d.Get("description").(string),
 		ServiceTier: d.Get("service_tier").(int),
 		Labels:      labels,
+		AlertOnAdd:  d.Get("alert_on_add").(bool),
+	}
+
+	functionalities := d.Get("functionalities").([]interface{})
+	for _, functionality := range functionalities {
+
+		f := functionality.(map[string]interface{})
+		*r.Functionalities = append(*r.Functionalities, firehydrant.ServiceFunctionalities{
+			Summary:     f["summary"].(string),
+			ID:          f["id"].(string),
+			Name:        f["name"].(string),
+			Description: f["description"].(string),
+		})
+	}
+
+	links := d.Get("links").([]interface{})
+	for _, link := range links {
+
+		l := link.(map[string]interface{})
+		*r.Links = append(*r.Links, firehydrant.ServiceLinks{
+			ID:      l["id"].(string),
+			Name:    l["name"].(string),
+			HrefURL: l["href_url"].(string),
+			IconURL: l["icon_url"].(string),
+		})
+	}
+
+	teams := d.Get("teams").([]interface{})
+	for _, team := range teams {
+
+		t := team.(map[string]interface{})
+		*r.Teams = append(*r.Teams, firehydrant.ServiceTeams{
+			ID: t["id"].(string),
+		})
 	}
 
 	newService, err := ac.Services().Create(ctx, r)
@@ -92,10 +225,14 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	d.SetId(newService.ID)
 
 	attributes := map[string]interface{}{
-		"name":        newService.Name,
-		"description": newService.Description,
-		"labels":      newService.Labels,
-		"service_tier": newService.ServiceTier,
+		"name":            newService.Name,
+		"description":     newService.Description,
+		"labels":          newService.Labels,
+		"service_tier":    newService.ServiceTier,
+		"functionalities": newService.Functionalities,
+		"links":           newService.Links,
+		"teams":           newService.Teams,
+		"alert_on_add":    newService.AlertOnAdd,
 	}
 
 	if err := setAttributesFromMap(d, attributes); err != nil {
@@ -113,6 +250,37 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 		Description: d.Get("description").(string),
 		ServiceTier: d.Get("service_tier").(int),
 		Labels:      convertStringMap(d.Get("labels").(map[string]interface{})),
+		AlertOnAdd:  d.Get("alert_on_add").(bool),
+	}
+
+	functionalities := d.Get("functionalities").([]interface{})
+	for _, functionality := range functionalities {
+		f := functionality.(map[string]interface{})
+		*r.Functionalities = append(*r.Functionalities, firehydrant.ServiceFunctionalities{
+			Summary:     f["summary"].(string),
+			ID:          f["id"].(string),
+			Name:        f["name"].(string),
+			Description: f["description"].(string),
+		})
+	}
+
+	links := d.Get("links").([]interface{})
+	for _, link := range links {
+		l := link.(map[string]interface{})
+		*r.Links = append(*r.Links, firehydrant.ServiceLinks{
+			ID:      l["id"].(string),
+			Name:    l["name"].(string),
+			HrefURL: l["href_url"].(string),
+			IconURL: l["icon_url"].(string),
+		})
+	}
+
+	teams := d.Get("teams").([]interface{})
+	for _, team := range teams {
+		t := team.(map[string]interface{})
+		*r.Teams = append(*r.Teams, firehydrant.ServiceTeams{
+			ID: t["id"].(string),
+		})
 	}
 
 	_, err := ac.Services().Update(ctx, d.Id(), r)
@@ -135,5 +303,3 @@ func deleteResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	d.SetId("")
 	return diag.Diagnostics{}
 }
-
-
