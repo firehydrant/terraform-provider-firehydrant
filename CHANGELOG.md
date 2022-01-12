@@ -1,7 +1,7 @@
 ## 0.1.4
 
 BUG FIXES:
-* Only one page of results was returned when using`data "firehydrant_runbook_action"` to lookup runbook steps. This meant some steps where completely inaccessible through the provider. This patch will return all steps.
+* Only one page of results was returned when using`data "firehydrant_runbook_action"` to lookup runbook steps. This meant some steps were completely inaccessible through the provider. This patch will return all steps.
 
 FEATURES:
 * CHANGELOG.md added to track contents of each release
