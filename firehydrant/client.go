@@ -31,8 +31,9 @@ var Version = fmt.Sprintf("%d.%d.%d", MajorVersion, MinorVersion, PatchVersion)
 
 // APIClient is the client that accesses all of the api.firehydrant.io resources
 type APIClient struct {
-	baseURL string
-	token   string
+	baseURL         string
+	token           string
+	userAgentSuffix string
 }
 
 const (
@@ -86,6 +87,13 @@ func WithBaseURL(baseURL string) OptFunc {
 	}
 }
 
+func WithUserAgentSuffix(suffix string) OptFunc {
+	return func(c *APIClient) error {
+		c.userAgentSuffix = suffix
+		return nil
+	}
+}
+
 // NewRestClient initializes a new API client for FireHydrant
 func NewRestClient(token string, opts ...OptFunc) (*APIClient, error) {
 	c := &APIClient{
@@ -104,7 +112,7 @@ func NewRestClient(token string, opts ...OptFunc) (*APIClient, error) {
 
 func (c *APIClient) client() *sling.Sling {
 	return sling.New().Base(c.baseURL).
-		Set("User-Agent", fmt.Sprintf("%s (%s)", UserAgentPrefix, Version)).
+		Set("User-Agent", fmt.Sprintf("%s (%s)/%s", UserAgentPrefix, Version, c.userAgentSuffix)).
 		Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
 }
 

@@ -34,7 +34,7 @@ func resourceService() *schema.Resource {
 			"service_tier": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				Default: 5,
+				Default:  5,
 			},
 		},
 	}
@@ -92,9 +92,9 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	d.SetId(newService.ID)
 
 	attributes := map[string]interface{}{
-		"name":        newService.Name,
-		"description": newService.Description,
-		"labels":      newService.Labels,
+		"name":         newService.Name,
+		"description":  newService.Description,
+		"labels":       newService.Labels,
 		"service_tier": newService.ServiceTier,
 	}
 
@@ -135,5 +135,3 @@ func deleteResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	d.SetId("")
 	return diag.Diagnostics{}
 }
-
-

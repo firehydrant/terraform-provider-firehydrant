@@ -58,7 +58,7 @@ type ServiceResponse struct {
 // ServiceQuery is the query used to search for services
 type ServiceQuery struct {
 	Query          string         `url:"query,omitempty"`
-	ServiceTier    int          `url:"int,service_tier,omitempty"`
+	ServiceTier    int            `url:"int,service_tier,omitempty"`
 	LabelsSelector LabelsSelector `url:"labels,omitempty"`
 }
 

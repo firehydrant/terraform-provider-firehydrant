@@ -32,7 +32,7 @@ var Version = fmt.Sprintf("%d.%d.%d", MajorVersion, MinorVersion, PatchVersion)
 
 // Provider returns a terraform provider for the FireHydrant API
 func Provider() *schema.Provider {
-	return &schema.Provider{
+	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			apiKeyName: {
 				Type:        schema.TypeString,
@@ -62,15 +62,26 @@ func Provider() *schema.Provider {
 			"firehydrant_runbook":        dataSourceRunbook(),
 			"firehydrant_runbook_action": dataSourceRunbookAction(),
 		},
-		ConfigureContextFunc: setupFireHydrantContext,
 	}
+
+	provider.ConfigureContextFunc = func(ctx context.Context, rd *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		terraformVersion := provider.TerraformVersion
+
+		if terraformVersion == "" {
+			terraformVersion = "0.11+compatible"
+		}
+
+		return setupFireHydrantContext(ctx, rd, terraformVersion)
+	}
+
+	return provider
 }
 
-func setupFireHydrantContext(ctx context.Context, rd *schema.ResourceData) (interface{}, diag.Diagnostics) {
+func setupFireHydrantContext(ctx context.Context, rd *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
 	apiKey := rd.Get(apiKeyName).(string)
 	fireHydrantBaseURL := rd.Get(firehydrantBaseURLName).(string)
 
-	ac, err := firehydrant.NewRestClient(apiKey, firehydrant.WithBaseURL(fireHydrantBaseURL))
+	ac, err := firehydrant.NewRestClient(apiKey, firehydrant.WithBaseURL(fireHydrantBaseURL), firehydrant.WithUserAgentSuffix(fmt.Sprintf("terraform-%s", terraformVersion)))
 	if err != nil {
 		return nil, diag.FromErr(fmt.Errorf("could not initialize API client: %w", err))
 	}
