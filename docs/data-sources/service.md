@@ -2,7 +2,7 @@
 page_title: "firehydrant_service Data Source - terraform-provider-firehydrant"
 subcategory: ""
 description: |-
-  
+
 ---
 
 # Data Source `firehydrant_service`
@@ -25,5 +25,5 @@ description: |-
 
 - **description** (String, Read-only)
 - **name** (String, Read-only)
-
+- **add_on_alert** (Boolean, Optional)
 

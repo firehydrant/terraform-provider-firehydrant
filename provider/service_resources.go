@@ -36,6 +36,11 @@ func resourceService() *schema.Resource {
 				Optional: true,
 				Default:  5,
 			},
+			"alert_on_add": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default: false,
+			},
 		},
 	}
 }
@@ -58,6 +63,7 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 		"name":         r.Name,
 		"description":  r.Description,
 		"service_tier": r.ServiceTier,
+		"alert_on_add": r.AlertOnAdd,
 	}
 
 	for key, val := range svc {
@@ -82,6 +88,7 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 		Description: d.Get("description").(string),
 		ServiceTier: d.Get("service_tier").(int),
 		Labels:      labels,
+		AlertOnAdd:  d.Get("alert_on_add").(bool),
 	}
 
 	newService, err := ac.Services().Create(ctx, r)
@@ -96,6 +103,7 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 		"description":  newService.Description,
 		"labels":       newService.Labels,
 		"service_tier": newService.ServiceTier,
+		"alert_on_add": newService.AlertOnAdd,
 	}
 
 	if err := setAttributesFromMap(d, attributes); err != nil {
@@ -113,6 +121,7 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 		Description: d.Get("description").(string),
 		ServiceTier: d.Get("service_tier").(int),
 		Labels:      convertStringMap(d.Get("labels").(map[string]interface{})),
+		AlertOnAdd:  d.Get("alert_on_add").(bool),
 	}
 
 	_, err := ac.Services().Update(ctx, d.Id(), r)
