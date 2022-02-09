@@ -18,20 +18,24 @@ func dataSourceService() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"name": {
-				Type:     schema.TypeString,
+			"alert_on_add": {
+				Type:     schema.TypeBool,
 				Computed: true,
 			},
 			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"service_tier": {
-				Type:     schema.TypeInt,
+			"name": {
+				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"alert_on_add": {
-				Type:     schema.TypeBool,
+			"owner_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"service_tier": {
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 		},
@@ -42,41 +46,18 @@ func dataSourceServices() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataFireHydrantServices,
 		Schema: map[string]*schema.Schema{
-			"query": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"labels": {
 				Type:     schema.TypeMap,
+				Optional: true,
+			},
+			"query": {
+				Type:     schema.TypeString,
 				Optional: true,
 			},
 			"services": {
 				Type:     schema.TypeList,
 				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"service_tier": {
-							Type:     schema.TypeInt,
-							Computed: true,
-						},
-						"alert_on_add": {
-							Type:     schema.TypeBool,
-							Computed: true,
-						},
-					},
-				},
+				Elem:     dataSourceService(),
 			},
 		},
 	}
@@ -84,21 +65,29 @@ func dataSourceServices() *schema.Resource {
 
 func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	ac := m.(firehydrant.Client)
-	serviceID := d.Get("id").(string)
 
+	// Get the service
+	serviceID := d.Get("id").(string)
 	r, err := ac.Services().Get(ctx, serviceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var ds diag.Diagnostics
+
 	svc := map[string]interface{}{
-		"name":         r.Name,
-		"description":  r.Description,
-		"service_tier": r.ServiceTier,
 		"alert_on_add": r.AlertOnAdd,
+		"description":  r.Description,
+		"name":         r.Name,
+		"service_tier": r.ServiceTier,
 	}
 
+	// Process any attributes that could be nil
+	if r.Owner != nil {
+		svc["owner_id"] = r.Owner.ID
+	}
+
+	// Set the data source attributes to the values we got from the API
 	for key, val := range svc {
 		if err := d.Set(key, val); err != nil {
 			return diag.FromErr(err)
@@ -114,14 +103,13 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	ac := m.(firehydrant.Client)
 
+	// Get the services
 	query := d.Get("query").(string)
 	labels := d.Get("labels").(map[string]interface{})
-
 	ls := firehydrant.LabelsSelector{}
 	for k, v := range labels {
 		ls[k] = v.(string)
 	}
-
 	r, err := ac.Services().List(ctx, &firehydrant.ServiceQuery{
 		Query:          query,
 		LabelsSelector: ls,
@@ -132,22 +120,29 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 
 	services := make([]interface{}, 0)
 
+	// Set the data source attributes to the values we got from the API
 	for _, svc := range r.Services {
 		values := map[string]interface{}{
 			"id":           svc.ID,
-			"name":         svc.Name,
-			"description":  svc.Description,
-			"service_tier": svc.ServiceTier,
 			"alert_on_add": svc.AlertOnAdd,
+			"description":  svc.Description,
+			"name":         svc.Name,
+			"service_tier": svc.ServiceTier,
 		}
+
+		// Process any attributes that could be nil
+		if svc.Owner != nil {
+			values["owner_id"] = svc.Owner.ID
+		}
+
 		services = append(services, values)
 	}
-
 	if err := d.Set("services", services); err != nil {
 		return diag.FromErr(err)
 	}
 
 	var ds diag.Diagnostics
+
 	d.SetId("does-not-matter")
 
 	return ds
