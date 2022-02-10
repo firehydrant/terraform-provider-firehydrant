@@ -14,6 +14,7 @@ import (
 
 func TestAccRunbooks(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
@@ -23,7 +24,7 @@ func TestAccRunbooks(t *testing.T) {
 			{
 				Config: testRunbookResourceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "name", rName),
+					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "name", fmt.Sprintf("test-runbook-%s", rName)),
 					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "description", "this is my description"),
 					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "steps.#", "1"),
 					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "steps.0.name", "Create Incident Channel"),
@@ -32,9 +33,9 @@ func TestAccRunbooks(t *testing.T) {
 				),
 			},
 			{
-				Config: testRunbookResourceConfig(rName + " updated"),
+				Config: testRunbookResourceConfig(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "name", rName+" updated"),
+					resource.TestCheckResourceAttr("firehydrant_runbook.default-incident-process", "name", fmt.Sprintf("test-runbook-%s", rNameUpdated)),
 				),
 			},
 		},
@@ -76,7 +77,7 @@ resource "firehydrant_severity" "sev1" {
 }
 
 resource "firehydrant_runbook" "default-incident-process" {
-	name = "%s"
+	name = "test-runbook-%s"
 	type = "incident"
 	description = "this is my description"
 

@@ -35,22 +35,22 @@ func TestAccService(t *testing.T) {
 				Config: testServiceConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testServiceExists("firehydrant_service.terraform-acceptance-test-service"),
-					resource.TestCheckResourceAttr("firehydrant_service.terraform-acceptance-test-service", "name", rName),
-					resource.TestCheckResourceAttr("firehydrant_service.terraform-acceptance-test-service", "description", rName+" description"),
+					resource.TestCheckResourceAttr("firehydrant_service.terraform-acceptance-test-service", "name", fmt.Sprintf("test-service-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_service.terraform-acceptance-test-service", "description", fmt.Sprintf("%s description", rName)),
 				),
 			},
 			{
 				Config: testServiceConfig(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testServiceExists("firehydrant_service.terraform-acceptance-test-service"),
-					resource.TestCheckResourceAttr("firehydrant_service.terraform-acceptance-test-service", "name", rNameUpdated),
-					resource.TestCheckResourceAttr("firehydrant_service.terraform-acceptance-test-service", "description", rNameUpdated+" description"),
+					resource.TestCheckResourceAttr("firehydrant_service.terraform-acceptance-test-service", "name", fmt.Sprintf("test-service-%s", rNameUpdated)),
+					resource.TestCheckResourceAttr("firehydrant_service.terraform-acceptance-test-service", "description", fmt.Sprintf("%s description", rNameUpdated)),
 				),
 			},
 			{
 				Config: testServiceDataSourceConfig(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.firehydrant_services.services", "services.0.name", rNameUpdated),
+					resource.TestCheckResourceAttr("data.firehydrant_services.services", "services.0.name", fmt.Sprintf("test-service-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr("data.firehydrant_services.services", "services.0.service_tier", "5"),
 				),
 			},
@@ -66,7 +66,7 @@ func testFireHydrantIsSetup(t *testing.T) {
 
 const testServiceConfigTemplate = `
 resource "firehydrant_service" "terraform-acceptance-test-service" {
-	name = "%s"
+	name = "test-service-%s"
 	description = "%s description"
 	labels = {
 		key1 = "value1"
@@ -76,13 +76,13 @@ resource "firehydrant_service" "terraform-acceptance-test-service" {
 `
 
 func testServiceDataSourceConfig(rName string) string {
-	return fmt.Sprintf(testServiceDataSourceConfigTemplate, rName, rName)
+	return fmt.Sprintf(testServiceDataSourceConfigTemplate, rName, rName, rName)
 }
 
 const testServiceDataSourceConfigTemplate = `
 resource "firehydrant_service" "terraform-acceptance-test-service" {
-	name = "%s"
-	description = "whatever"
+	name = "test-service-%s"
+	description = "%s description"
 	labels = {
 		key1 = "value1"
 	}
