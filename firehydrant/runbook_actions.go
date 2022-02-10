@@ -25,8 +25,8 @@ type RunbookAction struct {
 }
 
 type RunbookActionsQuery struct {
-	Type string `url:"type,omitempty"`
-	Items uint `url:"per_page,omitempty"`
+	Type  string `url:"type,omitempty"`
+	Items uint   `url:"per_page,omitempty"`
 }
 
 // RunbooksClient is an interface for interacting with runbooks on FireHydrant

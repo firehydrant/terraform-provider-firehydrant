@@ -30,6 +30,10 @@ func dataSourceService() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"alert_on_add": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -67,6 +71,10 @@ func dataSourceServices() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
+						"alert_on_add": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -88,6 +96,7 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 		"name":         r.Name,
 		"description":  r.Description,
 		"service_tier": r.ServiceTier,
+		"alert_on_add": r.AlertOnAdd,
 	}
 
 	for key, val := range svc {
@@ -129,6 +138,7 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 			"name":         svc.Name,
 			"description":  svc.Description,
 			"service_tier": svc.ServiceTier,
+			"alert_on_add": svc.AlertOnAdd,
 		}
 		services = append(services, values)
 	}
