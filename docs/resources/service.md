@@ -41,6 +41,7 @@ resource "firehydrant_service" "example-service" {
 - **description** (String, Optional) A description for the service.
 - **labels** (Map of String, Optional) Key-value pairs associated with the service. Useful for 
    supporting searching and filtering of the service catalog.
+- **owner_id** (String, Optional) The ID of the team that owns this service.
 - **service_tier** (Integer, Optional) The service tier of this resource - between 1 - 5. 
    Lower values represent higher criticality. Defaults to `5`.
 
