@@ -15,7 +15,7 @@ import (
 )
 
 func TestAccSeverities(t *testing.T) {
-	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	rName := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
@@ -26,7 +26,7 @@ func TestAccSeverities(t *testing.T) {
 				Config: testSeverityConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testSeverityExists("firehydrant_severity.terraform-acceptance-test-severity"),
-					resource.TestCheckResourceAttr("firehydrant_severity.terraform-acceptance-test-severity", "slug", strings.ToUpper(rName)),
+					resource.TestCheckResourceAttr("firehydrant_severity.terraform-acceptance-test-severity", "slug", fmt.Sprintf("TESTSEVERITY%s", rName)),
 				),
 			},
 			// TODO(bobbytables): Updating severities in Terraform is currently problematic because FireHydrant uses
@@ -45,7 +45,7 @@ func TestAccSeverities(t *testing.T) {
 
 const testSeverityConfigTemplate = `
 resource "firehydrant_severity" "terraform-acceptance-test-severity" {
-	slug = "%s"
+	slug = "TESTSEVERITY%s"
 }
 `
 

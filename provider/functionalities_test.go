@@ -25,14 +25,14 @@ func TestAccFunctionalities(t *testing.T) {
 				Config: testFunctionalityConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testFunctionalityExists("firehydrant_functionality.terraform-acceptance-test-functionality"),
-					resource.TestCheckResourceAttr("firehydrant_functionality.terraform-acceptance-test-functionality", "name", rName),
+					resource.TestCheckResourceAttr("firehydrant_functionality.terraform-acceptance-test-functionality", "name", fmt.Sprintf("test-functionality-%s", rName)),
 				),
 			},
 			{
 				Config: testFunctionalityConfig(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testFunctionalityExists("firehydrant_functionality.terraform-acceptance-test-functionality"),
-					resource.TestCheckResourceAttr("firehydrant_functionality.terraform-acceptance-test-functionality", "name", rNameUpdated),
+					resource.TestCheckResourceAttr("firehydrant_functionality.terraform-acceptance-test-functionality", "name", fmt.Sprintf("test-functionality-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr("firehydrant_functionality.terraform-acceptance-test-functionality", "services.#", "0"),
 				),
 			},
@@ -40,10 +40,10 @@ func TestAccFunctionalities(t *testing.T) {
 				Config: testFunctionalityConfigWithService(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testFunctionalityExists("firehydrant_functionality.terraform-acceptance-test-functionality"),
-					resource.TestCheckResourceAttr("firehydrant_functionality.terraform-acceptance-test-functionality", "name", rNameUpdated),
+					resource.TestCheckResourceAttr("firehydrant_functionality.terraform-acceptance-test-functionality", "name", fmt.Sprintf("test-functionality-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr("firehydrant_functionality.terraform-acceptance-test-functionality", "services.#", "1"),
 					resource.TestCheckResourceAttrSet("firehydrant_functionality.terraform-acceptance-test-functionality", "services.0.id"),
-					resource.TestCheckResourceAttr("firehydrant_functionality.terraform-acceptance-test-functionality", "services.0.name", "test service from terraform"),
+					resource.TestCheckResourceAttr("firehydrant_functionality.terraform-acceptance-test-functionality", "services.0.name", fmt.Sprintf("test-service-%s", rNameUpdated)),
 				),
 			},
 		},
@@ -52,7 +52,7 @@ func TestAccFunctionalities(t *testing.T) {
 
 const testFunctionalityConfigTemplate = `
 resource "firehydrant_functionality" "terraform-acceptance-test-functionality" {
-	name = "%s"
+	name = "test-functionality-%s"
 }
 `
 
@@ -62,11 +62,11 @@ func testFunctionalityConfig(rName string) string {
 
 const testFunctionalityWithService = `
 resource "firehydrant_service" "service" {
-	name = "test service from terraform"
+	name = "test-service-%s"
 }
 
 resource "firehydrant_functionality" "terraform-acceptance-test-functionality" {
-	name = "%s"
+	name = "test-functionality-%s"
 
 	services {
 		id = firehydrant_service.service.id
@@ -75,7 +75,7 @@ resource "firehydrant_functionality" "terraform-acceptance-test-functionality" {
 `
 
 func testFunctionalityConfigWithService(rName string) string {
-	return fmt.Sprintf(testFunctionalityWithService, rName)
+	return fmt.Sprintf(testFunctionalityWithService, rName, rName)
 }
 
 func testFunctionalityExists(resourceName string) resource.TestCheckFunc {

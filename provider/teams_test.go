@@ -26,14 +26,14 @@ func TestAccTeams(t *testing.T) {
 				Config: testTeamConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testTeamExists("firehydrant_team.terraform-acceptance-test-team"),
-					resource.TestCheckResourceAttr("firehydrant_team.terraform-acceptance-test-team", "name", rName),
+					resource.TestCheckResourceAttr("firehydrant_team.terraform-acceptance-test-team", "name", fmt.Sprintf("test-team-%s", rName)),
 				),
 			},
 			{
 				Config: testTeamConfig(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testTeamExists("firehydrant_team.terraform-acceptance-test-team"),
-					resource.TestCheckResourceAttr("firehydrant_team.terraform-acceptance-test-team", "name", rNameUpdated),
+					resource.TestCheckResourceAttr("firehydrant_team.terraform-acceptance-test-team", "name", fmt.Sprintf("test-team-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr("firehydrant_team.terraform-acceptance-test-team", "services.#", "0"),
 				),
 			},
@@ -41,10 +41,10 @@ func TestAccTeams(t *testing.T) {
 				Config: testTeamConfigWithService(rNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testTeamExists("firehydrant_team.terraform-acceptance-test-team"),
-					resource.TestCheckResourceAttr("firehydrant_team.terraform-acceptance-test-team", "name", rNameUpdated),
+					resource.TestCheckResourceAttr("firehydrant_team.terraform-acceptance-test-team", "name", fmt.Sprintf("test-team-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr("firehydrant_team.terraform-acceptance-test-team", "services.#", "1"),
 					resource.TestCheckResourceAttrSet("firehydrant_team.terraform-acceptance-test-team", "services.0.id"),
-					resource.TestCheckResourceAttr("firehydrant_team.terraform-acceptance-test-team", "services.0.name", "test service from terraform"),
+					resource.TestCheckResourceAttr("firehydrant_team.terraform-acceptance-test-team", "services.0.name", fmt.Sprintf("test-service-%s", rNameUpdated)),
 				),
 			},
 		},
@@ -53,7 +53,7 @@ func TestAccTeams(t *testing.T) {
 
 const testTeamConfigTemplate = `
 resource "firehydrant_team" "terraform-acceptance-test-team" {
-	name = "%s"
+	name = "test-team-%s"
 }
 `
 
@@ -63,11 +63,11 @@ func testTeamConfig(rName string) string {
 
 const testTeamWithService = `
 resource "firehydrant_service" "service" {
-	name = "test service from terraform"
+	name = "test-service-%s"
 }
 
 resource "firehydrant_team" "terraform-acceptance-test-team" {
-	name = "%s"
+	name = "test-team-%s"
 
 	services {
 		id = firehydrant_service.service.id
@@ -76,7 +76,7 @@ resource "firehydrant_team" "terraform-acceptance-test-team" {
 `
 
 func testTeamConfigWithService(rName string) string {
-	return fmt.Sprintf(testTeamWithService, rName)
+	return fmt.Sprintf(testTeamWithService, rName, rName)
 }
 
 func testTeamExists(resourceName string) resource.TestCheckFunc {
