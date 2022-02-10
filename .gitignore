@@ -5,3 +5,4 @@ examples/terraform.tfstate
 dist/
 terraform-provider-firehydrant
 .tool-versions
+.idea
