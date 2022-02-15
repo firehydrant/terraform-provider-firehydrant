@@ -46,6 +46,12 @@ data "firehydrant_services" "managed-true-labeled-services" {
 <a id="nestedatt--services"></a>
 ### Nested Schema for `services`
 
-- **description** (String)
-- **id** (String)
-- **name** (String)
+- **id** (String, Read-only) The ID of the service.
+- **add_on_alert** (Boolean, Read-only) Indicates if FireHydrant should automatically create
+  an alert based on the integrations set up for this service, if this service is added to an
+  active incident. Defaults to `false`.
+- **description** (String, Read-only) A description for the service.
+- **name** (String, Read-only) The name of the service.
+- **service_tier** (Integer, Read-only) The service tier of this resource - between 1 - 5.
+  Lower values represent higher criticality. Defaults to `5`.
+
