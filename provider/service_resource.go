@@ -2,9 +2,7 @@ package provider
 
 import (
 	"context"
-
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -19,10 +17,13 @@ func resourceService() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			// Required
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+
+			// Optional
 			"alert_on_add": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -35,6 +36,23 @@ func resourceService() *schema.Resource {
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
+			},
+			"links": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						// Required
+						"href_url": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
 			},
 			"owner_id": {
 				Type:     schema.TypeString,
@@ -62,7 +80,7 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 
 	// Get the service
 	serviceID := d.Id()
-	r, err := firehydrantAPIClient.Services().Get(ctx, serviceID)
+	serviceResponse, err := firehydrantAPIClient.Services().Get(ctx, serviceID)
 	if err != nil {
 		_, isNotFoundError := err.(firehydrant.NotFound)
 		if isNotFoundError {
@@ -72,35 +90,42 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	svc := map[string]interface{}{
-		"name":         r.Name,
-		"alert_on_add": r.AlertOnAdd,
-		"description":  r.Description,
-		"service_tier": r.ServiceTier,
+	// Set values in state
+	attributes := map[string]interface{}{
+		"name":         serviceResponse.Name,
+		"alert_on_add": serviceResponse.AlertOnAdd,
+		"description":  serviceResponse.Description,
+		"labels":       serviceResponse.Labels,
+		"service_tier": serviceResponse.ServiceTier,
 	}
 
 	// Process any attributes that could be nil
-	var ownerID string
-	if r.Owner != nil {
-		ownerID = r.Owner.ID
-	}
-	svc["owner_id"] = ownerID
-
-	var teamIDs []interface{}
-	for _, team := range r.Teams {
-		teamIDs = append(teamIDs, team.ID)
-	}
-	svc["team_ids"] = teamIDs
-
-	// Update the resource attributes to the values we got from the API
-	for key, val := range svc {
-		if err := d.Set(key, val); err != nil {
-			return diag.FromErr(err)
+	links := make([]map[string]interface{}, len(serviceResponse.Links))
+	for index, currentLink := range serviceResponse.Links {
+		links[index] = map[string]interface{}{
+			"href_url": currentLink.HrefURL,
+			"name":     currentLink.Name,
 		}
 	}
+	attributes["links"] = links
 
-	if err := d.Set("labels", r.Labels); err != nil {
-		return diag.FromErr(err)
+	var ownerID string
+	if serviceResponse.Owner != nil {
+		ownerID = serviceResponse.Owner.ID
+	}
+	attributes["owner_id"] = ownerID
+
+	var teamIDs []interface{}
+	for _, team := range serviceResponse.Teams {
+		teamIDs = append(teamIDs, team.ID)
+	}
+	attributes["team_ids"] = teamIDs
+
+	// Update the resource attributes to the values we got from the API
+	for key, value := range attributes {
+		if err := d.Set(key, value); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return diag.Diagnostics{}
@@ -111,33 +136,43 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	firehydrantAPIClient := m.(firehydrant.Client)
 
 	// Get attributes from config and construct the create request
-	labels := convertStringMap(d.Get("labels").(map[string]interface{}))
-	r := firehydrant.CreateServiceRequest{
+	createRequest := firehydrant.CreateServiceRequest{
 		Name:        d.Get("name").(string),
 		AlertOnAdd:  d.Get("alert_on_add").(bool),
 		Description: d.Get("description").(string),
-		Labels:      labels,
+		Labels:      convertStringMap(d.Get("labels").(map[string]interface{})),
 		ServiceTier: d.Get("service_tier").(int),
 	}
 
 	// Process any optional attributes and add to the create request if necessary
+	configLinks := d.Get("links")
+	for _, currentLink := range configLinks.(*schema.Set).List() {
+		link := currentLink.(map[string]interface{})
+		createRequest.Links = append(createRequest.Links, firehydrant.ServiceLink{
+			HrefURL: link["href_url"].(string),
+			Name:    link["name"].(string),
+		})
+	}
+
 	if ownerID, ok := d.GetOk("owner_id"); ok && ownerID.(string) != "" {
-		r.Owner = &firehydrant.ServiceTeam{ID: ownerID.(string)}
+		createRequest.Owner = &firehydrant.ServiceTeam{ID: ownerID.(string)}
 	}
 
 	teamIDs := d.Get("team_ids").(*schema.Set).List()
 	for _, teamID := range teamIDs {
-		r.Teams = append(r.Teams, firehydrant.ServiceTeam{ID: teamID.(string)})
+		createRequest.Teams = append(createRequest.Teams, firehydrant.ServiceTeam{ID: teamID.(string)})
 	}
 
 	// Create the new service
-	newService, err := firehydrantAPIClient.Services().Create(ctx, r)
+	serviceResponse, err := firehydrantAPIClient.Services().Create(ctx, createRequest)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newService.ID)
+	// Set the new service's ID in state
+	d.SetId(serviceResponse.ID)
 
+	// Update state with the latest information from the API
 	return readResourceFireHydrantService(ctx, d, m)
 }
 
@@ -146,7 +181,7 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	firehydrantAPIClient := m.(firehydrant.Client)
 
 	// Construct the update request
-	r := firehydrant.UpdateServiceRequest{
+	updateRequest := firehydrant.UpdateServiceRequest{
 		Name:        d.Get("name").(string),
 		AlertOnAdd:  d.Get("alert_on_add").(bool),
 		Description: d.Get("description").(string),
@@ -157,24 +192,37 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	// Process any optional attributes and add to the update request if necessary
 	ownerID, ownerIDSet := d.GetOk("owner_id")
 	if ownerIDSet {
-		r.Owner = &firehydrant.ServiceTeam{ID: ownerID.(string)}
+		updateRequest.Owner = &firehydrant.ServiceTeam{ID: ownerID.(string)}
 	} else {
-		r.RemoveOwner = true
+		updateRequest.RemoveOwner = true
+	}
+
+	links := d.Get("links")
+	for _, currentLink := range links.(*schema.Set).List() {
+		link := currentLink.(map[string]interface{})
+
+		linkAttributes := firehydrant.ServiceLink{
+			HrefURL: link["href_url"].(string),
+			Name:    link["name"].(string),
+		}
+
+		updateRequest.Links = append(updateRequest.Links, linkAttributes)
 	}
 
 	teamIDs := d.Get("team_ids").(*schema.Set).List()
 	for _, teamID := range teamIDs {
-		r.Teams = append(r.Teams, firehydrant.ServiceTeam{ID: teamID.(string)})
+		updateRequest.Teams = append(updateRequest.Teams, firehydrant.ServiceTeam{ID: teamID.(string)})
 	}
 	// This will force the update request to replace the teams with the ones we send
-	r.RemoveRemainingTeams = true
+	updateRequest.RemoveRemainingTeams = true
 
 	// Update the service
-	_, err := firehydrantAPIClient.Services().Update(ctx, d.Id(), r)
+	_, err := firehydrantAPIClient.Services().Update(ctx, d.Id(), updateRequest)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	// Update state with the latest information from the API
 	return readResourceFireHydrantService(ctx, d, m)
 }
 

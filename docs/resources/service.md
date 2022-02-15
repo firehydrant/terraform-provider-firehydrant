@@ -31,7 +31,7 @@ resource "firehydrant_service" "example-service" {
   name         = "my-example-service"
   add_on_alert = true
   description  = "The main service for our company"
-  
+
   labels = {
     language  = "ruby",
     lifecycle = "production"
@@ -39,9 +39,13 @@ resource "firehydrant_service" "example-service" {
     type      = "user"
     tags      = "foo; bar; baz"
   }
-  
-  owner_id = firehydrant_team.example-owner-team.id
 
+  links {
+    href_url = "https://example.com/internal-dashboard"
+    name     = "Internal Dashboard"
+  }
+
+  owner_id     = firehydrant_team.example-owner-team.id
   service_tier = 1
 
   team_ids = [
@@ -60,15 +64,21 @@ resource "firehydrant_service" "example-service" {
 ### Optional
 
 - **add_on_alert** (Boolean, Optional) Indicates if FireHydrant should automatically create 
-   an alert based on the integrations set up for this service, if this service is added to an 
-   active incident. Defaults to `false`.
+  an alert based on the integrations set up for this service, if this service is added to an 
+  active incident. Defaults to `false`.
 - **description** (String, Optional) A description for the service.
 - **labels** (Map of String, Optional) Key-value pairs associated with the service. Useful for 
-   supporting searching and filtering of the service catalog.
+  supporting searching and filtering of the service catalog.
+- **links** (Set of Map, Optional) Links associated with the service (see [below for nested schema](#nestedatt--links)).
 - **owner_id** (String, Optional) The ID of the team that owns this service.
 - **service_tier** (Integer, Optional) The service tier of this resource - between 1 - 5. 
-   Lower values represent higher criticality. Defaults to `5`.
+  Lower values represent higher criticality. Defaults to `5`.
 - **team_ids** (Set of String, Optional) A set of IDs of the teams responsible for this service's incident response.
+<a id="nestedatt--links"></a>
+### Nested Schema for `links`
+
+- **href_url** (String, Required) The URL to use for the link.
+- **name** (String, Required) The name of the link.
 
 ### Read-only
 
