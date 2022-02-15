@@ -7,6 +7,29 @@ description: |-
 
 # Resource `firehydrant_team`
 
+## Example Usage
+
+Basic usage:
+```hcl
+resource "firehydrant_service" "example-service1" {
+  name = "my-example-service1"
+}
+
+resource "firehydrant_service" "example-service2" {
+  name = "my-example-service2"
+}
+
+resource "firehydrant_team" "example-team" {
+  name        = "my-example-team"
+  description = "This is an example team"
+  services {
+    id = firehydrant_service.example-service1.id
+  }
+  services {
+    id = firehydrant_service.example-service2.id
+  }
+}
+```
 
 
 
@@ -20,15 +43,18 @@ description: |-
 ### Optional
 
 - **description** (String, Optional)
-- **id** (String, Optional) The ID of this resource.
 - **services** (Block List) (see [below for nested schema](#nestedblock--services))
+
+### Read-only
+
+- **id** (String, Read-only) The ID of the team.
 
 <a id="nestedblock--services"></a>
 ### Nested Schema for `services`
 
 Required:
 
-- **id** (String, Required) The ID of this resource.
+- **id** (String, Required) The ID of the service.
 
 Read-only:
 
