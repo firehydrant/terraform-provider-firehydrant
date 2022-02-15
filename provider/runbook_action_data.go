@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
@@ -10,18 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// Singular services data source
 func dataSourceRunbookAction() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataFireHydrantRunbookAction,
 		Schema: map[string]*schema.Schema{
-			"id": {
+			// Required
+			"integration_slug": {
 				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Required: true,
 			},
 			"slug": {
 				Type:     schema.TypeString,
@@ -31,37 +26,51 @@ func dataSourceRunbookAction() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"integration_slug": {
+
+			// Computed
+			"id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Computed: true,
+			},
+			"name": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
 }
 
 func dataFireHydrantRunbookAction(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	typ, slug, integrationSlug := d.Get("type").(string), d.Get("slug").(string), d.Get("integration_slug").(string)
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
-	r, err := ac.RunbookActions().Get(ctx, typ, fmt.Sprintf("%s.%s", integrationSlug, slug))
+	// Get the runbook action
+	runbookType := d.Get("type").(string)
+	actionSlug := d.Get("slug").(string)
+	integrationSlug := d.Get("integration_slug").(string)
+	runbookActionResponse, err := firehydrantAPIClient.RunbookActions().Get(ctx, runbookType, integrationSlug, actionSlug)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	var ds diag.Diagnostics
-	svc := map[string]string{
-		"name":             r.Name,
-		"slug":             r.Slug,
-		"integration_slug": "bunk",
+	// Update the attributes in state to the values we got from the API
+	attributes := map[string]string{
+		"name": runbookActionResponse.Name,
+		"slug": runbookActionResponse.Slug,
 	}
 
-	for key, val := range svc {
-		if err := d.Set(key, val); err != nil {
+	if runbookActionResponse.Integration != nil {
+		attributes["integration_slug"] = runbookActionResponse.Integration.Slug
+	}
+
+	for key, value := range attributes {
+		if err := d.Set(key, value); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	d.SetId(r.ID)
+	// Set the runbook action's ID in state
+	d.SetId(runbookActionResponse.ID)
 
-	return ds
+	return diag.Diagnostics{}
 }
