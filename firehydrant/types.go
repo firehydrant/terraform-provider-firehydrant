@@ -30,6 +30,7 @@ type CreateServiceRequest struct {
 	AlertOnAdd  bool              `json:"alert_on_add,omitempty"`
 	Description string            `json:"description"`
 	Labels      map[string]string `json:"labels,omitempty"`
+	Links       []ServiceLink     `json:"links,omitempty"`
 	Name        string            `json:"name"`
 	Owner       *ServiceTeam      `json:"owner,omitempty"`
 	ServiceTier int               `json:"service_tier,int,omitempty"`
@@ -47,12 +48,20 @@ type ServiceTeam struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// ServiceLink represents a link when creating/updating a service
+type ServiceLink struct {
+	ID      string `json:"id,omitempty"`
+	Name    string `json:"name"`
+	HrefURL string `json:"href_url"`
+}
+
 // UpdateServiceRequest is the payload for updating a service
 // URL: PATCH https://api.firehydrant.io/v1/services/{id}
 type UpdateServiceRequest struct {
 	AlertOnAdd           bool              `json:"alert_on_add"`
 	Description          string            `json:"description"`
 	Labels               map[string]string `json:"labels"`
+	Links                []ServiceLink     `json:"links"`
 	Name                 string            `json:"name,omitempty"`
 	Owner                *ServiceTeam      `json:"owner"`
 	RemoveOwner          bool              `json:"remove_owner,omitempty"`
@@ -68,6 +77,7 @@ type ServiceResponse struct {
 	AlertOnAdd  bool              `json:"alert_on_add"`
 	Description string            `json:"description"`
 	Labels      map[string]string `json:"labels"`
+	Links       []ServiceLink     `json:"links"`
 	Name        string            `json:"name"`
 	Owner       *ServiceTeam      `json:"owner"`
 	ServiceTier int               `json:"service_tier"`
