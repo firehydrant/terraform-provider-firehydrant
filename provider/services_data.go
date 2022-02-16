@@ -13,6 +13,7 @@ func dataSourceServices() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataFireHydrantServices,
 		Schema: map[string]*schema.Schema{
+			// Optional
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
@@ -21,6 +22,8 @@ func dataSourceServices() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+
+			// Computed
 			"services": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -37,13 +40,13 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 	// Get the services
 	query := d.Get("query").(string)
 	labels := d.Get("labels").(map[string]interface{})
-	ls := firehydrant.LabelsSelector{}
-	for k, v := range labels {
-		ls[k] = v.(string)
+	labelsSelector := firehydrant.LabelsSelector{}
+	for key, value := range labels {
+		labelsSelector[key] = value.(string)
 	}
-	r, err := firehydrantAPIClient.Services().List(ctx, &firehydrant.ServiceQuery{
+	servicesResponse, err := firehydrantAPIClient.Services().List(ctx, &firehydrant.ServiceQuery{
 		Query:          query,
-		LabelsSelector: ls,
+		LabelsSelector: labelsSelector,
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -51,27 +54,36 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 
 	// Set the data source attributes to the values we got from the API
 	services := make([]interface{}, 0)
-	for _, svc := range r.Services {
-		values := map[string]interface{}{
-			"id":           svc.ID,
-			"alert_on_add": svc.AlertOnAdd,
-			"description":  svc.Description,
-			"name":         svc.Name,
-			"service_tier": svc.ServiceTier,
+	for _, service := range servicesResponse.Services {
+		attributes := map[string]interface{}{
+			"id":           service.ID,
+			"alert_on_add": service.AlertOnAdd,
+			"description":  service.Description,
+			"name":         service.Name,
+			"service_tier": service.ServiceTier,
 		}
 
 		// Process any attributes that could be nil
-		if svc.Owner != nil {
-			values["owner_id"] = svc.Owner.ID
+		var links []interface{}
+		for _, currentLink := range service.Links {
+			links = append(links, map[string]interface{}{
+				"href_url": currentLink.HrefURL,
+				"name":     currentLink.Name,
+			})
+		}
+		attributes["links"] = links
+
+		if service.Owner != nil {
+			attributes["owner_id"] = service.Owner.ID
 		}
 
 		var teamIDs []interface{}
-		for _, team := range svc.Teams {
+		for _, team := range service.Teams {
 			teamIDs = append(teamIDs, team.ID)
 		}
-		values["team_ids"] = teamIDs
+		attributes["team_ids"] = teamIDs
 
-		services = append(services, values)
+		services = append(services, attributes)
 	}
 	if err := d.Set("services", services); err != nil {
 		return diag.FromErr(err)
