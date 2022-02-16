@@ -7,23 +7,27 @@ description: |-
 
 # Data Source `firehydrant_service`
 
+## Example Usage
 
-
-
+Basic usage:
+```hcl
+data "firehydrant_service" "example-service" {
+  id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+}
+```
 
 ## Schema
 
 ### Required
 
-- **id** (String, Required) The ID of this resource.
-
-### Optional
-
-- **service_tier** (Integer, Optional) The Service Tier of this resource - between 1 - 5.
+- **id** (String, Required) The ID of the service.
 
 ### Read-only
 
-- **description** (String, Read-only)
-- **name** (String, Read-only)
-- **add_on_alert** (Boolean, Optional)
-
+- **add_on_alert** (Boolean, Read-only) Indicates if FireHydrant should automatically create
+  an alert based on the integrations set up for this service, if this service is added to an
+  active incident. Defaults to `false`.
+- **description** (String, Read-only) A description for the service.
+- **name** (String, Read-only) The name of the service.
+- **service_tier** (Integer, Read-only) The service tier of this resource - between 1 - 5.
+  Lower values represent higher criticality. Defaults to `5`.

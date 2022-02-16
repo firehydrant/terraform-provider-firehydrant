@@ -2,14 +2,34 @@
 page_title: "firehydrant_services Data Source - terraform-provider-firehydrant"
 subcategory: ""
 description: |-
-  
+
 ---
 
 # Data Source `firehydrant_services`
 
+## Example Usage
 
+Basic usage:
+```hcl
+data "firehydrant_services" "all-services" {
+}
+```
 
+Getting all services with `database` in the name:
+```hcl
+data "firehydrant_services" "database-named-services" {
+  query = "database"
+}
+```
 
+Getting all services with the label `managed: true`:
+```hcl
+data "firehydrant_services" "managed-true-labeled-services" {
+  labels = {
+    managed = "true"
+  }
+}
+```
 
 ## Schema
 
@@ -26,8 +46,12 @@ description: |-
 <a id="nestedatt--services"></a>
 ### Nested Schema for `services`
 
-- **description** (String)
-- **id** (String)
-- **name** (String)
-
+- **id** (String, Read-only) The ID of the service.
+- **add_on_alert** (Boolean, Read-only) Indicates if FireHydrant should automatically create
+  an alert based on the integrations set up for this service, if this service is added to an
+  active incident. Defaults to `false`.
+- **description** (String, Read-only) A description for the service.
+- **name** (String, Read-only) The name of the service.
+- **service_tier** (Integer, Read-only) The service tier of this resource - between 1 - 5.
+  Lower values represent higher criticality. Defaults to `5`.
 
