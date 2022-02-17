@@ -18,7 +18,7 @@ func TestAccServicesDataSource_basic(t *testing.T) {
 		ProviderFactories: defaultProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServicesDataSourceConfig(rName),
+				Config: testAccServicesDataSourceConfig_basic(rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.firehydrant_services.all_services", "services.#"),
 					testAccCheckServicesSet("data.firehydrant_services.all_services"),
@@ -58,7 +58,7 @@ func testAccCheckServicesSet(name string) resource.TestCheckFunc {
 	}
 }
 
-func testAccServicesDataSourceConfig(rName string) string {
+func testAccServicesDataSourceConfig_basic(rName string) string {
 	return fmt.Sprintf(`
 resource "firehydrant_service" "test_service" {
   name = "test-service-%s"

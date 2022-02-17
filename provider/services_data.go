@@ -65,6 +65,12 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 			values["owner_id"] = svc.Owner.ID
 		}
 
+		var teamIDs []interface{}
+		for _, team := range svc.Teams {
+			teamIDs = append(teamIDs, team.ID)
+		}
+		values["team_ids"] = teamIDs
+
 		services = append(services, values)
 	}
 	if err := d.Set("services", services); err != nil {

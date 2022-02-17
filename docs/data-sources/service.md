@@ -32,3 +32,5 @@ data "firehydrant_service" "example-service" {
 - **owner_id** (String, Read-only) The ID of the team that owns this service.
 - **service_tier** (Integer, Read-only) The service tier of this resource - between 1 - 5.
   Lower values represent higher criticality. Defaults to `5`.
+- **team_ids** (Set of String, Optional) A set of IDs of the teams responsible for this service's incident response.
+

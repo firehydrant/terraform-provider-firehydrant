@@ -37,6 +37,13 @@ func dataSourceService() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"team_ids": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -63,6 +70,12 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 	if r.Owner != nil {
 		svc["owner_id"] = r.Owner.ID
 	}
+
+	var teamIDs []interface{}
+	for _, team := range r.Teams {
+		teamIDs = append(teamIDs, team.ID)
+	}
+	svc["team_ids"] = teamIDs
 
 	// Set the data source attributes to the values we got from the API
 	for key, val := range svc {
