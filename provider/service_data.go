@@ -37,6 +37,13 @@ func dataSourceService() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"team_ids": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -69,6 +76,14 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 		if err := d.Set(key, val); err != nil {
 			return diag.FromErr(err)
 		}
+	}
+
+	var teamIDs []interface{}
+	for _, team := range r.Teams {
+		teamIDs = append(teamIDs, team.ID)
+	}
+	if err := d.Set("team_ids", teamIDs); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(r.ID)
