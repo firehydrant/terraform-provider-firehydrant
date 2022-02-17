@@ -31,7 +31,7 @@ resource "firehydrant_service" "example-service" {
 
 ### Required
 
-- **name** (String, Required)
+- **name** (String, Required) The name of the service.
 
 ### Optional
 
@@ -44,6 +44,7 @@ resource "firehydrant_service" "example-service" {
 - **owner_id** (String, Optional) The ID of the team that owns this service.
 - **service_tier** (Integer, Optional) The service tier of this resource - between 1 - 5. 
    Lower values represent higher criticality. Defaults to `5`.
+- **team_ids** (Set of String, Optional) A set of IDs of the teams responsible for this service's incident response.
 
 ### Read-only
 

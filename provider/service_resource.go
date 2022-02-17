@@ -45,6 +45,13 @@ func resourceService() *schema.Resource {
 				Optional: true,
 				Default:  5,
 			},
+			"team_ids": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -73,6 +80,12 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 		ownerID = r.Owner.ID
 	}
 	svc["owner_id"] = ownerID
+
+	var teamIDs []interface{}
+	for _, team := range r.Teams {
+		teamIDs = append(teamIDs, team.ID)
+	}
+	svc["team_ids"] = teamIDs
 
 	// Update the resource attributes to the values we got from the API
 	for key, val := range svc {
@@ -107,6 +120,11 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 		r.Owner = &firehydrant.ServiceTeam{ID: ownerID.(string)}
 	}
 
+	teamIDs := d.Get("team_ids").(*schema.Set).List()
+	for _, teamID := range teamIDs {
+		r.Teams = append(r.Teams, firehydrant.ServiceTeam{ID: teamID.(string)})
+	}
+
 	// Create the new service
 	newService, err := firehydrantAPIClient.Services().Create(ctx, r)
 	if err != nil {
@@ -138,6 +156,13 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	} else {
 		r.RemoveOwner = true
 	}
+
+	teamIDs := d.Get("team_ids").(*schema.Set).List()
+	for _, teamID := range teamIDs {
+		r.Teams = append(r.Teams, firehydrant.ServiceTeam{ID: teamID.(string)})
+	}
+	// This will force the update request to replace the teams with the ones we send
+	r.RemoveRemainingTeams = true
 
 	// Update the service
 	_, err := firehydrantAPIClient.Services().Update(ctx, d.Id(), r)
