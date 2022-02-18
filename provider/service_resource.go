@@ -32,6 +32,13 @@ func resourceService() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"functionality_ids": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
@@ -77,6 +84,14 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 		if err := d.Set(key, val); err != nil {
 			return diag.FromErr(err)
 		}
+	}
+
+	functionalityIDs := make([]interface{}, 0)
+	for _, functionality := range r.Functionalities {
+		functionalityIDs = append(functionalityIDs, functionality.ID)
+	}
+	if err := d.Set("functionality_ids", functionalityIDs); err != nil {
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("labels", r.Labels); err != nil {
