@@ -29,5 +29,6 @@ data "firehydrant_service" "example-service" {
   active incident. Defaults to `false`.
 - **description** (String, Read-only) A description for the service.
 - **name** (String, Read-only) The name of the service.
+- **owner_id** (String, Read-only) The ID of the team that owns this service.
 - **service_tier** (Integer, Read-only) The service tier of this resource - between 1 - 5.
   Lower values represent higher criticality. Defaults to `5`.
