@@ -50,16 +50,15 @@ func resourceService() *schema.Resource {
 }
 
 func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
 	// Get the service
 	serviceID := d.Id()
-	r, err := ac.Services().Get(ctx, serviceID)
+	r, err := firehydrantAPIClient.Services().Get(ctx, serviceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	var ds diag.Diagnostics
 
 	svc := map[string]interface{}{
 		"name":         r.Name,
@@ -84,11 +83,12 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	return ds
+	return diag.Diagnostics{}
 }
 
 func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
 	// Get attributes from config and construct the create request
 	labels := convertStringMap(d.Get("labels").(map[string]interface{}))
@@ -106,37 +106,19 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Create the new service
-	newService, err := ac.Services().Create(ctx, r)
+	newService, err := firehydrantAPIClient.Services().Create(ctx, r)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(newService.ID)
 
-	// TODO: Replace this whole section with a call to readResource
-	// Update resource attributes
-	attributes := map[string]interface{}{
-		"name":         newService.Name,
-		"alert_on_add": newService.AlertOnAdd,
-		"description":  newService.Description,
-		"labels":       newService.Labels,
-		"service_tier": newService.ServiceTier,
-	}
-
-	// Process any attributes that could be nil
-	if newService.Owner != nil {
-		attributes["owner_id"] = newService.Owner.ID
-	}
-
-	if err := setAttributesFromMap(d, attributes); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return diag.Diagnostics{}
+	return readResourceFireHydrantService(ctx, d, m)
 }
 
 func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
 	// Construct the update request
 	r := firehydrant.UpdateServiceRequest{
@@ -159,27 +141,24 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Update the service
-	_, err := ac.Services().Update(ctx, d.Id(), r)
+	_, err := firehydrantAPIClient.Services().Update(ctx, d.Id(), r)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// TODO: Add a call to readResource to update attribute from API
-
-	return diag.Diagnostics{}
+	return readResourceFireHydrantService(ctx, d, m)
 }
 
 func deleteResourceFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
 	// Delete the service
 	serviceID := d.Id()
-	err := ac.Services().Delete(ctx, serviceID)
+	err := firehydrantAPIClient.Services().Delete(ctx, serviceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId("")
 
 	return diag.Diagnostics{}
 }
