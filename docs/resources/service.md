@@ -31,7 +31,7 @@ resource "firehydrant_service" "example-service" {
 
 ### Required
 
-- **name** (String, Required)
+- **name** (String, Required) The name of the service.
 
 ### Optional
 
