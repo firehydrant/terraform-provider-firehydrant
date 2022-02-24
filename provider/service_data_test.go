@@ -97,5 +97,5 @@ resource "firehydrant_service" "test_service" {
 
 data "firehydrant_service" "test_service" {
   id = firehydrant_service.test_service.id
-}`, rName)
+}`, rName, rName, rName, rName, rName)
 }
