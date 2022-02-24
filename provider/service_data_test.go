@@ -51,7 +51,7 @@ func TestAccServiceDataSource_allAttributes(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_service.test_service", "service_tier", "1"),
-					resource.TestCheckResourceAttr("data.firehydrant_team.test_service", "team_ids.#", "2"),
+					resource.TestCheckResourceAttr("data.firehydrant_service.test_service", "team_ids.#", "2"),
 				),
 			},
 		},
