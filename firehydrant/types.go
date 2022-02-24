@@ -58,7 +58,7 @@ type UpdateServiceRequest struct {
 	RemoveOwner          bool              `json:"remove_owner,omitempty"`
 	RemoveRemainingTeams bool              `json:"remove_remaining_teams,omitempty"`
 	ServiceTier          int               `json:"service_tier,int,omitempty"`
-	Teams                []ServiceTeam     `json:"teams,omitempty"`
+	Teams                []ServiceTeam     `json:"teams"`
 }
 
 // ServiceResponse is the payload for retrieving a service
