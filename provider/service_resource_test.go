@@ -417,7 +417,7 @@ resource "firehydrant_service" "test_service" {
     firehydrant_team.test_team2.id,
     firehydrant_team.test_team3.id
   ]
-}`, rName, rName, rName)
+}`, rName, rName, rName, rName, rName)
 }
 
 func testAccServiceResourceConfig_updateChangeOwnerIDAndTeamIDs(rName string) string {
@@ -444,7 +444,7 @@ resource "firehydrant_service" "test_service" {
     firehydrant_team.test_team1.id,
     firehydrant_team.test_team3.id
   ]
-}`, rName, rName, rName, rName)
+}`, rName, rName, rName, rName, rName)
 }
 
 func testAccServiceResourceConfig_updateRemoveOwnerIDAndTeamIDs(rName string) string {
