@@ -73,14 +73,23 @@ func testAccServiceDataSourceConfig_allAttributes(rName string) string {
 	return fmt.Sprintf(`
 resource "firehydrant_team" "test_team1" {
   name = "test-team1-%s"
+services {
+id = firehydrant_service.test_service.id
+}
 }
 
 resource "firehydrant_team" "test_team2" {
   name = "test-team2-%s"
+services {
+id = firehydrant_service.test_service.id
+}
 }
 
 resource "firehydrant_team" "test_team3" {
   name = "test-team3-%s"
+services {
+id = firehydrant_service.test_service.id
+}
 }
 
 resource "firehydrant_service" "test_service" {
