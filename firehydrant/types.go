@@ -197,9 +197,9 @@ type TeamService struct {
 // UpdateTeamRequest is the payload for updating a environment
 // URL: PATCH https://api.firehydrant.io/v1/environments/{id}
 type UpdateTeamRequest struct {
-	Name        string   `json:"name,omitempty"`
-	Description string   `json:"description,omitempty"`
-	ServiceIDs  []string `json:"service_ids,omitempty"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	ServiceIDs  []string `json:"service_ids"`
 }
 
 // SeverityResponse is the payload for a single environment

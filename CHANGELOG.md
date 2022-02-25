@@ -5,10 +5,16 @@ ENHANCEMENTS:
 * provider: Added Terraform version to the user agent header ([#24](https://github.com/firehydrant/terraform-provider-firehydrant/pull/24))
 * resource/service: Added the `alert_on_add` attribute to services ([#24](https://github.com/firehydrant/terraform-provider-firehydrant/pull/24))
 * resource/service: Added the `owner_id` attribute to services ([#23](https://github.com/firehydrant/terraform-provider-firehydrant/pull/23))
+* resource/team: Added deprecation warning to the `services` attribute, preferring `service_ids` instead ([#31](https://github.com/firehydrant/terraform-provider-firehydrant/pull/31))
 * data_source/service: Added the `alert_on_add` attribute to services ([#24](https://github.com/firehydrant/terraform-provider-firehydrant/pull/24))
 * data_source/service: Added the `owner_id` attribute to services ([#23](https://github.com/firehydrant/terraform-provider-firehydrant/pull/23))
 * data_source/services: Added the `alert_on_add` attribute to services ([#24](https://github.com/firehydrant/terraform-provider-firehydrant/pull/24))
 * data_source/services: Added the `owner_id` attribute to services ([#23](https://github.com/firehydrant/terraform-provider-firehydrant/pull/23))
+
+NOTES:
+
+* The deprecated attribute `services` will be removed from resource/team 3 months after the release of v0.2.0. You will have until May 31, 2022 to migrate to the preferred attribute.
+   More information about this deprecation can be found in the description of ([#31](https://github.com/firehydrant/terraform-provider-firehydrant/pull/31))
 
 ## 0.1.4
 
