@@ -25,6 +25,13 @@ func dataSourceService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"functionality_ids": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"name": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -69,6 +76,14 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 		if err := d.Set(key, val); err != nil {
 			return diag.FromErr(err)
 		}
+	}
+
+	functionalityIDs := make([]interface{}, 0)
+	for _, functionality := range r.Functionalities {
+		functionalityIDs = append(functionalityIDs, functionality.ID)
+	}
+	if err := d.Set("functionality_ids", functionalityIDs); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(r.ID)
