@@ -27,13 +27,12 @@ type PingResponse struct {
 // CreateServiceRequest is the payload for creating a service
 // URL: POST https://api.firehydrant.io/v1/services
 type CreateServiceRequest struct {
-	AlertOnAdd      bool                   `json:"alert_on_add,omitempty"`
-	Description     string                 `json:"description"`
-	Functionalities []ServiceFunctionality `json:"functionalities,omitempty"`
-	Labels          map[string]string      `json:"labels,omitempty"`
-	Name            string                 `json:"name"`
-	Owner           *ServiceTeam           `json:"owner,omitempty"`
-	ServiceTier     int                    `json:"service_tier,int,omitempty"`
+	AlertOnAdd  bool              `json:"alert_on_add,omitempty"`
+	Description string            `json:"description"`
+	Labels      map[string]string `json:"labels,omitempty"`
+	Name        string            `json:"name"`
+	Owner       *ServiceTeam      `json:"owner,omitempty"`
+	ServiceTier int               `json:"service_tier,int,omitempty"`
 }
 
 // ServiceTeam represents a team when creating a service
@@ -60,14 +59,13 @@ type ServiceFunctionality struct {
 // UpdateServiceRequest is the payload for updating a service
 // URL: PATCH https://api.firehydrant.io/v1/services/{id}
 type UpdateServiceRequest struct {
-	AlertOnAdd      bool                   `json:"alert_on_add,omitempty"`
-	Description     string                 `json:"description,omitempty"`
-	Functionalities []ServiceFunctionality `json:"functionalities,omitempty"`
-	Labels          map[string]string      `json:"labels,omitempty"`
-	Name            string                 `json:"name,omitempty"`
-	Owner           *ServiceTeam           `json:"owner,omitempty"`
-	RemoveOwner     bool                   `json:"remove_owner,omitempty"`
-	ServiceTier     int                    `json:"service_tier,int,omitempty"`
+	AlertOnAdd  bool              `json:"alert_on_add,omitempty"`
+	Description string            `json:"description,omitempty"`
+	Labels      map[string]string `json:"labels,omitempty"`
+	Name        string            `json:"name,omitempty"`
+	Owner       *ServiceTeam      `json:"owner,omitempty"`
+	RemoveOwner bool              `json:"remove_owner,omitempty"`
+	ServiceTier int               `json:"service_tier,int,omitempty"`
 }
 
 // ServiceResponse is the payload for retrieving a service
