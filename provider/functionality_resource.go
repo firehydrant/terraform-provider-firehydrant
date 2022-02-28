@@ -203,6 +203,8 @@ func updateResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 
 	// Set the service IDs for the update functionality request
 	r.Services = updatedServices
+	// This will force the update request to replace the services with the ones we send
+	r.RemoveRemainingServices = true
 
 	// Update the functionality
 	functionalityID := d.Id()
