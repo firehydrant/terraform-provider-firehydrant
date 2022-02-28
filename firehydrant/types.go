@@ -49,13 +49,13 @@ type ServiceTeam struct {
 // UpdateServiceRequest is the payload for updating a service
 // URL: PATCH https://api.firehydrant.io/v1/services/{id}
 type UpdateServiceRequest struct {
-	AlertOnAdd  bool              `json:"alert_on_add,omitempty"`
-	Description string            `json:"description,omitempty"`
+	AlertOnAdd  bool              `json:"alert_on_add"`
+	Description string            `json:"description"`
 	Labels      map[string]string `json:"labels,omitempty"`
 	Name        string            `json:"name,omitempty"`
 	Owner       *ServiceTeam      `json:"owner,omitempty"`
 	RemoveOwner bool              `json:"remove_owner,omitempty"`
-	ServiceTier int               `json:"service_tier,int,omitempty"`
+	ServiceTier int               `json:"service_tier,int"`
 }
 
 // ServiceResponse is the payload for retrieving a service
