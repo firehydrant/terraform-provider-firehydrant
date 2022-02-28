@@ -468,26 +468,25 @@ func testAccCheckTeamResourceExistsWithAttributes_updateServiceIDs(resourceName 
 
 func testAccCheckTeamResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		// TODO: add this back once the bug in the API is fixed
-		//client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
-		//if err != nil {
-		//	return err
-		//}
-		//
-		//for _, teamResource := range s.RootModule().Resources {
-		//	if teamResource.Type != "firehydrant_team" {
-		//		continue
-		//	}
-		//
-		//	if teamResource.Primary.ID == "" {
-		//		return fmt.Errorf("No instance ID is set")
-		//	}
-		//
-		//	_, err := client.GetTeam(context.TODO(), teamResource.Primary.ID)
-		//	if err == nil {
-		//		return fmt.Errorf("Team %s still exists", teamResource.Primary.ID)
-		//	}
-		//}
+		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		if err != nil {
+			return err
+		}
+
+		for _, teamResource := range s.RootModule().Resources {
+			if teamResource.Type != "firehydrant_team" {
+				continue
+			}
+
+			if teamResource.Primary.ID == "" {
+				return fmt.Errorf("No instance ID is set")
+			}
+
+			_, err := client.GetTeam(context.TODO(), teamResource.Primary.ID)
+			if err == nil {
+				return fmt.Errorf("Team %s still exists", teamResource.Primary.ID)
+			}
+		}
 
 		return nil
 	}
