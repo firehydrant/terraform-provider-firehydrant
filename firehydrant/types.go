@@ -51,7 +51,7 @@ type ServiceTeam struct {
 type UpdateServiceRequest struct {
 	AlertOnAdd  bool              `json:"alert_on_add"`
 	Description string            `json:"description"`
-	Labels      map[string]string `json:"labels,omitempty"`
+	Labels      map[string]string `json:"labels"`
 	Name        string            `json:"name,omitempty"`
 	Owner       *ServiceTeam      `json:"owner,omitempty"`
 	RemoveOwner bool              `json:"remove_owner,omitempty"`
