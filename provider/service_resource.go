@@ -68,9 +68,11 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 	}
 
 	// Process any attributes that could be nil
+	var ownerID string
 	if r.Owner != nil {
-		svc["owner_id"] = r.Owner.ID
+		ownerID = r.Owner.ID
 	}
+	svc["owner_id"] = ownerID
 
 	// Update the resource attributes to the values we got from the API
 	for key, val := range svc {
@@ -129,15 +131,12 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 		ServiceTier: d.Get("service_tier").(int),
 	}
 
-	// Process any optional attributes and add to the create request if necessary
-	// Only set ownerID if it has actually been changed
-	if d.HasChange("owner_id") {
-		ownerID, ownerIDSet := d.GetOk("owner_id")
-		if ownerIDSet {
-			r.Owner = &firehydrant.ServiceTeam{ID: ownerID.(string)}
-		} else {
-			r.RemoveOwner = true
-		}
+	// Process any optional attributes and add to the update request if necessary
+	ownerID, ownerIDSet := d.GetOk("owner_id")
+	if ownerIDSet {
+		r.Owner = &firehydrant.ServiceTeam{ID: ownerID.(string)}
+	} else {
+		r.RemoveOwner = true
 	}
 
 	// Update the service

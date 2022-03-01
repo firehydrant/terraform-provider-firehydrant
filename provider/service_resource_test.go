@@ -166,6 +166,7 @@ func TestAccServiceResource_updateLabels(t *testing.T) {
 
 func TestAccServiceResource_updateOwnerID(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
@@ -191,30 +192,48 @@ func TestAccServiceResource_updateOwnerID(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccServiceResourceConfig_updateChangeOwnerID(rName),
+				Config: testAccServiceResourceConfig_update(rNameUpdated),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckServiceResourceExistsWithAttributes_update("firehydrant_service.test_service"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "id"),
 					resource.TestCheckResourceAttr(
-						"firehydrant_service.test_service", "name", fmt.Sprintf("test-service-%s", rName)),
+						"firehydrant_service.test_service", "name", fmt.Sprintf("test-service-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "alert_on_add", "true"),
 					resource.TestCheckResourceAttr(
-						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rName)),
+						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
-						"firehydrant_service.test_service", "labels.test1", fmt.Sprintf("test-label1-%s", rName)),
+						"firehydrant_service.test_service", "labels.test1", fmt.Sprintf("test-label1-%s", rNameUpdated)),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "1"),
 				),
 			},
 			{
-				Config: testAccServiceResourceConfig_basic(rName),
+				Config: testAccServiceResourceConfig_updateChangeOwnerID(rNameUpdated),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckServiceResourceExistsWithAttributes_update("firehydrant_service.test_service"),
+					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "id"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "name", fmt.Sprintf("test-service-%s", rNameUpdated)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "alert_on_add", "true"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "labels.test1", fmt.Sprintf("test-label1-%s", rNameUpdated)),
+					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "service_tier", "1"),
+				),
+			},
+			{
+				Config: testAccServiceResourceConfig_basic(rNameUpdated),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckServiceResourceExistsWithAttributes_basic("firehydrant_service.test_service"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "id"),
 					resource.TestCheckResourceAttr(
-						"firehydrant_service.test_service", "name", fmt.Sprintf("test-service-%s", rName)),
+						"firehydrant_service.test_service", "name", fmt.Sprintf("test-service-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "alert_on_add", "false"),
 					// Make sure owner_id is not set

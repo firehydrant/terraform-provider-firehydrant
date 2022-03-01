@@ -53,7 +53,7 @@ type UpdateServiceRequest struct {
 	Description string            `json:"description"`
 	Labels      map[string]string `json:"labels"`
 	Name        string            `json:"name,omitempty"`
-	Owner       *ServiceTeam      `json:"owner,omitempty"`
+	Owner       *ServiceTeam      `json:"owner"`
 	RemoveOwner bool              `json:"remove_owner,omitempty"`
 	ServiceTier int               `json:"service_tier,int"`
 }
