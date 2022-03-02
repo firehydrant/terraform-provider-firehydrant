@@ -76,6 +76,19 @@ func TestAccServiceResource_update(t *testing.T) {
 						"firehydrant_service.test_service", "service_tier", "1"),
 				),
 			},
+			{
+				Config: testAccServiceResourceConfig_basic(rNameUpdated),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckServiceResourceExistsWithAttributes_basic("firehydrant_service.test_service"),
+					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "id"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "name", fmt.Sprintf("test-service-%s", rNameUpdated)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "alert_on_add", "false"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "service_tier", "5"),
+				),
+			},
 		},
 	})
 }

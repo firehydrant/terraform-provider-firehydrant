@@ -1,5 +1,9 @@
 ## 0.2.0 (Unreleased)
 
+BUG FIXES:
+
+* resource/service: Fixed bug that prevented the `description` attribute from being unset ([#51](https://github.com/firehydrant/terraform-provider-firehydrant/pull/51))
+
 ENHANCEMENTS:
 
 * provider: Added Terraform version to the user agent header ([#24](https://github.com/firehydrant/terraform-provider-firehydrant/pull/24))
