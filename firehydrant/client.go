@@ -77,7 +77,7 @@ type Client interface {
 
 	// ServiceDependencies
 	GetServiceDependency(ctx context.Context, id string) (*ServiceDependencyResponse, error)
-	CreateServiceDependency(ctx context.Context, req CreateServiceDependencyRequest) (*ServiceDependencyResponse, error
+	CreateServiceDependency(ctx context.Context, req CreateServiceDependencyRequest) (*ServiceDependencyResponse, error)
 	UpdateServiceDependency(ctx context.Context, id string, req UpdateServiceDependencyRequest) (*ServiceDependencyResponse, error)
 	DeleteServiceDependency(ctx context.Context, id string) error
 }
@@ -367,9 +367,9 @@ func (c *APIClient) DeleteSeverity(ctx context.Context, slug string) error {
 	return nil
 }
 
-// GetSeverity retrieves an severity from the FireHydrant API
+// ServiceDependency
 func (c *APIClient) GetServiceDependency(ctx context.Context, id string) (*ServiceDependencyResponse, error) {
-	var fun SeverityResponse
+	var fun ServiceDependencyResponse
 
 	resp, err := c.client().Get("service_dependencies/"+id).Receive(&fun, nil)
 
@@ -384,7 +384,6 @@ func (c *APIClient) GetServiceDependency(ctx context.Context, id string) (*Servi
 	return &fun, nil
 }
 
-// CreateSeverity creates an severity
 func (c *APIClient) CreateServiceDependency(ctx context.Context, req CreateServiceDependencyRequest) (*ServiceDependencyResponse, error) {
 	res := &ServiceDependencyResponse{}
 
@@ -394,13 +393,12 @@ func (c *APIClient) CreateServiceDependency(ctx context.Context, req CreateServi
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return nil, fmt.Errorf("Could not create ServiceDependency %s", req.ID)
+		return nil, fmt.Errorf("Could not create ServiceDependency")
 	}
 
 	return res, nil
 }
 
-// UpdateSeverity updates a severity in FireHydrant
 func (c *APIClient) UpdateServiceDependency(ctx context.Context, id string, req UpdateServiceDependencyRequest) (*ServiceDependencyResponse, error) {
 	res := &ServiceDependencyResponse{}
 
@@ -411,7 +409,6 @@ func (c *APIClient) UpdateServiceDependency(ctx context.Context, id string, req 
 	return res, nil
 }
 
-// DeleteSeverity deletes a severity record from FireHydrant
 func (c *APIClient) DeleteServiceDependency(ctx context.Context, id string) error {
 	if _, err := c.client().Delete("service_dependencies/"+id).Receive(nil, nil); err != nil {
 		return errors.Wrap(err, "could not delete ServiceDependency")

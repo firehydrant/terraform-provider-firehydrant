@@ -11,17 +11,21 @@ import (
 
 func dataSourceServiceDependency() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataFireHydrantFunctionality,
+		ReadContext: dataFireHydrantServiceDependency,
 		Schema: map[string]*schema.Schema{
-			"functionality_id": {
+			"service_dependency_id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"name": {
+			"service_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"description": {
+			"connected_service_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"notes": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -42,7 +46,7 @@ func dataFireHydrantServiceDependency(ctx context.Context, d *schema.ResourceDat
 	env := map[string]string{
 		"service_id":           r.ServiceID,
 		"connected_service_id": r.ConnectedServiceID,
-		"notes":                r.notes,
+		"notes":                r.Notes,
 	}
 
 	for key, val := range env {
