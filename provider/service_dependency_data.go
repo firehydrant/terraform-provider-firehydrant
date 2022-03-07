@@ -44,8 +44,8 @@ func dataFireHydrantServiceDependency(ctx context.Context, d *schema.ResourceDat
 
 	var ds diag.Diagnostics
 	env := map[string]string{
-		"service_id":           r.ServiceID,
-		"connected_service_id": r.ConnectedServiceID,
+		"service_id":           r.Service.ID,
+		"connected_service_id": r.ConnectedService.ID,
 		"notes":                r.Notes,
 	}
 

@@ -228,17 +228,17 @@ type ServiceDependency struct {
 }
 
 type ServiceDependencyResponse struct {
-	ID                 string    `json:"id"`
-	ServiceID          string    `json:"service_id"`
-	ConnectedServiceID string    `json:"connected_service_idid"`
-	Notes              string    `json:"notes"`
-	CreatedAt          time.Time `json:"created_at"`
-	UpdatedAt          time.Time `json:"updated_at"`
+	ID               string          `json:"id"`
+	Service          ServiceResponse `json:"service"`
+	ConnectedService ServiceResponse `json:"connected_service"`
+	Notes            string          `json:"notes"`
+	CreatedAt        time.Time
+	UpdatedAt        time.Time `json:"updated_at"`
 }
 
 type CreateServiceDependencyRequest struct {
 	ServiceID          string `json:"service_id"`
-	ConnectedServiceID string `json:"connected_service_idid"`
+	ConnectedServiceID string `json:"connected_service_id"`
 	Notes              string `json:"notes"`
 }
 
