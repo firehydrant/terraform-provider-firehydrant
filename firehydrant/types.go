@@ -222,3 +222,27 @@ type UpdateSeverityRequest struct {
 	Slug        string `json:"slug,omitempty"`
 	Description string `json:"description,omitempty"`
 }
+
+type ServiceDependency struct {
+	ID string `json:"id"`
+}
+
+type ServiceDependencyResponse struct {
+	ID                 string    `json:"id"`
+	ServiceID          string    `json:"service_id"`
+	ConnectedServiceID string    `json:"connected_service_idid"`
+	Notes              string    `json:"notes"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
+}
+
+type CreateServiceDependencyRequest struct {
+	ServiceID          string `json:"service_id"`
+	ConnectedServiceID string `json:"connected_service_idid"`
+	Notes              string `json:"notes"`
+}
+
+type UpdateServiceDependencyRequest struct {
+	ID    string `json:"id"`
+	Notes string `json:"notes"`
+}

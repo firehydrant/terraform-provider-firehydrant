@@ -74,6 +74,12 @@ type Client interface {
 	CreateSeverity(ctx context.Context, req CreateSeverityRequest) (*SeverityResponse, error)
 	UpdateSeverity(ctx context.Context, slug string, req UpdateSeverityRequest) (*SeverityResponse, error)
 	DeleteSeverity(ctx context.Context, slug string) error
+
+	// ServiceDependencies
+	GetServiceDependency(ctx context.Context, id string) (*ServiceDependencyResponse, error)
+	CreateServiceDependency(ctx context.Context, req CreateServiceDependencyRequest) (*ServiceDependencyResponse, error
+	UpdateServiceDependency(ctx context.Context, id string, req UpdateServiceDependencyRequest) (*ServiceDependencyResponse, error)
+	DeleteServiceDependency(ctx context.Context, id string) error
 }
 
 // OptFunc is a function that sets a setting on a client
@@ -356,6 +362,59 @@ func (c *APIClient) UpdateSeverity(ctx context.Context, slug string, req UpdateS
 func (c *APIClient) DeleteSeverity(ctx context.Context, slug string) error {
 	if _, err := c.client().Delete("severities/"+slug).Receive(nil, nil); err != nil {
 		return errors.Wrap(err, "could not delete service")
+	}
+
+	return nil
+}
+
+// GetSeverity retrieves an severity from the FireHydrant API
+func (c *APIClient) GetServiceDependency(ctx context.Context, id string) (*ServiceDependencyResponse, error) {
+	var fun SeverityResponse
+
+	resp, err := c.client().Get("service_dependencies/"+id).Receive(&fun, nil)
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, NotFound(fmt.Sprintf("Could not find ServiceDependency with ID %s", id))
+	}
+
+	if err != nil {
+		return nil, errors.Wrap(err, "could not retrieve ServiceDependency")
+	}
+
+	return &fun, nil
+}
+
+// CreateSeverity creates an severity
+func (c *APIClient) CreateServiceDependency(ctx context.Context, req CreateServiceDependencyRequest) (*ServiceDependencyResponse, error) {
+	res := &ServiceDependencyResponse{}
+
+	resp, err := c.client().Post("service_dependencies").BodyJSON(&req).Receive(res, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not create ServiceDependency")
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, fmt.Errorf("Could not create ServiceDependency %s", req.ID)
+	}
+
+	return res, nil
+}
+
+// UpdateSeverity updates a severity in FireHydrant
+func (c *APIClient) UpdateServiceDependency(ctx context.Context, id string, req UpdateServiceDependencyRequest) (*ServiceDependencyResponse, error) {
+	res := &ServiceDependencyResponse{}
+
+	if _, err := c.client().Patch("service_dependencies/"+id).BodyJSON(&req).Receive(res, nil); err != nil {
+		return nil, errors.Wrap(err, "could not update ServiceDependency")
+	}
+
+	return res, nil
+}
+
+// DeleteSeverity deletes a severity record from FireHydrant
+func (c *APIClient) DeleteServiceDependency(ctx context.Context, id string) error {
+	if _, err := c.client().Delete("service_dependencies/"+id).Receive(nil, nil); err != nil {
+		return errors.Wrap(err, "could not delete ServiceDependency")
 	}
 
 	return nil
