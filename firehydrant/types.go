@@ -164,9 +164,10 @@ type FunctionalityService struct {
 // UpdateFunctionalityRequest is the payload for updating a environment
 // URL: PATCH https://api.firehydrant.io/v1/environments/{id}
 type UpdateFunctionalityRequest struct {
-	Name        string                 `json:"name,omitempty"`
-	Description string                 `json:"description,omitempty"`
-	Services    []FunctionalityService `json:"services,omitempty"`
+	Name                    string                 `json:"name,omitempty"`
+	Description             string                 `json:"description"`
+	RemoveRemainingServices bool                   `json:"remove_remaining_services"`
+	Services                []FunctionalityService `json:"services"`
 }
 
 // TeamResponse is the payload for a single environment
