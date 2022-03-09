@@ -28,6 +28,8 @@ data "firehydrant_service" "example-service" {
   an alert based on the integrations set up for this service, if this service is added to an
   active incident. Defaults to `false`.
 - **description** (String, Read-only) A description for the service.
+- **labels** (Map of String, Read-only) Key-value pairs associated with the service. Useful for
+  supporting searching and filtering of the service catalog.
 - **links** (Set of Map, Read-only) Links associated with the service (see [below for nested schema](#nestedatt--links)).
 - **name** (String, Read-only) The name of the service.
 - **owner_id** (String, Read-only) The ID of the team that owns this service.

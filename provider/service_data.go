@@ -28,6 +28,10 @@ func dataSourceService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"labels": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
 			"links": {
 				Type:     schema.TypeSet,
 				Computed: true,
@@ -83,6 +87,7 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 	attributes := map[string]interface{}{
 		"alert_on_add": serviceResponse.AlertOnAdd,
 		"description":  serviceResponse.Description,
+		"labels":       serviceResponse.Labels,
 		"name":         serviceResponse.Name,
 		"service_tier": serviceResponse.ServiceTier,
 	}

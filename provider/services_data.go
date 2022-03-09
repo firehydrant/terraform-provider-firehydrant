@@ -59,6 +59,7 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 			"id":           service.ID,
 			"alert_on_add": service.AlertOnAdd,
 			"description":  service.Description,
+			"labels":       service.Labels,
 			"name":         service.Name,
 			"service_tier": service.ServiceTier,
 		}
