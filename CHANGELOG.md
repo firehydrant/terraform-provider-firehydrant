@@ -6,6 +6,7 @@ BUG FIXES:
 * resource/functionality: Fixed bug that prevented the `services` attribute from being unset ([#49](https://github.com/firehydrant/terraform-provider-firehydrant/pull/49))
 * resource/service: Fixed bug that prevented the `description` attribute from being unset ([#51](https://github.com/firehydrant/terraform-provider-firehydrant/pull/51))
 * resource/service: Fixed bug that prevented `labels` from being removed from services ([#52](https://github.com/firehydrant/terraform-provider-firehydrant/pull/52))
+* data_source/runbook_action: Fixed bug that caused the wrong action to be returned when multiple actions existed for the same slug ([#56](https://github.com/firehydrant/terraform-provider-firehydrant/pull/56))
 
 ENHANCEMENTS:
 
