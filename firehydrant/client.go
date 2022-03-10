@@ -168,49 +168,64 @@ func (c *APIClient) RunbookActions() RunbookActionsClient {
 	return &RESTRunbookActionsClient{client: c}
 }
 
-// GetEnvironment retrieves an environment from the FireHydrant API
+// GetEnvironment retrieves an environment from FireHydrant
 func (c *APIClient) GetEnvironment(ctx context.Context, id string) (*EnvironmentResponse, error) {
-	var env EnvironmentResponse
-
-	resp, err := c.client().Get("environments/"+id).Receive(&env, nil)
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("status code was not a 200, got %d", resp.StatusCode)
-	}
-
+	envResponse := &EnvironmentResponse{}
+	response, err := c.client().Get("environments/"+id).Receive(envResponse, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not retrieve environment")
+		return nil, errors.Wrap(err, "could not get environment")
 	}
 
-	return &env, nil
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
+	}
+
+	return envResponse, nil
 }
 
-// CreateEnvironment creates an environment
+// CreateEnvironment creates an environment in FireHydrant
 func (c *APIClient) CreateEnvironment(ctx context.Context, req CreateEnvironmentRequest) (*EnvironmentResponse, error) {
-	res := &EnvironmentResponse{}
-
-	if _, err := c.client().Post("environments").BodyJSON(&req).Receive(res, nil); err != nil {
+	envResponse := &EnvironmentResponse{}
+	response, err := c.client().Post("environments").BodyJSON(&req).Receive(envResponse, nil)
+	if err != nil {
 		return nil, errors.Wrap(err, "could not create environment")
 	}
 
-	return res, nil
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
+	}
+
+	return envResponse, nil
 }
 
 // UpdateEnvironment updates a environment in FireHydrant
 func (c *APIClient) UpdateEnvironment(ctx context.Context, id string, req UpdateEnvironmentRequest) (*EnvironmentResponse, error) {
-	res := &EnvironmentResponse{}
-
-	if _, err := c.client().Patch("environments/"+id).BodyJSON(&req).Receive(res, nil); err != nil {
+	envResponse := &EnvironmentResponse{}
+	response, err := c.client().Patch("environments/"+id).BodyJSON(&req).Receive(envResponse, nil)
+	if err != nil {
 		return nil, errors.Wrap(err, "could not update environment")
 	}
 
-	return res, nil
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
+	}
+
+	return envResponse, nil
 }
 
-// DeleteEnvironment deletes a environment record from FireHydrant
+// DeleteEnvironment deletes a environment from FireHydrant
 func (c *APIClient) DeleteEnvironment(ctx context.Context, id string) error {
-	if _, err := c.client().Delete("environments/"+id).Receive(nil, nil); err != nil {
-		return errors.Wrap(err, "could not delete service")
+	response, err := c.client().Delete("environments/"+id).Receive(nil, nil)
+	if err != nil {
+		return errors.Wrap(err, "could not delete environment")
+	}
+
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return err
 	}
 
 	return nil
