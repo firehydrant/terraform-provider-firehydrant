@@ -138,15 +138,19 @@ func (c *APIClient) client() *sling.Sling {
 }
 
 // Ping hits and verifies the HTTP of FireHydrant
-// TODO: Check failure case
 func (c *APIClient) Ping(ctx context.Context) (*PingResponse, error) {
-	res := &PingResponse{}
-
-	if _, err := c.client().Get("ping").Receive(res, nil); err != nil {
+	pingResponse := &PingResponse{}
+	response, err := c.client().Get("ping").Receive(pingResponse, nil)
+	if err != nil {
 		return nil, errors.Wrap(err, "could not ping")
 	}
 
-	return res, nil
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
+	}
+
+	return pingResponse, nil
 }
 
 // Services returns a ServicesClient interface for interacting with services in FireHydrant
@@ -159,6 +163,7 @@ func (c *APIClient) Runbooks() RunbooksClient {
 	return &RESTRunbooksClient{client: c}
 }
 
+// RunbookActions returns a RunbookActionsClient interface for interacting with runbook actions in FireHydrant
 func (c *APIClient) RunbookActions() RunbookActionsClient {
 	return &RESTRunbookActionsClient{client: c}
 }
