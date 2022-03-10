@@ -231,49 +231,64 @@ func (c *APIClient) DeleteEnvironment(ctx context.Context, id string) error {
 	return nil
 }
 
-// GetFunctionality retrieves an functionality from the FireHydrant API
+// GetFunctionality retrieves a functionality from FireHydrant
 func (c *APIClient) GetFunctionality(ctx context.Context, id string) (*FunctionalityResponse, error) {
-	var fun FunctionalityResponse
-
-	resp, err := c.client().Get("functionalities/"+id).Receive(&fun, nil)
-
-	if resp.StatusCode == 404 {
-		return nil, NotFound(fmt.Sprintf("Could not find functionality with ID %s", id))
-	}
-
+	funcResponse := &FunctionalityResponse{}
+	response, err := c.client().Get("functionalities/"+id).Receive(funcResponse, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not retrieve functionality")
+		return nil, errors.Wrap(err, "could not get functionality")
 	}
 
-	return &fun, nil
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
+	}
+
+	return funcResponse, nil
 }
 
-// CreateFunctionality creates an functionality
+// CreateFunctionality creates a functionality in FireHydrant
 func (c *APIClient) CreateFunctionality(ctx context.Context, req CreateFunctionalityRequest) (*FunctionalityResponse, error) {
-	res := &FunctionalityResponse{}
-
-	if _, err := c.client().Post("functionalities").BodyJSON(&req).Receive(res, nil); err != nil {
+	funcResponse := &FunctionalityResponse{}
+	response, err := c.client().Post("functionalities").BodyJSON(&req).Receive(funcResponse, nil)
+	if err != nil {
 		return nil, errors.Wrap(err, "could not create functionality")
 	}
 
-	return res, nil
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
+	}
+
+	return funcResponse, nil
 }
 
 // UpdateFunctionality updates a functionality in FireHydrant
 func (c *APIClient) UpdateFunctionality(ctx context.Context, id string, req UpdateFunctionalityRequest) (*FunctionalityResponse, error) {
-	res := &FunctionalityResponse{}
-
-	if _, err := c.client().Patch("functionalities/"+id).BodyJSON(&req).Receive(res, nil); err != nil {
+	funcResponse := &FunctionalityResponse{}
+	response, err := c.client().Patch("functionalities/"+id).BodyJSON(&req).Receive(funcResponse, nil)
+	if err != nil {
 		return nil, errors.Wrap(err, "could not update functionality")
 	}
 
-	return res, nil
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
+	}
+
+	return funcResponse, nil
 }
 
-// DeleteFunctionality deletes a functionality record from FireHydrant
+// DeleteFunctionality deletes a functionality from FireHydrant
 func (c *APIClient) DeleteFunctionality(ctx context.Context, id string) error {
-	if _, err := c.client().Delete("functionalities/"+id).Receive(nil, nil); err != nil {
-		return errors.Wrap(err, "could not delete service")
+	response, err := c.client().Delete("functionalities/"+id).Receive(nil, nil)
+	if err != nil {
+		return errors.Wrap(err, "could not delete functionality")
+	}
+
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return err
 	}
 
 	return nil
