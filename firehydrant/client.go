@@ -163,28 +163,6 @@ func (c *APIClient) RunbookActions() RunbookActionsClient {
 	return &RESTRunbookActionsClient{client: c}
 }
 
-// UpdateService updates a old spankin service in FireHydrant
-// TODO: Check failure case
-func (c *APIClient) UpdateService(ctx context.Context, serviceID string, updateReq UpdateServiceRequest) (*ServiceResponse, error) {
-	res := &ServiceResponse{}
-
-	if _, err := c.client().Patch("services/"+serviceID).BodyJSON(&updateReq).Receive(res, nil); err != nil {
-		return nil, errors.Wrap(err, "could not update service")
-	}
-
-	return res, nil
-}
-
-// DeleteService updates a old spankin service in FireHydrant
-// TODO: Check failure case
-func (c *APIClient) DeleteService(ctx context.Context, serviceID string) error {
-	if _, err := c.client().Delete("services/"+serviceID).Receive(nil, nil); err != nil {
-		return errors.Wrap(err, "could not delete service")
-	}
-
-	return nil
-}
-
 // GetEnvironment retrieves an environment from the FireHydrant API
 func (c *APIClient) GetEnvironment(ctx context.Context, id string) (*EnvironmentResponse, error) {
 	var env EnvironmentResponse
