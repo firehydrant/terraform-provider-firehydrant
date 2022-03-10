@@ -2,7 +2,6 @@ package firehydrant
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/dghubble/sling"
@@ -83,34 +82,34 @@ func (c *RESTRunbooksClient) restClient() *sling.Sling {
 
 // Get returns a runbook from the FireHydrant API
 func (c *RESTRunbooksClient) Get(ctx context.Context, id string) (*RunbookResponse, error) {
-	res := &RunbookResponse{}
-	resp, err := c.restClient().Get("runbooks/"+id).Receive(res, nil)
+	runbookResponse := &RunbookResponse{}
+	response, err := c.restClient().Get("runbooks/"+id).Receive(runbookResponse, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get runbook")
 	}
 
-	if resp.StatusCode == 404 {
-		return nil, NotFound(fmt.Sprintf("Could not find runbook with ID %s", id))
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
 	}
 
-	return res, nil
+	return runbookResponse, nil
 }
 
 // Create creates a brand spankin new runbook in FireHydrant
-// TODO: Check failure case
 func (c *RESTRunbooksClient) Create(ctx context.Context, createReq CreateRunbookRequest) (*RunbookResponse, error) {
-	res := &RunbookResponse{}
-	resp, err := c.restClient().Post("runbooks").BodyJSON(&createReq).Receive(res, nil)
-
+	runbookResponse := &RunbookResponse{}
+	response, err := c.restClient().Post("runbooks").BodyJSON(&createReq).Receive(runbookResponse, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create runbook")
 	}
 
-	if resp.StatusCode != 201 {
-		return nil, fmt.Errorf("error creating runbook: status %d", resp.StatusCode)
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
 	}
 
-	res, err = c.Update(ctx, res.ID, UpdateRunbookRequest{
+	runbookResponse, err = c.Update(ctx, runbookResponse.ID, UpdateRunbookRequest{
 		Steps:      createReq.Steps,
 		Severities: createReq.Severities,
 	})
@@ -118,30 +117,39 @@ func (c *RESTRunbooksClient) Create(ctx context.Context, createReq CreateRunbook
 		return nil, errors.Wrap(err, "could not update created runbook")
 	}
 
-	return res, nil
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
+	}
+
+	return runbookResponse, nil
 }
 
 // Update updates a runbook in FireHydrant
 func (c *RESTRunbooksClient) Update(ctx context.Context, id string, updateReq UpdateRunbookRequest) (*RunbookResponse, error) {
-	res := &RunbookResponse{}
-	resp, err := c.restClient().Put("runbooks/"+id).BodyJSON(updateReq).Receive(res, nil)
-
+	runbookResponse := &RunbookResponse{}
+	response, err := c.restClient().Put("runbooks/"+id).BodyJSON(updateReq).Receive(runbookResponse, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not update runbook")
 	}
 
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("error creating runbook: status %d", resp.StatusCode)
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
 	}
 
-	return res, nil
+	return runbookResponse, nil
 }
 
 func (c *RESTRunbooksClient) Delete(ctx context.Context, id string) error {
-	_, err := c.restClient().Delete("runbooks/"+id).Receive(nil, nil)
-
+	response, err := c.restClient().Delete("runbooks/"+id).Receive(nil, nil)
 	if err != nil {
 		return errors.Wrap(err, "could not delete runbook")
+	}
+
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return err
 	}
 
 	return nil
