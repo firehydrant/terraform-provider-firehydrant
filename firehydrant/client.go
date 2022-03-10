@@ -3,6 +3,7 @@ package firehydrant
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/dghubble/sling"
 	"github.com/pkg/errors"
@@ -20,10 +21,30 @@ const (
 	UserAgentPrefix = "firehydrant-terraform-provider"
 )
 
+// Errors
+// NotFound is returned when receiving a 404.
 type NotFound string
 
-func (nf NotFound) Error() string {
-	return string(nf)
+func (err NotFound) Error() string {
+	return string(err)
+}
+
+// checkResponseStatusCode checks to see if the response's status
+// code corresponds to an error or not. An error is returned for
+// all status codes 300 and above
+// TODO: parse response body for other errors so we can return
+//       details error messages from the API
+func checkResponseStatusCode(response *http.Response) error {
+	switch code := response.StatusCode; {
+	case code >= 200 && code <= 299:
+		return nil
+	case code == 404:
+		return NotFound("resource not found")
+	case code == 401:
+		return errors.New("invalid api key")
+	default:
+		return errors.New("request failed with error")
+	}
 }
 
 // Version is the semver of this provider
