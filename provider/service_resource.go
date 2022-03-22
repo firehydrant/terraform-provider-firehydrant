@@ -64,6 +64,11 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 	serviceID := d.Id()
 	r, err := firehydrantAPIClient.Services().Get(ctx, serviceID)
 	if err != nil {
+		_, isNotFoundError := err.(firehydrant.NotFound)
+		if isNotFoundError {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -181,6 +186,11 @@ func deleteResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	serviceID := d.Id()
 	err := firehydrantAPIClient.Services().Delete(ctx, serviceID)
 	if err != nil {
+		_, isNotFoundError := err.(firehydrant.NotFound)
+		if isNotFoundError {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
