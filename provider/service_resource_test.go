@@ -32,6 +32,7 @@ func TestAccServiceResource_basic(t *testing.T) {
 						"firehydrant_service.test_service", "alert_on_add", "false"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "5"),
+					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "0"),
 				),
 			},
 		},
@@ -58,6 +59,7 @@ func TestAccServiceResource_update(t *testing.T) {
 						"firehydrant_service.test_service", "alert_on_add", "false"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "5"),
+					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "0"),
 				),
 			},
 			{
@@ -76,6 +78,7 @@ func TestAccServiceResource_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "1"),
+					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "2"),
 				),
 			},
 			{
@@ -89,6 +92,7 @@ func TestAccServiceResource_update(t *testing.T) {
 						"firehydrant_service.test_service", "alert_on_add", "false"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "5"),
+					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "0"),
 				),
 			},
 		},
@@ -120,6 +124,7 @@ func TestAccServiceResource_updateLabels(t *testing.T) {
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "1"),
+					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "2"),
 				),
 			},
 			{
@@ -140,6 +145,7 @@ func TestAccServiceResource_updateLabels(t *testing.T) {
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "1"),
+					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "2"),
 				),
 			},
 			{
@@ -158,13 +164,14 @@ func TestAccServiceResource_updateLabels(t *testing.T) {
 						"firehydrant_service.test_service", "labels.test2"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "5"),
+					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "0"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccServiceResource_updateOwnerID(t *testing.T) {
+func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -189,6 +196,7 @@ func TestAccServiceResource_updateOwnerID(t *testing.T) {
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "1"),
+					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "2"),
 				),
 			},
 			{
@@ -207,10 +215,11 @@ func TestAccServiceResource_updateOwnerID(t *testing.T) {
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "1"),
+					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "2"),
 				),
 			},
 			{
-				Config: testAccServiceResourceConfig_updateChangeOwnerID(rNameUpdated),
+				Config: testAccServiceResourceConfig_updateChangeOwnerIDAndTeamIDs(rNameUpdated),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckServiceResourceExistsWithAttributes_update("firehydrant_service.test_service"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "id"),
@@ -225,6 +234,7 @@ func TestAccServiceResource_updateOwnerID(t *testing.T) {
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "1"),
+					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "2"),
 				),
 			},
 			{
@@ -241,6 +251,7 @@ func TestAccServiceResource_updateOwnerID(t *testing.T) {
 						"firehydrant_service.test_service", "owner_id", ""),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "5"),
+					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "0"),
 				),
 			},
 		},
@@ -255,9 +266,27 @@ func TestAccServiceResourceImport_basic(t *testing.T) {
 		ProviderFactories: defaultProviderFactories(),
 		Steps: []resource.TestStep{
 			{
+				Config: testAccServiceResourceConfig_basic(rName),
+			},
+			{
+				ResourceName:      "firehydrant_service.test_service",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccServiceResourceImport_allAttributes(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		Steps: []resource.TestStep{
+			{
 				Config: testAccServiceResourceConfig_update(rName),
 			},
-
 			{
 				ResourceName:      "firehydrant_service.test_service",
 				ImportState:       true,
@@ -312,6 +341,11 @@ func testAccCheckServiceResourceExistsWithAttributes_basic(resourceName string) 
 		expected, got = serviceResource.Primary.Attributes["service_tier"], fmt.Sprintf("%d", serviceResponse.ServiceTier)
 		if expected != got {
 			return fmt.Errorf("Unexpected service_tier. Expected: %s, got: %s", expected, got)
+		}
+
+		// TODO: Check the team ids
+		if len(serviceResponse.Teams) != 0 {
+			return fmt.Errorf("Unexpected number of teams. Expected: 0, got: %v", len(serviceResponse.Teams))
 		}
 
 		return nil
@@ -377,6 +411,11 @@ func testAccCheckServiceResourceExistsWithAttributes_update(resourceName string)
 			return fmt.Errorf("Unexpected service_tier. Expected: %s, got: %s", expected, got)
 		}
 
+		// TODO: Check the team ids
+		if len(serviceResponse.Teams) != 2 {
+			return fmt.Errorf("Unexpected number of teams. Expected: 2, got: %v", len(serviceResponse.Teams))
+		}
+
 		return nil
 	}
 }
@@ -420,6 +459,14 @@ resource "firehydrant_team" "test_team1" {
   name = "test-team1-%s"
 }
 
+resource "firehydrant_team" "test_team2" {
+  name = "test-team2-%s"
+}
+
+resource "firehydrant_team" "test_team3" {
+  name = "test-team3-%s"
+}
+
 resource "firehydrant_service" "test_service" {
   name         = "test-service-%s"
   alert_on_add = true
@@ -429,13 +476,25 @@ resource "firehydrant_service" "test_service" {
   }
   owner_id     = firehydrant_team.test_team1.id
   service_tier = "1"
-}`, rName, rName, rName, rName)
+  team_ids = [
+    firehydrant_team.test_team2.id,
+    firehydrant_team.test_team3.id
+  ]
+}`, rName, rName, rName, rName, rName, rName)
 }
 
 func testAccServiceResourceConfig_updateChangeLabels(rName string) string {
 	return fmt.Sprintf(`
 resource "firehydrant_team" "test_team1" {
   name = "test-team1-%s"
+}
+
+resource "firehydrant_team" "test_team2" {
+  name = "test-team2-%s"
+}
+
+resource "firehydrant_team" "test_team3" {
+  name = "test-team3-%s"
 }
 
 resource "firehydrant_service" "test_service" {
@@ -448,10 +507,14 @@ resource "firehydrant_service" "test_service" {
   }
   owner_id     = firehydrant_team.test_team1.id
   service_tier = "1"
-}`, rName, rName, rName, rName, rName)
+  team_ids = [
+    firehydrant_team.test_team2.id,
+    firehydrant_team.test_team3.id
+  ]
+}`, rName, rName, rName, rName, rName, rName, rName)
 }
 
-func testAccServiceResourceConfig_updateChangeOwnerID(rName string) string {
+func testAccServiceResourceConfig_updateChangeOwnerIDAndTeamIDs(rName string) string {
 	return fmt.Sprintf(`
 resource "firehydrant_team" "test_team1" {
   name = "test-team1-%s"
@@ -461,14 +524,22 @@ resource "firehydrant_team" "test_team2" {
   name = "test-team2-%s"
 }
 
+resource "firehydrant_team" "test_team3" {
+  name = "test-team3-%s"
+}
+
 resource "firehydrant_service" "test_service" {
   name         = "test-service-%s"
   alert_on_add = true
   description  = "test-description-%s"
   labels = {
-    test1 = "test-label1-%s",
+    test1 = "test-label1-%s"
   }
   owner_id     = firehydrant_team.test_team2.id
   service_tier = "1"
-}`, rName, rName, rName, rName, rName)
+  team_ids = [
+    firehydrant_team.test_team1.id,
+    firehydrant_team.test_team3.id
+  ]
+}`, rName, rName, rName, rName, rName, rName)
 }

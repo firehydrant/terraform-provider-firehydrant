@@ -33,6 +33,7 @@ type CreateServiceRequest struct {
 	Name        string            `json:"name"`
 	Owner       *ServiceTeam      `json:"owner,omitempty"`
 	ServiceTier int               `json:"service_tier,int,omitempty"`
+	Teams       []ServiceTeam     `json:"teams,omitempty"`
 }
 
 // ServiceTeam represents a team when creating a service
@@ -49,13 +50,15 @@ type ServiceTeam struct {
 // UpdateServiceRequest is the payload for updating a service
 // URL: PATCH https://api.firehydrant.io/v1/services/{id}
 type UpdateServiceRequest struct {
-	AlertOnAdd  bool              `json:"alert_on_add"`
-	Description string            `json:"description"`
-	Labels      map[string]string `json:"labels"`
-	Name        string            `json:"name,omitempty"`
-	Owner       *ServiceTeam      `json:"owner"`
-	RemoveOwner bool              `json:"remove_owner,omitempty"`
-	ServiceTier int               `json:"service_tier,int"`
+	AlertOnAdd           bool              `json:"alert_on_add"`
+	Description          string            `json:"description"`
+	Labels               map[string]string `json:"labels"`
+	Name                 string            `json:"name,omitempty"`
+	Owner                *ServiceTeam      `json:"owner"`
+	RemoveOwner          bool              `json:"remove_owner,omitempty"`
+	RemoveRemainingTeams bool              `json:"remove_remaining_teams,omitempty"`
+	ServiceTier          int               `json:"service_tier,int"`
+	Teams                []ServiceTeam     `json:"teams"`
 }
 
 // ServiceResponse is the payload for retrieving a service
@@ -69,6 +72,7 @@ type ServiceResponse struct {
 	Owner       *ServiceTeam      `json:"owner"`
 	ServiceTier int               `json:"service_tier"`
 	Slug        string            `json:"slug"`
+	Teams       []ServiceTeam     `json:"teams"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -173,21 +177,21 @@ type UpdateFunctionalityRequest struct {
 // TeamResponse is the payload for a single environment
 // URL: GET https://api.firehydrant.io/v1/teams/{id}
 type TeamResponse struct {
-	ID          string            `json:"id"`
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Slug        string            `json:"slug"`
-	Services    []ServiceResponse `json:"services"`
-	CreatedAt   time.Time         `json:"created_at"`
-	UpdatedAt   time.Time         `json:"updated_at"`
+	ID            string            `json:"id"`
+	Name          string            `json:"name"`
+	Description   string            `json:"description"`
+	Slug          string            `json:"slug"`
+	OwnedServices []ServiceResponse `json:"owned_services"`
+	Services      []ServiceResponse `json:"services"`
+	CreatedAt     time.Time         `json:"created_at"`
+	UpdatedAt     time.Time         `json:"updated_at"`
 }
 
 // CreateTeamRequest is the payload for creating a service
 // URL: POST https://api.firehydrant.io/v1/services
 type CreateTeamRequest struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	ServiceIDs  []string `json:"service_ids,omitempty"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 // TeamService represents a service when creating a functionality
@@ -198,9 +202,8 @@ type TeamService struct {
 // UpdateTeamRequest is the payload for updating a environment
 // URL: PATCH https://api.firehydrant.io/v1/environments/{id}
 type UpdateTeamRequest struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	ServiceIDs  []string `json:"service_ids"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 // SeverityResponse is the payload for a single environment
