@@ -52,14 +52,19 @@ func (c *RESTRunbookActionsClient) restClient() *sling.Sling {
 
 // Get returns a runbook action from the FireHydrant API
 func (c *RESTRunbookActionsClient) Get(ctx context.Context, runbookType string, integrationSlug string, actionSlug string) (*RunbookAction, error) {
-	res := &RunbookActionsResponse{}
+	runbookActionResponse := &RunbookActionsResponse{}
 	query := RunbookActionsQuery{Type: runbookType, Items: 100}
-	_, err := c.restClient().Get("runbooks/actions").QueryStruct(query).Receive(res, nil)
+	response, err := c.restClient().Get("runbooks/actions").QueryStruct(query).Receive(runbookActionResponse, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get runbook")
 	}
 
-	for _, action := range res.Actions {
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, action := range runbookActionResponse.Actions {
 		if action.Slug == actionSlug && action.Integration.Slug == integrationSlug {
 			return &action, nil
 		}

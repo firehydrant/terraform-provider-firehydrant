@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,6 +39,11 @@ func readResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, m 
 	// Get the team
 	teamResponse, err := firehydrantAPIClient.GetTeam(ctx, d.Id())
 	if err != nil {
+		_, isNotFoundError := err.(firehydrant.NotFound)
+		if isNotFoundError {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -114,6 +118,10 @@ func deleteResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 	teamID := d.Id()
 	err := firehydrantAPIClient.DeleteTeam(ctx, teamID)
 	if err != nil {
+		_, isNotFoundError := err.(firehydrant.NotFound)
+		if isNotFoundError {
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 

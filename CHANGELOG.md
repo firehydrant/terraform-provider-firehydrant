@@ -6,10 +6,14 @@ BREAKING CHANGES:
 
 BUG FIXES:
 
+* provider: Fixed bug where errors weren't being checked or handled for various API requests ([#58](https://github.com/firehydrant/terraform-provider-firehydrant/pull/58))
 * resource/functionality: Fixed bug that prevented the `description` attribute from being unset ([#49](https://github.com/firehydrant/terraform-provider-firehydrant/pull/49))
 * resource/functionality: Fixed bug that prevented the `services` attribute from being unset ([#49](https://github.com/firehydrant/terraform-provider-firehydrant/pull/49))
+* resource/functionality: Fixed bug that prevented functionalities from being removed from state when they had been deleted outside of Terraform ([#58](https://github.com/firehydrant/terraform-provider-firehydrant/pull/58))
 * resource/service: Fixed bug that prevented the `description` attribute from being unset ([#51](https://github.com/firehydrant/terraform-provider-firehydrant/pull/51))
 * resource/service: Fixed bug that prevented `labels` from being removed from services ([#52](https://github.com/firehydrant/terraform-provider-firehydrant/pull/52))
+* resource/service: Fixed bug that prevented services from being removed from state when they had been deleted outside of Terraform ([#58](https://github.com/firehydrant/terraform-provider-firehydrant/pull/58))
+* resource/team: Fixed bug that prevented teams from being removed from state when they had been deleted outside of Terraform ([#58](https://github.com/firehydrant/terraform-provider-firehydrant/pull/58))
 * data_source/runbook_action: Fixed bug that caused the wrong action to be returned when multiple actions existed for the same slug ([#56](https://github.com/firehydrant/terraform-provider-firehydrant/pull/56))
 
 ENHANCEMENTS:
