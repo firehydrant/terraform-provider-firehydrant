@@ -75,6 +75,8 @@ func TestAccServiceResource_update(t *testing.T) {
 						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "labels.test1", fmt.Sprintf("test-label1-%s", rNameUpdated)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "links.#", "2"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "1"),
@@ -121,6 +123,8 @@ func TestAccServiceResource_updateLabels(t *testing.T) {
 						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rName)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "labels.test1", fmt.Sprintf("test-label1-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "links.#", "2"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "1"),
@@ -142,6 +146,8 @@ func TestAccServiceResource_updateLabels(t *testing.T) {
 						"firehydrant_service.test_service", "labels.test1", fmt.Sprintf("test-label1-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "labels.test2", fmt.Sprintf("test-label2-%s", rNameUpdated)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "links.#", "2"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "1"),
@@ -193,6 +199,8 @@ func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
 						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rName)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "labels.test1", fmt.Sprintf("test-label1-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "links.#", "2"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "1"),
@@ -212,6 +220,8 @@ func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
 						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "labels.test1", fmt.Sprintf("test-label1-%s", rNameUpdated)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "links.#", "2"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "1"),
@@ -231,6 +241,8 @@ func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
 						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "labels.test1", fmt.Sprintf("test-label1-%s", rNameUpdated)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "links.#", "2"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "1"),
@@ -334,6 +346,10 @@ func testAccCheckServiceResourceExistsWithAttributes_basic(resourceName string) 
 			return fmt.Errorf("Unexpected number of labels. Expected no labels, got: %v", len(serviceResponse.Labels))
 		}
 
+		if len(serviceResponse.Links) != 0 {
+			return fmt.Errorf("Unexpected number of links. Expected no links, got: %v", len(serviceResponse.Links))
+		}
+
 		if serviceResponse.Owner != nil {
 			return fmt.Errorf("Unexpected owner. Expected no owner ID, got: %s", serviceResponse.Owner.ID)
 		}
@@ -396,6 +412,11 @@ func testAccCheckServiceResourceExistsWithAttributes_update(resourceName string)
 			if serviceResource.Primary.Attributes[key] != labelValue {
 				return fmt.Errorf("Unexpected label. Expected %s:%s, got: %s:%s", labelKey, labelValue, labelKey, serviceResource.Primary.Attributes[key])
 			}
+		}
+
+		// TODO: check link attributes
+		if len(serviceResponse.Links) == 0 {
+			return fmt.Errorf("Unexpected number of links. Expected at least 1 link, got: %v", len(serviceResponse.Links))
 		}
 
 		if serviceResponse.Owner == nil {
@@ -474,13 +495,21 @@ resource "firehydrant_service" "test_service" {
   labels = {
     test1 = "test-label1-%s",
   }
+  links {
+    href_url = "https://example.com/test-link1-%s"
+    name = "test-link1-%s"
+  }
+  links {
+    href_url = "https://example.com/test-link2-%s"
+    name = "test-link2-%s"
+  }
   owner_id     = firehydrant_team.test_team1.id
   service_tier = "1"
   team_ids = [
     firehydrant_team.test_team2.id,
     firehydrant_team.test_team3.id
   ]
-}`, rName, rName, rName, rName, rName, rName)
+}`, rName, rName, rName, rName, rName, rName, rName, rName, rName, rName)
 }
 
 func testAccServiceResourceConfig_updateChangeLabels(rName string) string {
@@ -505,13 +534,21 @@ resource "firehydrant_service" "test_service" {
     test1 = "test-label1-%s",
     test2 = "test-label2-%s"
   }
+  links {
+    href_url = "https://example.com/test-link1-%s"
+    name = "test-link1-%s"
+  }
+  links {
+    href_url = "https://example.com/test-link2-%s"
+    name = "test-link2-%s"
+  }
   owner_id     = firehydrant_team.test_team1.id
   service_tier = "1"
   team_ids = [
     firehydrant_team.test_team2.id,
     firehydrant_team.test_team3.id
   ]
-}`, rName, rName, rName, rName, rName, rName, rName)
+}`, rName, rName, rName, rName, rName, rName, rName, rName, rName, rName, rName)
 }
 
 func testAccServiceResourceConfig_updateChangeOwnerIDAndTeamIDs(rName string) string {
@@ -535,11 +572,19 @@ resource "firehydrant_service" "test_service" {
   labels = {
     test1 = "test-label1-%s"
   }
+  links {
+    href_url = "https://example.com/test-link1-%s"
+    name = "test-link1-%s"
+  }
+  links {
+    href_url = "https://example.com/test-link2-%s"
+    name = "test-link2-%s"
+  }
   owner_id     = firehydrant_team.test_team2.id
   service_tier = "1"
   team_ids = [
     firehydrant_team.test_team1.id,
     firehydrant_team.test_team3.id
   ]
-}`, rName, rName, rName, rName, rName, rName)
+}`, rName, rName, rName, rName, rName, rName, rName, rName, rName, rName)
 }

@@ -13,10 +13,13 @@ func dataSourceService() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataFireHydrantService,
 		Schema: map[string]*schema.Schema{
+			// Required
 			"id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+
+			// Computed
 			"alert_on_add": {
 				Type:     schema.TypeBool,
 				Computed: true,
@@ -24,6 +27,27 @@ func dataSourceService() *schema.Resource {
 			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+			"labels": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
+			"links": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						// Computed
+						"href_url": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 			"name": {
 				Type:     schema.TypeString,
@@ -54,37 +78,49 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 
 	// Get the service
 	serviceID := d.Get("id").(string)
-	r, err := firehydrantAPIClient.Services().Get(ctx, serviceID)
+	serviceResponse, err := firehydrantAPIClient.Services().Get(ctx, serviceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	svc := map[string]interface{}{
-		"alert_on_add": r.AlertOnAdd,
-		"description":  r.Description,
-		"name":         r.Name,
-		"service_tier": r.ServiceTier,
+	// Set values in state
+	attributes := map[string]interface{}{
+		"alert_on_add": serviceResponse.AlertOnAdd,
+		"description":  serviceResponse.Description,
+		"labels":       serviceResponse.Labels,
+		"name":         serviceResponse.Name,
+		"service_tier": serviceResponse.ServiceTier,
 	}
 
 	// Process any attributes that could be nil
-	if r.Owner != nil {
-		svc["owner_id"] = r.Owner.ID
+	var links []interface{}
+	for _, currentLink := range serviceResponse.Links {
+		links = append(links, map[string]interface{}{
+			"href_url": currentLink.HrefURL,
+			"name":     currentLink.Name,
+		})
+	}
+	attributes["links"] = links
+
+	if serviceResponse.Owner != nil {
+		attributes["owner_id"] = serviceResponse.Owner.ID
 	}
 
 	var teamIDs []interface{}
-	for _, team := range r.Teams {
+	for _, team := range serviceResponse.Teams {
 		teamIDs = append(teamIDs, team.ID)
 	}
-	svc["team_ids"] = teamIDs
+	attributes["team_ids"] = teamIDs
 
 	// Set the data source attributes to the values we got from the API
-	for key, val := range svc {
-		if err := d.Set(key, val); err != nil {
+	for key, value := range attributes {
+		if err := d.Set(key, value); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	d.SetId(r.ID)
+	// Set the service's ID in state
+	d.SetId(serviceResponse.ID)
 
 	return diag.Diagnostics{}
 }

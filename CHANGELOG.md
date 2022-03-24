@@ -23,13 +23,16 @@ ENHANCEMENTS:
 * resource/service: Added the `alert_on_add` attribute to services ([#24](https://github.com/firehydrant/terraform-provider-firehydrant/pull/24))
 * resource/service: Added the `owner_id` attribute to services ([#23](https://github.com/firehydrant/terraform-provider-firehydrant/pull/23))
 * resource/service: Added the `team_ids` attribute to services ([#54](https://github.com/firehydrant/terraform-provider-firehydrant/pull/54))
+* resource/service: Added the `links` attribute to services ([#30](https://github.com/firehydrant/terraform-provider-firehydrant/pull/30))
 * data_source/functionality: Added the `service_ids` attribute to functionality ([#49](https://github.com/firehydrant/terraform-provider-firehydrant/pull/49))
 * data_source/service: Added the `alert_on_add` attribute to services ([#24](https://github.com/firehydrant/terraform-provider-firehydrant/pull/24))
 * data_source/service: Added the `owner_id` attribute to services ([#23](https://github.com/firehydrant/terraform-provider-firehydrant/pull/23))
 * data_source/service: Added the `team_ids` attribute to services ([#54](https://github.com/firehydrant/terraform-provider-firehydrant/pull/54))
+* data_source/service: Added the `links` and `labels` attributes to services ([#30](https://github.com/firehydrant/terraform-provider-firehydrant/pull/30))
 * data_source/services: Added the `alert_on_add` attribute to services ([#24](https://github.com/firehydrant/terraform-provider-firehydrant/pull/24))
 * data_source/services: Added the `owner_id` attribute to services ([#23](https://github.com/firehydrant/terraform-provider-firehydrant/pull/23))
 * data_source/services: Added the `team_ids` attribute to services ([#54](https://github.com/firehydrant/terraform-provider-firehydrant/pull/54))
+* data_source/services: Added the `links` and `labels` attributes to services ([#30](https://github.com/firehydrant/terraform-provider-firehydrant/pull/30))
 
 
 NOTES:

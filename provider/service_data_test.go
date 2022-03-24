@@ -48,6 +48,14 @@ func TestAccServiceDataSource_allAttributes(t *testing.T) {
 						"data.firehydrant_service.test_service", "alert_on_add", "true"),
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"data.firehydrant_service.test_service", "labels.test", fmt.Sprintf("test-label-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"data.firehydrant_service.test_service", "links.#", "2"),
+					resource.TestCheckResourceAttr(
+						"data.firehydrant_service.test_service", "links.0.name", fmt.Sprintf("test-link1-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"data.firehydrant_service.test_service", "links.0.href_url", fmt.Sprintf("https://example.com/test-link1-%s", rName)),
 					resource.TestCheckResourceAttrSet("data.firehydrant_service.test_service", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_service.test_service", "service_tier", "1"),
@@ -87,6 +95,20 @@ resource "firehydrant_service" "test_service" {
   name         = "test-service-%s"
   alert_on_add = true
   description  = "test-description-%s"
+  
+  labels = {
+    test = "test-label-%s"
+  }
+
+  links {
+    href_url = "https://example.com/test-link1-%s"
+    name = "test-link1-%s"
+  }
+  links {
+    href_url = "https://example.com/test-link2-%s"
+    name = "test-link2-%s"
+  }
+
   owner_id     = firehydrant_team.test_team1.id
   service_tier = "1"
   team_ids = [
@@ -97,5 +119,5 @@ resource "firehydrant_service" "test_service" {
 
 data "firehydrant_service" "test_service" {
   id = firehydrant_service.test_service.id
-}`, rName, rName, rName, rName, rName)
+}`, rName, rName, rName, rName, rName, rName, rName, rName, rName, rName)
 }
