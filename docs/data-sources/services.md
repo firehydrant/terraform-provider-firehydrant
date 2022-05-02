@@ -45,7 +45,7 @@ data "firehydrant_services" "managed-true-labeled-services" {
 ### Nested Schema for `services`
 
 - **id** (String, Read-only) The ID of the service.
-- **add_on_alert** (Boolean, Read-only) Indicates if FireHydrant should automatically create
+- **alert_on_add** (Boolean, Read-only) Indicates if FireHydrant should automatically create
   an alert based on the integrations set up for this service, if this service is added to an
   active incident. Defaults to `false`.
 - **description** (String, Read-only) A description for the service.

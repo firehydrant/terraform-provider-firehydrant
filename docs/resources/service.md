@@ -29,7 +29,7 @@ resource "firehydrant_team" "example-responder-team2" {
 
 resource "firehydrant_service" "example-service" {
   name         = "my-example-service"
-  add_on_alert = true
+  alert_on_add = true
   description  = "The main service for our company"
 
   labels = {
@@ -63,7 +63,7 @@ resource "firehydrant_service" "example-service" {
 
 ### Optional
 
-- **add_on_alert** (Boolean, Optional) Indicates if FireHydrant should automatically create 
+- **alert_on_add** (Boolean, Optional) Indicates if FireHydrant should automatically create 
   an alert based on the integrations set up for this service, if this service is added to an 
   active incident. Defaults to `false`.
 - **description** (String, Optional) A description for the service.
