@@ -12,7 +12,7 @@ resource "firehydrant_service" "web" {
 }
 
 resource "firehydrant_service" "frontend" {
-    name   = "web"
+    name   = "frontend"
     description = "The main web UI for our company"
     labels = {
       language = "javascript",
