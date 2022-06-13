@@ -95,6 +95,12 @@ type Client interface {
 	CreateSeverity(ctx context.Context, req CreateSeverityRequest) (*SeverityResponse, error)
 	UpdateSeverity(ctx context.Context, slug string, req UpdateSeverityRequest) (*SeverityResponse, error)
 	DeleteSeverity(ctx context.Context, slug string) error
+
+	// Priorities
+	GetPriority(ctx context.Context, slug string) (*PriorityResponse, error)
+	CreatePriority(ctx context.Context, req CreatePriorityRequest) (*PriorityResponse, error)
+	UpdatePriority(ctx context.Context, slug string, req UpdatePriorityRequest) (*PriorityResponse, error)
+	DeletePriority(ctx context.Context, slug string) error
 }
 
 // OptFunc is a function that sets a setting on a client
@@ -410,6 +416,69 @@ func (c *APIClient) DeleteSeverity(ctx context.Context, slug string) error {
 	response, err := c.client().Delete("severities/"+slug).Receive(nil, nil)
 	if err != nil {
 		return errors.Wrap(err, "could not delete severity")
+	}
+
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetPriority retrieves a priority from FireHydrant
+func (c *APIClient) GetPriority(ctx context.Context, slug string) (*PriorityResponse, error) {
+	sevResponse := &PriorityResponse{}
+	response, err := c.client().Get("priorities/"+slug).Receive(sevResponse, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get priority")
+	}
+
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
+	}
+
+	return sevResponse, nil
+}
+
+// CreatePriority creates a priority
+func (c *APIClient) CreatePriority(ctx context.Context, req CreatePriorityRequest) (*PriorityResponse, error) {
+	sevResponse := &PriorityResponse{}
+	response, err := c.client().Post("priorities").BodyJSON(&req).Receive(sevResponse, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not create priority")
+	}
+
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
+	}
+
+	return sevResponse, nil
+}
+
+// UpdatePriority updates a priority in FireHydrant
+func (c *APIClient) UpdatePriority(ctx context.Context, slug string, req UpdatePriorityRequest) (*PriorityResponse, error) {
+	sevResponse := &PriorityResponse{}
+	response, err := c.client().Patch("priorities/"+slug).BodyJSON(&req).Receive(sevResponse, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not update priority")
+	}
+
+	err = checkResponseStatusCode(response)
+	if err != nil {
+		return nil, err
+	}
+
+	return sevResponse, nil
+}
+
+// DeletePriority deletes a priority from FireHydrant
+func (c *APIClient) DeletePriority(ctx context.Context, slug string) error {
+	response, err := c.client().Delete("priorities/"+slug).Receive(nil, nil)
+	if err != nil {
+		return errors.Wrap(err, "could not delete priority")
 	}
 
 	err = checkResponseStatusCode(response)

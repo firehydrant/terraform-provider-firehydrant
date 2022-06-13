@@ -236,3 +236,27 @@ type UpdateSeverityRequest struct {
 	Slug        string `json:"slug,omitempty"`
 	Description string `json:"description,omitempty"`
 }
+
+// PriorityResponse is the payload for a single priority
+// URL: GET https://api.firehydrant.io/v1/priorities/{id}
+type PriorityResponse struct {
+	Slug        string `json:"slug"`
+	Description string `json:"description"`
+	Default     bool   `json:"default"`
+}
+
+// CreatePriorityRequest is the payload for creating a priority
+// URL: POST https://api.firehydrant.io/v1/priorities
+type CreatePriorityRequest struct {
+	Slug        string `json:"slug"`
+	Description string `json:"description"`
+	Default     bool   `json:"default"`
+}
+
+// UpdatePriorityRequest is the payload for updating a priority
+// URL: PATCH https://api.firehydrant.io/v1/priorities/{id}
+type UpdatePriorityRequest struct {
+	Slug        string `json:"slug,omitempty"`
+	Description string `json:"description,omitempty"`
+	Default     bool   `json:"default"`
+}
