@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -28,25 +27,26 @@ func resourcePriority() *schema.Resource {
 				Optional: true,
 			},
 			"default": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeBool,
 				Optional: true,
+				Default:  false,
 			},
 		},
 	}
 }
 
 func readResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	r, err := ac.GetPriority(ctx, d.Id())
+	firehydrantAPIClient := m.(firehydrant.Client)
+	serviceResponse, err := firehydrantAPIClient.GetPriority(ctx, d.Get("slug").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var ds diag.Diagnostics
-	svc := map[string]string{
-		"slug":        r.Slug,
-		"description": r.Description,
-		"default":     strconv.FormatBool(r.Default),
+	svc := map[string]interface{}{
+		"slug":        serviceResponse.Slug,
+		"description": serviceResponse.Description,
+		"default":     serviceResponse.Default,
 	}
 
 	for key, val := range svc {
@@ -60,12 +60,11 @@ func readResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData
 
 func createResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	ac := m.(firehydrant.Client)
-	slug, description, defaultV := d.Get("slug").(string), d.Get("description").(string), d.Get("default").(bool)
 
 	r := firehydrant.CreatePriorityRequest{
-		Slug:        slug,
-		Description: description,
-		Default:     defaultV,
+		Slug:        d.Get("slug").(string),
+		Description: d.Get("description").(string),
+		Default:     d.Get("default").(bool),
 	}
 
 	resource, err := ac.CreatePriority(ctx, r)

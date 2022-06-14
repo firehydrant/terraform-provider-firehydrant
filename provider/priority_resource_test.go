@@ -200,5 +200,6 @@ func testAccPriorityResourceConfig_update(rSlug string) string {
 resource "firehydrant_priority" "test_priority" {
   slug        = "test-priority-%s"
   description = "test-description-%s"
+  default     = true
 }`, rSlug, rSlug)
 }
