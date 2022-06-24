@@ -22,6 +22,7 @@ func resourcePriority() *schema.Resource {
 			"slug": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			// Optional
