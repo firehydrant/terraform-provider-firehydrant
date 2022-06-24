@@ -258,5 +258,5 @@ type CreatePriorityRequest struct {
 type UpdatePriorityRequest struct {
 	Slug        string `json:"slug,omitempty"`
 	Description string `json:"description"`
-	Default     bool   `json:"default,omitempty"`
+	Default     bool   `json:"default"`
 }
