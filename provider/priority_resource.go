@@ -2,6 +2,9 @@ package provider
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"regexp"
+	"strings"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -23,6 +26,20 @@ func resourcePriority() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+				DiffSuppressFunc: func(k string, oldValue string, newValue string, d *schema.ResourceData) bool {
+					// Slug is case-insensitive, so don't show a diff if the string are the same when compared
+					// in all lowercase
+					if strings.ToLower(oldValue) == strings.ToLower(newValue) {
+						return true
+					}
+					return false
+				},
+				ValidateDiagFunc: validation.ToDiagFunc(
+					validation.All(
+						validation.StringLenBetween(0, 23),
+						validation.StringMatch(regexp.MustCompile(`\A[[:alnum:]]+\z`), "must only include letters and numbers"),
+					),
+				),
 			},
 
 			// Optional

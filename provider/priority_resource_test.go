@@ -3,11 +3,11 @@ package provider
 import (
 	"context"
 	"fmt"
+	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -80,6 +80,25 @@ func TestAccPriorityResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_priority.test_priority", "default", "false"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccPriorityResource_validateSchemaAttributesSlug(t *testing.T) {
+	rSlug := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccPriorityResourceConfig_slugTooLong(rSlug),
+				ExpectError: regexp.MustCompile(`expected length of slug to be in the range (0 - 23), got 30"`),
+			},
+			{
+				Config:      testAccPriorityResourceConfig_slugWithInvalidCharacters(rSlug),
+				ExpectError: regexp.MustCompile(`invalid value for slug (must only include letters and numbers)`),
 			},
 		},
 	})
@@ -240,4 +259,18 @@ resource "firehydrant_priority" "test_priority" {
   description = "test-description-%s"
   default     = true
 }`, rSlug, rSlug)
+}
+
+func testAccPriorityResourceConfig_slugTooLong(rSlug string) string {
+	return fmt.Sprintf(`
+resource "firehydrant_priority" "test_priority" {
+  slug = "THISSLUGISWAYTOOLONG%s"
+}`, rSlug)
+}
+
+func testAccPriorityResourceConfig_slugWithInvalidCharacters(rSlug string) string {
+	return fmt.Sprintf(`
+resource "firehydrant_priority" "test_priority" {
+  slug = "INVALID-SLUG%s"
+}`, rSlug)
 }
