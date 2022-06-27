@@ -18,6 +18,7 @@ func resourceRunbook() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			// Required
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -26,6 +27,8 @@ func resourceRunbook() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+
+			// Optional
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -47,24 +50,27 @@ func resourceRunbook() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						// Required
+						"action_id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
 						"name": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"step_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"action_id": {
-							Type:     schema.TypeString,
-							Required: true,
+
+						// Optional
+						"automatic": {
+							Type:     schema.TypeBool,
+							Optional: true,
 						},
 						"config": {
 							Type:     schema.TypeMap,
 							Optional: true,
 						},
-						"automatic": {
-							Type:     schema.TypeBool,
+						"delation_duration": {
+							Type:     schema.TypeString,
 							Optional: true,
 						},
 						"repeats": {
@@ -75,9 +81,11 @@ func resourceRunbook() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"delation_duration": {
+
+						// Computed
+						"step_id": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 					},
 				},
@@ -87,173 +95,165 @@ func resourceRunbook() *schema.Resource {
 }
 
 func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	r, err := ac.Runbooks().Get(ctx, d.Id())
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
+
+	// Get the runbook
+	runbookID := d.Id()
+	runbookResponse, err := firehydrantAPIClient.Runbooks().Get(ctx, runbookID)
 	if err != nil {
+		_, isNotFoundError := err.(firehydrant.NotFound)
+		if isNotFoundError {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
-	if err != nil {
-		return diag.FromErr(err)
+	// Gather values from API response
+	attributes := map[string]interface{}{
+		"name":        runbookResponse.Name,
+		"description": runbookResponse.Description,
+		"type":        runbookResponse.Type,
 	}
 
-	var ds diag.Diagnostics
-	svc := map[string]string{
-		"name":        r.Name,
-		"description": r.Description,
-		"type":        r.Type,
-	}
+	steps := make([]interface{}, len(runbookResponse.Steps))
+	for index, currentStep := range runbookResponse.Steps {
+		stepConfig := map[string]interface{}{}
+		for key, value := range currentStep.Config {
+			stepConfig[key] = value
+		}
 
-	for key, val := range svc {
-		if err := d.Set(key, val); err != nil {
+		steps[index] = map[string]interface{}{
+			"step_id":   currentStep.StepID,
+			"name":      currentStep.Name,
+			"action_id": currentStep.ActionID,
+			"config":    stepConfig,
+			"automatic": currentStep.Automatic,
+		}
+	}
+	attributes["steps"] = steps
+
+	severities := make([]interface{}, len(runbookResponse.Severities))
+	for index, currentSeverity := range runbookResponse.Severities {
+		severities[index] = map[string]interface{}{
+			"id": currentSeverity.ID,
+		}
+	}
+	attributes["severities"] = severities
+
+	// Set the resource attributes to the values we got from the API
+	for key, value := range attributes {
+		if err := d.Set(key, value); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if err := convertRunbookToState(r, d); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return ds
+	return diag.Diagnostics{}
 }
 
 func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	name, description, typ := d.Get("name").(string), d.Get("description").(string), d.Get("type").(string)
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
-	r := firehydrant.CreateRunbookRequest{
-		Name:        name,
-		Description: description,
-		Type:        typ,
+	// Get attributes from config and construct the create request
+	createRequest := firehydrant.CreateRunbookRequest{
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
+		Type:        d.Get("type").(string),
 	}
 
+	// Process any optional attributes and add to the create request if necessary
 	steps := d.Get("steps").([]interface{})
-	for _, step := range steps {
-		s := step.(map[string]interface{})
+	for _, currentStep := range steps {
+		step := currentStep.(map[string]interface{})
 
-		r.Steps = append(r.Steps, firehydrant.RunbookStep{
-			Name:      s["name"].(string),
-			ActionID:  s["action_id"].(string),
-			Automatic: s["automatic"].(bool),
-			Config:    convertStringMap(s["config"].(map[string]interface{})),
+		createRequest.Steps = append(createRequest.Steps, firehydrant.RunbookStep{
+			Name:      step["name"].(string),
+			ActionID:  step["action_id"].(string),
+			Automatic: step["automatic"].(bool),
+			Config:    convertStringMap(step["config"].(map[string]interface{})),
 		})
 	}
 
 	severities := d.Get("severities").([]interface{})
-	for _, sev := range severities {
-		s := sev.(map[string]interface{})
+	for _, severity := range severities {
+		currentSeverity := severity.(map[string]interface{})
 
-		r.Severities = append(r.Severities, firehydrant.RunbookRelation{
-			ID: s["id"].(string),
+		createRequest.Severities = append(createRequest.Severities, firehydrant.RunbookRelation{
+			ID: currentSeverity["id"].(string),
 		})
 	}
 
-	resource, err := ac.Runbooks().Create(ctx, r)
+	// Create the new runbook
+	runbookResponse, err := firehydrantAPIClient.Runbooks().Create(ctx, createRequest)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resource.ID)
+	// Set the new runbook's ID in state
+	d.SetId(runbookResponse.ID)
 
-	attributes := map[string]interface{}{
-		"name":        resource.Name,
-		"type":        resource.Type,
-		"description": resource.Description,
-	}
-
-	if err := setAttributesFromMap(d, attributes); err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := convertRunbookToState(resource, d); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return diag.Diagnostics{}
+	// Update state with the latest information from the API
+	return readResourceFireHydrantRunbook(ctx, d, m)
 }
 
 func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	id := d.Id()
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
-	r := firehydrant.UpdateRunbookRequest{
-		Name:        name,
-		Description: description,
+	// Construct the update request
+	updateRequest := firehydrant.UpdateRunbookRequest{
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
 	}
 
+	// Process any optional attributes and add to the update request if necessary
 	steps := d.Get("steps").([]interface{})
-	for _, step := range steps {
-		s := step.(map[string]interface{})
+	for _, currentStep := range steps {
+		step := currentStep.(map[string]interface{})
 
-		r.Steps = append(r.Steps, firehydrant.RunbookStep{
-			Name:      s["name"].(string),
-			ActionID:  s["action_id"].(string),
-			Automatic: s["automatic"].(bool),
-			Config:    convertStringMap(s["config"].(map[string]interface{})),
+		updateRequest.Steps = append(updateRequest.Steps, firehydrant.RunbookStep{
+			Name:      step["name"].(string),
+			ActionID:  step["action_id"].(string),
+			Automatic: step["automatic"].(bool),
+			Config:    convertStringMap(step["config"].(map[string]interface{})),
 		})
 	}
 
 	severities := d.Get("severities").([]interface{})
-	for _, sev := range severities {
-		s := sev.(map[string]interface{})
+	for _, currentSeverity := range severities {
+		severity := currentSeverity.(map[string]interface{})
 
-		r.Severities = append(r.Severities, firehydrant.RunbookRelation{
-			ID: s["id"].(string),
+		updateRequest.Severities = append(updateRequest.Severities, firehydrant.RunbookRelation{
+			ID: severity["id"].(string),
 		})
 	}
 
-	_, err := ac.Runbooks().Update(ctx, id, r)
+	// Update the runbook
+	_, err := firehydrantAPIClient.Runbooks().Update(ctx, d.Id(), updateRequest)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return diag.Diagnostics{}
+	// Update state with the latest information from the API
+	return readResourceFireHydrantRunbook(ctx, d, m)
 }
 
 func deleteResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
-	err := ac.Runbooks().Delete(ctx, d.Id())
+	// Delete the runbook
+	runbookID := d.Id()
+	err := firehydrantAPIClient.Runbooks().Delete(ctx, runbookID)
 	if err != nil {
+		_, isNotFoundError := err.(firehydrant.NotFound)
+		if isNotFoundError {
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
-	d.SetId("")
 	return diag.Diagnostics{}
-}
-
-func convertRunbookToState(runbook *firehydrant.RunbookResponse, d *schema.ResourceData) error {
-	resourceSteps := make([]interface{}, len(runbook.Steps))
-	for index, s := range runbook.Steps {
-		stepConfig := map[string]interface{}{}
-		for k, v := range s.Config {
-			stepConfig[k] = v
-		}
-
-		resourceSteps[index] = map[string]interface{}{
-			"step_id":   s.StepID,
-			"name":      s.Name,
-			"action_id": s.ActionID,
-			"config":    stepConfig,
-			"automatic": s.Automatic,
-		}
-	}
-
-	if err := d.Set("steps", resourceSteps); err != nil {
-		return err
-	}
-
-	sevs := make([]interface{}, len(runbook.Severities))
-	for index, s := range runbook.Severities {
-		sevs[index] = map[string]interface{}{
-			"id": s.ID,
-		}
-	}
-	if err := d.Set("severities", sevs); err != nil {
-		return err
-	}
-
-	return nil
 }
