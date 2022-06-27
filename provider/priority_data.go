@@ -13,16 +13,19 @@ func dataSourcePriority() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataFireHydrantPriority,
 		Schema: map[string]*schema.Schema{
+			// Required
 			"slug": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
+			
+			// Computed
 			"default": {
 				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"description": {
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 		},
@@ -30,26 +33,31 @@ func dataSourcePriority() *schema.Resource {
 }
 
 func dataFireHydrantPriority(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	// Get the API client
 	firehydrantAPIClient := m.(firehydrant.Client)
+	
+	// Get the priority
 	slug := d.Get("slug").(string)
-
-	serviceResponse, err := firehydrantAPIClient.GetPriority(ctx, slug)
+	priorityResponse, err := firehydrantAPIClient.GetPriority(ctx, slug)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	env := map[string]interface{}{
-		"description": serviceResponse.Description,
-		"default":     serviceResponse.Default,
+	// Gather values from API response
+	attributes := map[string]interface{}{
+		"description": priorityResponse.Description,
+		"default":     priorityResponse.Default,
 	}
 
-	for key, val := range env {
+	// Set the data source attributes to the values we got from the API
+	for key, val := range attributes {
 		if err := d.Set(key, val); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	d.SetId(serviceResponse.Slug)
+	// Set the priority's ID in state
+	d.SetId(priorityResponse.Slug)
 
 	return diag.Diagnostics{}
 }

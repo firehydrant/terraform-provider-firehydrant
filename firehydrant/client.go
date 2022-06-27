@@ -428,8 +428,8 @@ func (c *APIClient) DeleteSeverity(ctx context.Context, slug string) error {
 
 // GetPriority retrieves a priority from FireHydrant
 func (c *APIClient) GetPriority(ctx context.Context, slug string) (*PriorityResponse, error) {
-	sevResponse := &PriorityResponse{}
-	response, err := c.client().Get("priorities/"+slug).Receive(sevResponse, nil)
+	priorityResponse := &PriorityResponse{}
+	response, err := c.client().Get("priorities/"+slug).Receive(priorityResponse, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get priority")
 	}
@@ -439,13 +439,13 @@ func (c *APIClient) GetPriority(ctx context.Context, slug string) (*PriorityResp
 		return nil, err
 	}
 
-	return sevResponse, nil
+	return priorityResponse, nil
 }
 
 // CreatePriority creates a priority
 func (c *APIClient) CreatePriority(ctx context.Context, req CreatePriorityRequest) (*PriorityResponse, error) {
-	sevResponse := &PriorityResponse{}
-	response, err := c.client().Post("priorities").BodyJSON(&req).Receive(sevResponse, nil)
+	priorityResponse := &PriorityResponse{}
+	response, err := c.client().Post("priorities").BodyJSON(&req).Receive(priorityResponse, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create priority")
 	}
@@ -455,13 +455,13 @@ func (c *APIClient) CreatePriority(ctx context.Context, req CreatePriorityReques
 		return nil, err
 	}
 
-	return sevResponse, nil
+	return priorityResponse, nil
 }
 
 // UpdatePriority updates a priority in FireHydrant
 func (c *APIClient) UpdatePriority(ctx context.Context, slug string, req UpdatePriorityRequest) (*PriorityResponse, error) {
-	sevResponse := &PriorityResponse{}
-	response, err := c.client().Patch("priorities/"+slug).BodyJSON(&req).Receive(sevResponse, nil)
+	priorityResponse := &PriorityResponse{}
+	response, err := c.client().Patch("priorities/"+slug).BodyJSON(&req).Receive(priorityResponse, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not update priority")
 	}
@@ -471,7 +471,7 @@ func (c *APIClient) UpdatePriority(ctx context.Context, slug string, req UpdateP
 		return nil, err
 	}
 
-	return sevResponse, nil
+	return priorityResponse, nil
 }
 
 // DeletePriority deletes a priority from FireHydrant

@@ -15,11 +15,13 @@ func TestAccPriorityDataSource_basic(t *testing.T) {
 			{
 				Config: testAccPriorityDataSourceConfig_basic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.firehydrant_priority.test_priority", "slug"),
+					resource.TestCheckResourceAttrSet("data.firehydrant_priority.test_priority", "id"),
 					resource.TestCheckResourceAttr(
-						"data.firehydrant_priority.test_priority", "description", "test priority"),
+						"data.firehydrant_priority.test_priority", "slug", "TESTPRIORITY"),
 					resource.TestCheckResourceAttr(
-						"data.firehydrant_priority.test_priority", "default", "false"),
+						"data.firehydrant_priority.test_priority", "description", "test-description"),
+					resource.TestCheckResourceAttr(
+						"data.firehydrant_priority.test_priority", "default", "true"),
 				),
 			},
 		},
@@ -28,9 +30,13 @@ func TestAccPriorityDataSource_basic(t *testing.T) {
 
 func testAccPriorityDataSourceConfig_basic() string {
 	return fmt.Sprintln(`
+resource "firehydrant_priority" "test_priority" {
+  slug        = "TESTPRIORITY"
+  description = "test-description"
+  default     = true
+}
+
 data "firehydrant_priority" "test_priority" {
-  slug          = "test_priority"
-  description   = "test priority"
-  default       = false
+  slug = firehydrant_priority.test_priority.id
 }`)
 }

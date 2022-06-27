@@ -257,6 +257,6 @@ type CreatePriorityRequest struct {
 // URL: PATCH https://api.firehydrant.io/v1/priorities/{id}
 type UpdatePriorityRequest struct {
 	Slug        string `json:"slug,omitempty"`
-	Description string `json:"description,omitempty"`
+	Description string `json:"description"`
 	Default     bool   `json:"default"`
 }

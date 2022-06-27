@@ -59,56 +59,65 @@ func readResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData
 }
 
 func createResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
-	r := firehydrant.CreatePriorityRequest{
+	// Get attributes from config and construct the create request
+	createRequest := firehydrant.CreatePriorityRequest{
+		Slug:        d.Get("slug").(string),
+		Default:     d.Get("default").(bool),
+		Description: d.Get("description").(string),
+	}
+
+	// Create the new service
+	priorityResponse, err := firehydrantAPIClient.CreatePriority(ctx, createRequest)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Set the new priority's ID in state
+	d.SetId(priorityResponse.Slug)
+
+	// Update state with the latest information from the API
+	return readResourceFireHydrantPriority(ctx, d, m)
+}
+
+func updateResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
+
+	// Construct the update request
+	updateRequest := firehydrant.UpdatePriorityRequest{
 		Slug:        d.Get("slug").(string),
 		Description: d.Get("description").(string),
 		Default:     d.Get("default").(bool),
 	}
 
-	resource, err := ac.CreatePriority(ctx, r)
+	// Update the priority
+	_, err := firehydrantAPIClient.UpdatePriority(ctx, d.Id(), updateRequest)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resource.Slug)
-
-	if err := d.Set("description", resource.Description); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return diag.Diagnostics{}
-}
-
-func updateResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	description := d.Get("description").(string)
-	defaultV := d.Get("default").(bool)
-	id := d.Id()
-	r := firehydrant.UpdatePriorityRequest{
-		Slug:        id,
-		Description: description,
-		Default:     defaultV,
-	}
-
-	_, err := ac.UpdatePriority(ctx, id, r)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return diag.Diagnostics{}
+	// Update state with the latest information from the API
+	return readResourceFireHydrantPriority(ctx, d, m)
 }
 
 func deleteResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	priorityID := d.Id()
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
-	err := ac.DeletePriority(ctx, priorityID)
+	// Delete the priority
+	priorityID := d.Id()
+	err := firehydrantAPIClient.DeletePriority(ctx, priorityID)
 	if err != nil {
+		_, isNotFoundError := err.(firehydrant.NotFound)
+		if isNotFoundError {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
-	d.SetId("")
 	return diag.Diagnostics{}
 }
