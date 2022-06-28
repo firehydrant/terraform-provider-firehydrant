@@ -1,6 +1,6 @@
 ---
 page_title: "FireHydrant Data Source: firehydrant_runbook"
-subcategory: ""
+subcategory: "Beta"
 ---
 
 # firehydrant_runbook Data Source

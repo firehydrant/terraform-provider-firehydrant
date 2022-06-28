@@ -1,6 +1,6 @@
 ---
 page_title: "FireHydrant Data Source: firehydrant_functionality"
-subcategory: ""
+subcategory: "Beta"
 ---
 
 # firehydrant_functionality Data Source

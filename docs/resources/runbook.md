@@ -1,6 +1,6 @@
 ---
 page_title: "FireHydrant Resource: firehydrant_runbook"
-subcategory: ""
+subcategory: "Beta"
 ---
 
 # firehydrant_runbook Resource

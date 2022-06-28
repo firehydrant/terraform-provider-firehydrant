@@ -1,6 +1,6 @@
 ---
 page_title: "FireHydrant Resource: firehydrant_severity"
-subcategory: ""
+subcategory: "Beta"
 ---
 
 # firehydrant_severity Resource
