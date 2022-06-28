@@ -18,44 +18,72 @@ func resourcePriority() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			// Required
 			"slug": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
+				DiffSuppressFunc: func(k string, oldValue string, newValue string, d *schema.ResourceData) bool {
+					// Slug is case-insensitive, so don't show a diff if the string are the same when compared
+					// in all lowercase
+					if strings.ToLower(oldValue) == strings.ToLower(newValue) {
+						return true
+					}
+					return false
+				},
+				ValidateDiagFunc: validation.ToDiagFunc(
+					validation.All(
+						validation.StringLenBetween(0, 23),
+						validation.StringMatch(regexp.MustCompile(`\A[[:alnum:]]+\z`), "must only include letters and numbers"),
+					),
+				),
 			},
-			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
+			
+			// Optional
 			"default": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 		},
 	}
 }
 
 func readResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	// Get the API client
 	firehydrantAPIClient := m.(firehydrant.Client)
-	serviceResponse, err := firehydrantAPIClient.GetPriority(ctx, d.Get("slug").(string))
+
+	// Get the priority
+	priorityID := d.Id()
+	priorityResponse, err := firehydrantAPIClient.GetPriority(ctx, priorityID)
 	if err != nil {
+		_, isNotFoundError := err.(firehydrant.NotFound)
+		if isNotFoundError {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
-	var ds diag.Diagnostics
-	svc := map[string]interface{}{
-		"slug":        serviceResponse.Slug,
-		"description": serviceResponse.Description,
-		"default":     serviceResponse.Default,
+	// Gather values from the API response
+	attributes := map[string]interface{}{
+		"slug":        priorityResponse.Slug,
+		"default":     priorityResponse.Default,
+		"description": priorityResponse.Description,
 	}
 
-	for key, val := range svc {
+	// Set the resource attributes to the values we got from the API
+	for key, val := range attributes {
 		if err := d.Set(key, val); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return ds
+	return diag.Diagnostics{}
 }
 
 func createResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
