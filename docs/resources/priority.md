@@ -7,6 +7,8 @@ description: |-
 
 # Resource `firehydrant_priority`
 
+## Example Usage
+
 Basic usage:
 
 ```hcl
