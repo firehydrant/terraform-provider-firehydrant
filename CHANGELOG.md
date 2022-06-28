@@ -1,5 +1,9 @@
 ## 0.2.1 (Unreleased)
 
+ENHANCEMENTS:
+
+* documentation: Refactored documentation to follow best practices, added descriptions for all arguments, and added configuration examples for all resources and data sources ([#69](https://github.com/firehydrant/terraform-provider-firehydrant/pull/69))
+
 ## 0.2.0
 
 BREAKING CHANGES: 
