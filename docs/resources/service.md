@@ -1,16 +1,16 @@
 ---
-page_title: "firehydrant_service Resource - terraform-provider-firehydrant"
+page_title: "FireHydrant Resource: firehydrant_service"
 subcategory: ""
-description: |-
-
 ---
 
-# Resource `firehydrant_service`
+# firehydrant_service Resource
+
+FireHydrant services are collections of functions that perform a targeted business operation.
+A service can be a microservice, a mono-repository, or a library that you maintain.
 
 ## Example Usage
 
 Basic usage:
-
 ```hcl
 resource "firehydrant_team" "example-owner-team" {
   name        = "my-example-owner-team"
@@ -28,16 +28,13 @@ resource "firehydrant_team" "example-responder-team2" {
 }
 
 resource "firehydrant_service" "example-service" {
-  name         = "my-example-service"
-  add_on_alert = true
-  description  = "The main service for our company"
+  name         = "example-service"
+  alert_on_add = true
+  description  = "This is an example service"
 
   labels = {
-    language  = "ruby",
+    language  = "go",
     lifecycle = "production"
-    system    = "main"
-    type      = "user"
-    tags      = "foo; bar; baz"
   }
 
   links {
@@ -55,31 +52,39 @@ resource "firehydrant_service" "example-service" {
 }
 ```
 
-## Schema
+## Argument Reference
 
-### Required
+The following arguments are supported:
 
-- **name** (String, Required) The name of the service.
-
-### Optional
-
-- **add_on_alert** (Boolean, Optional) Indicates if FireHydrant should automatically create 
-  an alert based on the integrations set up for this service, if this service is added to an 
+* `name` - (Required) The name of the service.
+* `alert_on_add` - (Optional) Indicates if FireHydrant should automatically create
+  an alert based on the integrations set up for this service, if this service is added to an
   active incident. Defaults to `false`.
-- **description** (String, Optional) A description for the service.
-- **labels** (Map of String, Optional) Key-value pairs associated with the service. Useful for 
+* `description` - (Optional) A description for the service.
+* `labels` - (Optional) Key-value pairs associated with the service. Useful for
   supporting searching and filtering of the service catalog.
-- **links** (Set of Map, Optional) Links associated with the service (see [below for nested schema](#nestedatt--links)).
-- **owner_id** (String, Optional) The ID of the team that owns this service.
-- **service_tier** (Integer, Optional) The service tier of this resource - between 1 - 5. 
+* `links` - (Optional) Links associated with the service
+* `owner_id` - (Optional) The ID of the team that owns this service.
+* `service_tier` - (Optional) The service tier of this resource - between 1 - 5.
   Lower values represent higher criticality. Defaults to `5`.
-- **team_ids** (Set of String, Optional) A set of IDs of the teams responsible for this service's incident response.
-<a id="nestedatt--links"></a>
-### Nested Schema for `links`
+* `team_ids` - (Optional) A set of IDs of the teams responsible for this service's incident
+  response.
 
-- **href_url** (String, Required) The URL to use for the link.
-- **name** (String, Required) The name of the link.
+The `links` block supports:
 
-### Read-only
+* `href_url` - (Required) The URL to use for the link.
+* `name` - (Required) The name of the link.
 
-- **id** (String, Read-only) The ID of the service.
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - The ID of the service.
+
+## Import
+
+Services can be imported; use `<SERVICE ID>` as the import ID. For example:
+
+```shell
+terraform import firehydrant_service.test 3638b647-b99c-5051-b715-eda2c912c42e
+```
