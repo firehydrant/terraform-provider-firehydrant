@@ -1,11 +1,14 @@
 ---
-page_title: "firehydrant_service Data Source - terraform-provider-firehydrant"
+page_title: "FireHydrant Data Source: firehydrant_service"
 subcategory: ""
-description: |-
-
 ---
 
-# Data Source `firehydrant_service`
+# firehydrant_service Data Source
+
+Use this data source to get information on services.
+
+FireHydrant services are collections of functions that perform a targeted business operation. 
+A service can be a microservice, a mono-repository, or a library that you maintain. 
 
 ## Example Usage
 
@@ -16,28 +19,32 @@ data "firehydrant_service" "example-service" {
 }
 ```
 
-## Schema
+## Argument Reference
 
-### Required
+The following arguments are supported:
 
-- **id** (String, Required) The ID of the service.
+* `id` - (Required) The ID of the service.
 
-### Read-only
+## Attributes Reference
 
-- **add_on_alert** (Boolean, Read-only) Indicates if FireHydrant should automatically create
-  an alert based on the integrations set up for this service, if this service is added to an
-  active incident. Defaults to `false`.
-- **description** (String, Read-only) A description for the service.
-- **labels** (Map of String, Read-only) Key-value pairs associated with the service. Useful for
-  supporting searching and filtering of the service catalog.
-- **links** (Set of Map, Read-only) Links associated with the service (see [below for nested schema](#nestedatt--links)).
-- **name** (String, Read-only) The name of the service.
-- **owner_id** (String, Read-only) The ID of the team that owns this service.
-- **service_tier** (Integer, Read-only) The service tier of this resource - between 1 - 5.
-  Lower values represent higher criticality. Defaults to `5`.
-- **team_ids** (Set of String, Optional) A set of IDs of the teams responsible for this service's incident response.
-<a id="nestedatt--links"></a>
-### Nested Schema for `links`
+In addition to all arguments above, the following attributes are exported:
 
-- **href_url** (String, Read-only) The URL to use for the link.
-- **name** (String, Read-only) The name of the link.
+* `id` - The ID of the service.
+* `alert_on_add` - Indicates if FireHydrant should automatically create an alert 
+  based on the integrations set up for this service, if this service is added to 
+  an active incident.
+* `description` - A description of the service.
+* `labels` - Key-value pairs associated with the service. Useful for supporting 
+  searching and filtering of the service catalog.
+* `links` - Links associated with the service
+* `name` - The name of the service.
+* `owner_id` - The ID of the team that owns this service.
+* `service_tier` - The service tier of this resource - between 1 - 5.
+  Lower values represent higher criticality.
+* `team_ids` - A set of IDs of the teams responsible for this service's incident 
+  response.
+
+The `links` block contains:
+
+* `href_url` - The URL for the link.
+* `name` - The name of the link.

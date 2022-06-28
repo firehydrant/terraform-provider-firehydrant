@@ -1,32 +1,36 @@
 ---
-page_title: "firehydrant_functionality Data Source - terraform-provider-firehydrant"
+page_title: "FireHydrant Data Source: firehydrant_functionality"
 subcategory: ""
-description: |-
-  
 ---
 
-# Data Source `firehydrant_functionality`
+# firehydrant_functionality Data Source
+
+Use this data source to get information on functionalities.
+
+A functionality (function) is a programming construct that performs a specific task. 
+FireHydrant functionalities let you associate backend services with the features your 
+end users interact with.
 
 ## Example Usage
 
 Basic usage:
-
 ```hcl
 data "firehydrant_functionality" "example-functionality" {
   functionality_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
 ```
 
-## Schema
+## Argument Reference
 
-### Required
+The following arguments are supported:
 
-- **functionality_id** (String, Required) The ID of the functionality.
+* `functionality_id` - (Required) The ID of the functionality.
 
-### Read-only
+## Attributes Reference
 
-- **id** (String, Read-only) The ID of the functionality.
-- **description** (String, Read-only)
-- **name** (String, Read-only) The name of the functionality.
-- **description** (String, Read-only) A description for the functionality.
-- **service_ids** (Set of String, Read-only) A set of IDs of the services this functionality is associated with.
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - The ID of the functionality.
+* `description` - A description of the functionality.
+* `name` - The name of the functionality.
+* `service_ids` - A set of IDs of the services this functionality is associated with.
