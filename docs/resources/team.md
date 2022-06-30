@@ -1,33 +1,40 @@
 ---
-page_title: "firehydrant_team Resource - terraform-provider-firehydrant"
+page_title: "FireHydrant Resource: firehydrant_team"
 subcategory: ""
-description: |-
-  
 ---
 
-# Resource `firehydrant_team`
+# firehydrant_team Resource
+
+FireHydrant teams are collections of people that can be assigned to incidents 
+and configured as owners of various resources, like services and runbooks.
 
 ## Example Usage
 
 Basic usage:
-
 ```hcl
 resource "firehydrant_team" "example-team" {
-  name        = "my-example-team"
+  name        = "example-team"
   description = "This is an example team"
 }
 ```
 
-## Schema
+## Argument Reference
 
-### Required
+The following arguments are supported:
 
-- **name** (String, Required) The name of the team.
+* `name` - (Required) The name of the team.
+* `description` - (Optional) A description for the team.
 
-### Optional
+## Attributes Reference
 
-- **description** (String, Optional) A description for the team.
+In addition to all arguments above, the following attributes are exported:
 
-### Read-only
+* `id` - The ID of the team.
 
-- **id** (String, Read-only) The ID of the team.
+## Import
+
+Teams can be imported; use `<TEAM ID>` as the import ID. For example:
+
+```shell
+terraform import firehydrant_team.test 3638b647-b99c-5051-b715-eda2c912c42e
+```

@@ -1,16 +1,17 @@
 ---
-page_title: "firehydrant_functionality Resource - terraform-provider-firehydrant"
-subcategory: ""
-description: |-
-  
+page_title: "FireHydrant Resource: firehydrant_functionality"
+subcategory: "Beta"
 ---
 
-# Resource `firehydrant_functionality`
+# firehydrant_functionality Resource
+
+A functionality (function) is a programming construct that performs a specific task.
+FireHydrant functionalities let you associate backend services with the features your
+end users interact with.
 
 ## Example Usage
 
 Basic usage:
-
 ```hcl
 resource "firehydrant_service" "example-service1" {
   name = "my-example-service1"
@@ -31,32 +32,35 @@ resource "firehydrant_functionality" "example-functionality" {
 }
 ```
 
-## Schema
+## Argument Reference
 
-### Required
+The following arguments are supported:
 
-- **name** (String, Required) The name of the functionality.
-
-### Optional
-
-- **description** (String, Optional) A description for the functionality.
-- **service_ids** (Set of String, Optional) A set of IDs of the services this functionality is associated with.
+* `name` - (Required) The name of the functionality.
+* `description` - (Optional) A description of the functionality.
+* `service_ids` - (Optional) A set of IDs of the services this functionality is associated with.
   This value _must not_ be provided if `services` is provided.
-- **services** (Block List, Optional) **Deprecated** The services this functionality is associated with 
-   (see [below for nested schema](#nestedblock--services)). This value _must not_ be provided if
-  `service_ids` is provided.
+* `services` - **Deprecated** Use `service_ids` instead. The services this functionality is associated with. 
+  This value _must not_ be provided if `service_ids` is provided.
 
-### Read-only
+**Deprecated** The `services` block supports:
 
-- **id** (String, Read-only) The ID of the functionality.
+* `id` - (Required) The ID of the service.
 
-<a id="nestedblock--services"></a>
-### Nested Schema for `services` (Deprecated)
+## Attributes Reference
 
-Required:
+In addition to all arguments above, the following attributes are exported:
 
-- **id** (String, Required) The ID of the service.
+* `id` - The ID of the functionality.
 
-Read-only:
+**Deprecated** The `services` block contains:
 
-- **name** (String, Read-only) The name of the service.
+* `id` - The ID of the service.
+
+## Import
+
+Functionalities can be imported; use `<FUNCTIONALITY ID>` as the import ID. For example:
+
+```shell
+terraform import firehydrant_functionality.test 3638b647-b99c-5051-b715-eda2c912c42e
+```
