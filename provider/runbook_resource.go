@@ -2,8 +2,11 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -104,14 +107,20 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 
 	// Get the runbook
 	runbookID := d.Id()
+	tflog.Debug(ctx, fmt.Sprintf("Read runbook: %s", runbookID), map[string]interface{}{
+		"id": runbookID,
+	})
 	runbookResponse, err := firehydrantAPIClient.Runbooks().Get(ctx, runbookID)
 	if err != nil {
 		_, isNotFoundError := err.(firehydrant.NotFound)
 		if isNotFoundError {
+			tflog.Debug(ctx, fmt.Sprintf("Runbook %s no longer exists", runbookID), map[string]interface{}{
+				"id": runbookID,
+			})
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(err)
+		return diag.Errorf("Error reading runbook %s: %v", runbookID, err)
 	}
 
 	// Gather values from API response
@@ -155,7 +164,7 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 	// Set the resource attributes to the values we got from the API
 	for key, value := range attributes {
 		if err := d.Set(key, value); err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf("Error setting %s for runbook %s: %v", key, runbookID, err)
 		}
 	}
 
@@ -200,9 +209,12 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Create the new runbook
+	tflog.Debug(ctx, fmt.Sprintf("Create runbook: %s", createRequest.Name), map[string]interface{}{
+		"name": createRequest.Name,
+	})
 	runbookResponse, err := firehydrantAPIClient.Runbooks().Create(ctx, createRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error creating runbook %s: %v", createRequest.Name, err)
 	}
 
 	// Set the new runbook's ID in state
@@ -250,9 +262,12 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Update the runbook
+	tflog.Debug(ctx, fmt.Sprintf("Update runbook: %s", d.Id()), map[string]interface{}{
+		"id": d.Id(),
+	})
 	_, err := firehydrantAPIClient.Runbooks().Update(ctx, d.Id(), updateRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error updating runbook %s: %v", d.Id(), err)
 	}
 
 	// Update state with the latest information from the API
@@ -265,13 +280,16 @@ func deleteResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 
 	// Delete the runbook
 	runbookID := d.Id()
+	tflog.Debug(ctx, fmt.Sprintf("Delete runbook: %s", runbookID), map[string]interface{}{
+		"id": runbookID,
+	})
 	err := firehydrantAPIClient.Runbooks().Delete(ctx, runbookID)
 	if err != nil {
 		_, isNotFoundError := err.(firehydrant.NotFound)
 		if isNotFoundError {
 			return nil
 		}
-		return diag.FromErr(err)
+		return diag.Errorf("Error deleting runbook %s: %v", runbookID, err)
 	}
 
 	return diag.Diagnostics{}

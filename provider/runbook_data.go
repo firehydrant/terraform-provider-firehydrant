@@ -2,9 +2,11 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -43,9 +45,12 @@ func dataFireHydrantRunbook(ctx context.Context, d *schema.ResourceData, m inter
 
 	// Get the runbook
 	runbookID := d.Get("id").(string)
+	tflog.Debug(ctx, fmt.Sprintf("Read runbook: %s", runbookID), map[string]interface{}{
+		"id": runbookID,
+	})
 	runbookResponse, err := firehydrantAPIClient.Runbooks().Get(ctx, runbookID)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error reading runbook %s: %v", runbookID, err)
 	}
 
 	// Gather values from API response
@@ -61,7 +66,7 @@ func dataFireHydrantRunbook(ctx context.Context, d *schema.ResourceData, m inter
 	// Set the data source attributes to the values we got from the API
 	for key, value := range attributes {
 		if err := d.Set(key, value); err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf("Error setting %s for runbook %s: %v", key, runbookID, err)
 		}
 	}
 
