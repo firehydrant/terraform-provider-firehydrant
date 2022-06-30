@@ -94,11 +94,11 @@ func TestAccPriorityResource_validateSchemaAttributesSlug(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccPriorityResourceConfig_slugTooLong(rSlug),
-				ExpectError: regexp.MustCompile(`expected length of slug to be in the range (0 - 23)`),
+				ExpectError: regexp.MustCompile(`expected length of slug to be in the range \(0 - 23\)`),
 			},
 			{
 				Config:      testAccPriorityResourceConfig_slugWithInvalidCharacters(rSlug),
-				ExpectError: regexp.MustCompile(`invalid value for slug (must only include letters and numbers)`),
+				ExpectError: regexp.MustCompile(`invalid value for slug \(must only include letters and numbers\)`),
 			},
 		},
 	})
