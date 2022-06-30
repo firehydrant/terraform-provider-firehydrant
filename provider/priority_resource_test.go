@@ -98,7 +98,7 @@ func TestAccPriorityResource_validateSchemaAttributesSlug(t *testing.T) {
 			},
 			{
 				Config:      testAccPriorityResourceConfig_slugWithInvalidCharacters(rSlug),
-				ExpectError: regexp.MustCompile(`invalid value for slug (must only include letters and numbers)`),
+				ExpectError: regexp.MustCompile(`invalid value for slug \(must only include letters and numbers\)`),
 			},
 		},
 	})
