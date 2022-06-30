@@ -41,7 +41,7 @@ func resourcePriority() *schema.Resource {
 					),
 				),
 			},
-			
+
 			// Optional
 			"default": {
 				Type:     schema.TypeBool,
@@ -144,7 +144,6 @@ func deleteResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		_, isNotFoundError := err.(firehydrant.NotFound)
 		if isNotFoundError {
-			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
