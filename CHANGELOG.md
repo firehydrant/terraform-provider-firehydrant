@@ -1,3 +1,10 @@
+## 0.3.0 (Unreleased)
+
+ENHANCEMENTS:
+
+* **New Resource:** `firehydrant_priority` ([#65](https://github.com/firehydrant/terraform-provider-firehydrant/pull/65))
+* **New Data Source:** `firehydrant_priority` ([#65](https://github.com/firehydrant/terraform-provider-firehydrant/pull/65))
+
 ## 0.2.1
 
 ENHANCEMENTS:
@@ -39,7 +46,6 @@ ENHANCEMENTS:
 * data_source/services: Added the `owner_id` attribute to services ([#23](https://github.com/firehydrant/terraform-provider-firehydrant/pull/23))
 * data_source/services: Added the `team_ids` attribute to services ([#54](https://github.com/firehydrant/terraform-provider-firehydrant/pull/54))
 * data_source/services: Added the `links` and `labels` attributes to services ([#30](https://github.com/firehydrant/terraform-provider-firehydrant/pull/30))
-
 
 NOTES:
 
