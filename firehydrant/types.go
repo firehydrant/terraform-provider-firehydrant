@@ -37,6 +37,17 @@ type CreateServiceRequest struct {
 	Teams       []ServiceTeam     `json:"teams,omitempty"`
 }
 
+// RunbookTeam represents a team when creating a runbook
+type RunbookTeam struct {
+	ID          string `json:"id"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 // ServiceTeam represents a team when creating a service
 type ServiceTeam struct {
 	ID          string `json:"id"`

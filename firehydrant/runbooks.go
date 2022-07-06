@@ -11,9 +11,10 @@ import (
 // CreateRunbookRequest is the payload for creating a service
 // URL: POST https://api.firehydrant.io/v1/runbooks
 type CreateRunbookRequest struct {
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Description string `json:"description"`
+	Name        string       `json:"name"`
+	Type        string       `json:"type"`
+	Description string       `json:"description"`
+	Owner       *RunbookTeam `json:"owner,omitempty"`
 
 	Severities []RunbookRelation `json:"severities"`
 
@@ -42,6 +43,7 @@ type RunbookStep struct {
 type UpdateRunbookRequest struct {
 	Name        string            `json:"name,omitempty"`
 	Description string            `json:"description,omitempty"`
+	Owner       *RunbookTeam      `json:"owner,omitempty"`
 	Steps       []RunbookStep     `json:"steps,omitempty"`
 	Severities  []RunbookRelation `json:"severities"`
 }
@@ -53,6 +55,7 @@ type RunbookResponse struct {
 	Name        string        `json:"name"`
 	Type        string        `json:"type"`
 	Description string        `json:"description"`
+	Owner       *RunbookTeam  `json:"owner"`
 	Steps       []RunbookStep `json:"steps"`
 
 	Severities []RunbookRelation `json:"severities"`

@@ -45,6 +45,7 @@ The following arguments are supported:
 * `type` - (Required) The type of the runbook. Valid values are 
   `incident`, `general`, `infrastructure`, and `incident_role`.
 * `description` - (Optional) A description of the runbook.
+* `owner_id` - (Optional) The ID of the team that owns this runbook.
 * `severities` - (Optional) Severities to associate with the runbook.
 * `steps` - (Optional) Steps to add to the runbook.
 

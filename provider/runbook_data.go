@@ -29,6 +29,10 @@ func dataSourceRunbook() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -48,6 +52,10 @@ func dataFireHydrantRunbook(ctx context.Context, d *schema.ResourceData, m inter
 	attributes := map[string]interface{}{
 		"description": runbookResponse.Description,
 		"name":        runbookResponse.Name,
+	}
+
+	if runbookResponse.Owner != nil {
+		attributes["owner_id"] = runbookResponse.Owner.ID
 	}
 
 	// Set the data source attributes to the values we got from the API
