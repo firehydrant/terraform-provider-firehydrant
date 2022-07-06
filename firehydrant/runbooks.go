@@ -112,19 +112,6 @@ func (c *RESTRunbooksClient) Create(ctx context.Context, createReq CreateRunbook
 		return nil, err
 	}
 
-	runbookResponse, err = c.Update(ctx, runbookResponse.ID, UpdateRunbookRequest{
-		Steps:      createReq.Steps,
-		Severities: createReq.Severities,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "could not update created runbook")
-	}
-
-	err = checkResponseStatusCode(response)
-	if err != nil {
-		return nil, err
-	}
-
 	return runbookResponse, nil
 }
 
