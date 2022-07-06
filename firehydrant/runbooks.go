@@ -86,12 +86,13 @@ func (c *RESTRunbooksClient) restClient() *sling.Sling {
 // Get returns a runbook from the FireHydrant API
 func (c *RESTRunbooksClient) Get(ctx context.Context, id string) (*RunbookResponse, error) {
 	runbookResponse := &RunbookResponse{}
-	response, err := c.restClient().Get("runbooks/"+id).Receive(runbookResponse, nil)
+	apiError := &APIError{}
+	response, err := c.restClient().Get("runbooks/"+id).Receive(runbookResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get runbook")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -102,12 +103,13 @@ func (c *RESTRunbooksClient) Get(ctx context.Context, id string) (*RunbookRespon
 // Create creates a brand spankin new runbook in FireHydrant
 func (c *RESTRunbooksClient) Create(ctx context.Context, createReq CreateRunbookRequest) (*RunbookResponse, error) {
 	runbookResponse := &RunbookResponse{}
-	response, err := c.restClient().Post("runbooks").BodyJSON(&createReq).Receive(runbookResponse, nil)
+	apiError := &APIError{}
+	response, err := c.restClient().Post("runbooks").BodyJSON(&createReq).Receive(runbookResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create runbook")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -118,12 +120,13 @@ func (c *RESTRunbooksClient) Create(ctx context.Context, createReq CreateRunbook
 // Update updates a runbook in FireHydrant
 func (c *RESTRunbooksClient) Update(ctx context.Context, id string, updateReq UpdateRunbookRequest) (*RunbookResponse, error) {
 	runbookResponse := &RunbookResponse{}
-	response, err := c.restClient().Put("runbooks/"+id).BodyJSON(updateReq).Receive(runbookResponse, nil)
+	apiError := &APIError{}
+	response, err := c.restClient().Put("runbooks/"+id).BodyJSON(updateReq).Receive(runbookResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not update runbook")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -132,12 +135,13 @@ func (c *RESTRunbooksClient) Update(ctx context.Context, id string, updateReq Up
 }
 
 func (c *RESTRunbooksClient) Delete(ctx context.Context, id string) error {
-	response, err := c.restClient().Delete("runbooks/"+id).Receive(nil, nil)
+	apiError := &APIError{}
+	response, err := c.restClient().Delete("runbooks/"+id).Receive(nil, apiError)
 	if err != nil {
 		return errors.Wrap(err, "could not delete runbook")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return err
 	}

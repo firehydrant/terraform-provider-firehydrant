@@ -32,9 +32,7 @@ func (err NotFound) Error() string {
 // checkResponseStatusCode checks to see if the response's status
 // code corresponds to an error or not. An error is returned for
 // all status codes 300 and above
-// TODO: parse response body for other errors so we can return
-//       details error messages from the API
-func checkResponseStatusCode(response *http.Response) error {
+func checkResponseStatusCode(response *http.Response, apiError *APIError) error {
 	switch code := response.StatusCode; {
 	case code >= 200 && code <= 299:
 		return nil
@@ -43,7 +41,7 @@ func checkResponseStatusCode(response *http.Response) error {
 	case code == 401:
 		return errors.New("invalid api key")
 	default:
-		return errors.New("request failed with error")
+		return fmt.Errorf("%d request failed with error\n%s", code, apiError)
 	}
 }
 
@@ -146,12 +144,13 @@ func (c *APIClient) client() *sling.Sling {
 // Ping hits and verifies the HTTP of FireHydrant
 func (c *APIClient) Ping(ctx context.Context) (*PingResponse, error) {
 	pingResponse := &PingResponse{}
-	response, err := c.client().Get("ping").Receive(pingResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Get("ping").Receive(pingResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not ping")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -177,12 +176,13 @@ func (c *APIClient) RunbookActions() RunbookActionsClient {
 // GetEnvironment retrieves an environment from FireHydrant
 func (c *APIClient) GetEnvironment(ctx context.Context, id string) (*EnvironmentResponse, error) {
 	envResponse := &EnvironmentResponse{}
-	response, err := c.client().Get("environments/"+id).Receive(envResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Get("environments/"+id).Receive(envResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get environment")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -193,12 +193,13 @@ func (c *APIClient) GetEnvironment(ctx context.Context, id string) (*Environment
 // CreateEnvironment creates an environment in FireHydrant
 func (c *APIClient) CreateEnvironment(ctx context.Context, req CreateEnvironmentRequest) (*EnvironmentResponse, error) {
 	envResponse := &EnvironmentResponse{}
-	response, err := c.client().Post("environments").BodyJSON(&req).Receive(envResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Post("environments").BodyJSON(&req).Receive(envResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create environment")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -209,12 +210,13 @@ func (c *APIClient) CreateEnvironment(ctx context.Context, req CreateEnvironment
 // UpdateEnvironment updates a environment in FireHydrant
 func (c *APIClient) UpdateEnvironment(ctx context.Context, id string, req UpdateEnvironmentRequest) (*EnvironmentResponse, error) {
 	envResponse := &EnvironmentResponse{}
-	response, err := c.client().Patch("environments/"+id).BodyJSON(&req).Receive(envResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Patch("environments/"+id).BodyJSON(&req).Receive(envResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not update environment")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -224,12 +226,13 @@ func (c *APIClient) UpdateEnvironment(ctx context.Context, id string, req Update
 
 // DeleteEnvironment deletes a environment from FireHydrant
 func (c *APIClient) DeleteEnvironment(ctx context.Context, id string) error {
-	response, err := c.client().Delete("environments/"+id).Receive(nil, nil)
+	apiError := &APIError{}
+	response, err := c.client().Delete("environments/"+id).Receive(nil, apiError)
 	if err != nil {
 		return errors.Wrap(err, "could not delete environment")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return err
 	}
@@ -240,12 +243,13 @@ func (c *APIClient) DeleteEnvironment(ctx context.Context, id string) error {
 // GetFunctionality retrieves a functionality from FireHydrant
 func (c *APIClient) GetFunctionality(ctx context.Context, id string) (*FunctionalityResponse, error) {
 	funcResponse := &FunctionalityResponse{}
-	response, err := c.client().Get("functionalities/"+id).Receive(funcResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Get("functionalities/"+id).Receive(funcResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get functionality")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -256,12 +260,13 @@ func (c *APIClient) GetFunctionality(ctx context.Context, id string) (*Functiona
 // CreateFunctionality creates a functionality in FireHydrant
 func (c *APIClient) CreateFunctionality(ctx context.Context, req CreateFunctionalityRequest) (*FunctionalityResponse, error) {
 	funcResponse := &FunctionalityResponse{}
-	response, err := c.client().Post("functionalities").BodyJSON(&req).Receive(funcResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Post("functionalities").BodyJSON(&req).Receive(funcResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create functionality")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -272,12 +277,13 @@ func (c *APIClient) CreateFunctionality(ctx context.Context, req CreateFunctiona
 // UpdateFunctionality updates a functionality in FireHydrant
 func (c *APIClient) UpdateFunctionality(ctx context.Context, id string, req UpdateFunctionalityRequest) (*FunctionalityResponse, error) {
 	funcResponse := &FunctionalityResponse{}
-	response, err := c.client().Patch("functionalities/"+id).BodyJSON(&req).Receive(funcResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Patch("functionalities/"+id).BodyJSON(&req).Receive(funcResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not update functionality")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -287,12 +293,13 @@ func (c *APIClient) UpdateFunctionality(ctx context.Context, id string, req Upda
 
 // DeleteFunctionality deletes a functionality from FireHydrant
 func (c *APIClient) DeleteFunctionality(ctx context.Context, id string) error {
-	response, err := c.client().Delete("functionalities/"+id).Receive(nil, nil)
+	apiError := &APIError{}
+	response, err := c.client().Delete("functionalities/"+id).Receive(nil, apiError)
 	if err != nil {
 		return errors.Wrap(err, "could not delete functionality")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return err
 	}
@@ -303,12 +310,13 @@ func (c *APIClient) DeleteFunctionality(ctx context.Context, id string) error {
 // GetTeam retrieves a team from FireHydrant
 func (c *APIClient) GetTeam(ctx context.Context, id string) (*TeamResponse, error) {
 	teamResponse := &TeamResponse{}
-	response, err := c.client().Get("teams/"+id).Receive(teamResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Get("teams/"+id).Receive(teamResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get team")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -319,12 +327,13 @@ func (c *APIClient) GetTeam(ctx context.Context, id string) (*TeamResponse, erro
 // CreateTeam creates a team in FireHydrant
 func (c *APIClient) CreateTeam(ctx context.Context, req CreateTeamRequest) (*TeamResponse, error) {
 	teamResponse := &TeamResponse{}
-	response, err := c.client().Post("teams").BodyJSON(&req).Receive(teamResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Post("teams").BodyJSON(&req).Receive(teamResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create team")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -335,12 +344,13 @@ func (c *APIClient) CreateTeam(ctx context.Context, req CreateTeamRequest) (*Tea
 // UpdateTeam updates a team in FireHydrant
 func (c *APIClient) UpdateTeam(ctx context.Context, id string, req UpdateTeamRequest) (*TeamResponse, error) {
 	teamResponse := &TeamResponse{}
-	response, err := c.client().Patch("teams/"+id).BodyJSON(&req).Receive(teamResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Patch("teams/"+id).BodyJSON(&req).Receive(teamResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not update team")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -350,12 +360,13 @@ func (c *APIClient) UpdateTeam(ctx context.Context, id string, req UpdateTeamReq
 
 // DeleteTeam deletes a team from FireHydrant
 func (c *APIClient) DeleteTeam(ctx context.Context, id string) error {
-	response, err := c.client().Delete("teams/"+id).Receive(nil, nil)
+	apiError := &APIError{}
+	response, err := c.client().Delete("teams/"+id).Receive(nil, apiError)
 	if err != nil {
 		return errors.Wrap(err, "could not delete team")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return err
 	}
@@ -366,12 +377,13 @@ func (c *APIClient) DeleteTeam(ctx context.Context, id string) error {
 // GetSeverity retrieves a severity from FireHydrant
 func (c *APIClient) GetSeverity(ctx context.Context, slug string) (*SeverityResponse, error) {
 	sevResponse := &SeverityResponse{}
-	response, err := c.client().Get("severities/"+slug).Receive(sevResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Get("severities/"+slug).Receive(sevResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get severity")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -382,12 +394,13 @@ func (c *APIClient) GetSeverity(ctx context.Context, slug string) (*SeverityResp
 // CreateSeverity creates a severity
 func (c *APIClient) CreateSeverity(ctx context.Context, req CreateSeverityRequest) (*SeverityResponse, error) {
 	sevResponse := &SeverityResponse{}
-	response, err := c.client().Post("severities").BodyJSON(&req).Receive(sevResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Post("severities").BodyJSON(&req).Receive(sevResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create severity")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -398,12 +411,13 @@ func (c *APIClient) CreateSeverity(ctx context.Context, req CreateSeverityReques
 // UpdateSeverity updates a severity in FireHydrant
 func (c *APIClient) UpdateSeverity(ctx context.Context, slug string, req UpdateSeverityRequest) (*SeverityResponse, error) {
 	sevResponse := &SeverityResponse{}
-	response, err := c.client().Patch("severities/"+slug).BodyJSON(&req).Receive(sevResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Patch("severities/"+slug).BodyJSON(&req).Receive(sevResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not update severity")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -413,12 +427,13 @@ func (c *APIClient) UpdateSeverity(ctx context.Context, slug string, req UpdateS
 
 // DeleteSeverity deletes a severity from FireHydrant
 func (c *APIClient) DeleteSeverity(ctx context.Context, slug string) error {
-	response, err := c.client().Delete("severities/"+slug).Receive(nil, nil)
+	apiError := &APIError{}
+	response, err := c.client().Delete("severities/"+slug).Receive(nil, apiError)
 	if err != nil {
 		return errors.Wrap(err, "could not delete severity")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return err
 	}
@@ -429,12 +444,13 @@ func (c *APIClient) DeleteSeverity(ctx context.Context, slug string) error {
 // GetPriority retrieves a priority from FireHydrant
 func (c *APIClient) GetPriority(ctx context.Context, slug string) (*PriorityResponse, error) {
 	priorityResponse := &PriorityResponse{}
-	response, err := c.client().Get("priorities/"+slug).Receive(priorityResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Get("priorities/"+slug).Receive(priorityResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get priority")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -445,12 +461,13 @@ func (c *APIClient) GetPriority(ctx context.Context, slug string) (*PriorityResp
 // CreatePriority creates a priority
 func (c *APIClient) CreatePriority(ctx context.Context, req CreatePriorityRequest) (*PriorityResponse, error) {
 	priorityResponse := &PriorityResponse{}
-	response, err := c.client().Post("priorities").BodyJSON(&req).Receive(priorityResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Post("priorities").BodyJSON(&req).Receive(priorityResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create priority")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -461,12 +478,13 @@ func (c *APIClient) CreatePriority(ctx context.Context, req CreatePriorityReques
 // UpdatePriority updates a priority in FireHydrant
 func (c *APIClient) UpdatePriority(ctx context.Context, slug string, req UpdatePriorityRequest) (*PriorityResponse, error) {
 	priorityResponse := &PriorityResponse{}
-	response, err := c.client().Patch("priorities/"+slug).BodyJSON(&req).Receive(priorityResponse, nil)
+	apiError := &APIError{}
+	response, err := c.client().Patch("priorities/"+slug).BodyJSON(&req).Receive(priorityResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not update priority")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -476,12 +494,13 @@ func (c *APIClient) UpdatePriority(ctx context.Context, slug string, req UpdateP
 
 // DeletePriority deletes a priority from FireHydrant
 func (c *APIClient) DeletePriority(ctx context.Context, slug string) error {
-	response, err := c.client().Delete("priorities/"+slug).Receive(nil, nil)
+	apiError := &APIError{}
+	response, err := c.client().Delete("priorities/"+slug).Receive(nil, apiError)
 	if err != nil {
 		return errors.Wrap(err, "could not delete priority")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return err
 	}
