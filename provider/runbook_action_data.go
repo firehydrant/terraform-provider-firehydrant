@@ -2,9 +2,11 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -48,9 +50,14 @@ func dataFireHydrantRunbookAction(ctx context.Context, d *schema.ResourceData, m
 	runbookType := d.Get("type").(string)
 	actionSlug := d.Get("slug").(string)
 	integrationSlug := d.Get("integration_slug").(string)
+	tflog.Debug(ctx, fmt.Sprintf("Read runbook action: %s:%s", integrationSlug, actionSlug), map[string]interface{}{
+		"type":             runbookType,
+		"slug":             actionSlug,
+		"integration_slug": integrationSlug,
+	})
 	runbookActionResponse, err := firehydrantAPIClient.RunbookActions().Get(ctx, runbookType, integrationSlug, actionSlug)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error reading runbook action %s:%s: %v", integrationSlug, actionSlug, err)
 	}
 
 	// Update the attributes in state to the values we got from the API
@@ -65,7 +72,7 @@ func dataFireHydrantRunbookAction(ctx context.Context, d *schema.ResourceData, m
 
 	for key, value := range attributes {
 		if err := d.Set(key, value); err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf("Error setting %s for runbook action %s:%s: %v", key, integrationSlug, actionSlug, err)
 		}
 	}
 
