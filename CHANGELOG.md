@@ -1,11 +1,17 @@
 ## 0.3.0 (Unreleased)
 
-ENHANCEMENTS:
+FEATURES:
 
 * **New Resource:** `firehydrant_priority` ([#65](https://github.com/firehydrant/terraform-provider-firehydrant/pull/65))
 * **New Data Source:** `firehydrant_priority` ([#65](https://github.com/firehydrant/terraform-provider-firehydrant/pull/65))
-* data_source/runbook: Added the `owner_id` attribute to runbook ([#76](https://github.com/firehydrant/terraform-provider-firehydrant/pull/76))
+
+ENHANCEMENTS:
+
+* resource/runbook: Added logging ([#74](https://github.com/firehydrant/terraform-provider-firehydrant/pull/74))
 * resource/runbook: Added the `owner_id` attribute to runbook ([#76](https://github.com/firehydrant/terraform-provider-firehydrant/pull/76))
+* data_source/runbook: Added logging ([#74](https://github.com/firehydrant/terraform-provider-firehydrant/pull/74))
+* data_source/runbook: Added the `owner_id` attribute to runbook ([#76](https://github.com/firehydrant/terraform-provider-firehydrant/pull/76))
+* data_source/runbook_action: Added logging ([#74](https://github.com/firehydrant/terraform-provider-firehydrant/pull/74))
 
 ## 0.2.1
 
