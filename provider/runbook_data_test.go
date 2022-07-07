@@ -78,7 +78,7 @@ data "firehydrant_runbook" "test_runbook" {
 func testAccRunbookDataSourceConfig_allAttributes(rName string) string {
 	return fmt.Sprintf(`
 resource "firehydrant_team" "test_team1" {
-	name = "test-team1-%s"
+  name = "test-team1-%s"
 }
 
 data "firehydrant_runbook_action" "create_incident_channel" {
