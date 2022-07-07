@@ -18,7 +18,7 @@ Basic usage:
 ```hcl
 resource "firehydrant_team" "example-owner-team" {
   name        = "my-example-owner-team"
-  description = "This is an example team that owns a service"
+  description = "This is an example team that owns a runbook"
 }
 
 data "firehydrant_runbook_action" "notify-channel-action" {
