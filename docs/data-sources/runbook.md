@@ -35,4 +35,5 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the runbook.
 * `description` - A description of the runbook.
+* `owner_id` - The ID of the team that owns this runbook.
 * `name` - The name of the runbook.

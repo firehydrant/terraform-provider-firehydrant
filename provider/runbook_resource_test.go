@@ -78,6 +78,7 @@ func TestAccRunbookResource_update(t *testing.T) {
 						"firehydrant_runbook.test_runbook", "type", "incident"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
+					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "owner_id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.#", "1"),
 					resource.TestCheckResourceAttr(
@@ -180,6 +181,10 @@ func testAccCheckRunbookResourceExistsWithAttributes_basic(resourceName string) 
 			return fmt.Errorf("Unexpected description. Expected no description, got: %s", runbookResponse.Description)
 		}
 
+		if runbookResponse.Owner != nil {
+			return fmt.Errorf("Unexpected owner. Expected no owner ID, got: %s", runbookResponse.Owner.ID)
+		}
+
 		if len(runbookResponse.Steps) != 1 {
 			return fmt.Errorf("Unexpected number of steps. Expected 1 step, got: %v", len(runbookResponse.Steps))
 		}
@@ -234,6 +239,14 @@ func testAccCheckRunbookResourceExistsWithAttributes_update(resourceName string)
 			return fmt.Errorf("Unexpected description. Expected: %s, got: %s", expected, got)
 		}
 
+		if runbookResponse.Owner == nil {
+			return fmt.Errorf("Unexpected owner. Expected owner to be set.")
+		}
+		expected, got = runbookResource.Primary.Attributes["owner_id"], runbookResponse.Owner.ID
+		if expected != got {
+			return fmt.Errorf("Unexpected owner ID. Expected:%s, got: %s", expected, got)
+		}
+
 		if len(runbookResponse.Steps) != 1 {
 			return fmt.Errorf("Unexpected number of steps. Expected 1 step, got: %v", len(runbookResponse.Steps))
 		}
@@ -281,6 +294,7 @@ func testAccCheckRunbookResourceDestroy() resource.TestCheckFunc {
 
 func testAccRunbookResourceConfig_basic(rName string) string {
 	return fmt.Sprintf(`
+
 data "firehydrant_runbook_action" "create_incident_channel" {
   slug             = "create_incident_channel"
   integration_slug = "slack"
@@ -303,6 +317,9 @@ resource "firehydrant_runbook" "test_runbook" {
 
 func testAccRunbookResourceConfig_update(rName string) string {
 	return fmt.Sprintf(`
+resource "firehydrant_team" "test_team1" {
+  name = "test-team1-%s"
+}
 data "firehydrant_runbook_action" "notify_channel" {
   slug             = "notify_channel"
   integration_slug = "slack"
@@ -313,6 +330,7 @@ resource "firehydrant_runbook" "test_runbook" {
   name        = "test-runbook-%s"
   type        = "incident"
   description = "test-description-%s"
+  owner_id    = firehydrant_team.test_team1.id
 
   steps {
     name    = "Notify Channel"
@@ -321,5 +339,5 @@ resource "firehydrant_runbook" "test_runbook" {
       "channels" = "#incidents"
     }
   }
-}`, rName, rName)
+}`, rName, rName, rName)
 }

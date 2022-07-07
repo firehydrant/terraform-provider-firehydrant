@@ -11,9 +11,10 @@ import (
 // CreateRunbookRequest is the payload for creating a service
 // URL: POST https://api.firehydrant.io/v1/runbooks
 type CreateRunbookRequest struct {
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Description string `json:"description"`
+	Name        string       `json:"name"`
+	Type        string       `json:"type"`
+	Description string       `json:"description"`
+	Owner       *RunbookTeam `json:"owner,omitempty"`
 
 	Severities []RunbookRelation `json:"severities"`
 
@@ -42,6 +43,7 @@ type RunbookStep struct {
 type UpdateRunbookRequest struct {
 	Name        string            `json:"name,omitempty"`
 	Description string            `json:"description,omitempty"`
+	Owner       *RunbookTeam      `json:"owner,omitempty"`
 	Steps       []RunbookStep     `json:"steps,omitempty"`
 	Severities  []RunbookRelation `json:"severities"`
 }
@@ -53,6 +55,7 @@ type RunbookResponse struct {
 	Name        string        `json:"name"`
 	Type        string        `json:"type"`
 	Description string        `json:"description"`
+	Owner       *RunbookTeam  `json:"owner"`
 	Steps       []RunbookStep `json:"steps"`
 
 	Severities []RunbookRelation `json:"severities"`
@@ -102,19 +105,6 @@ func (c *RESTRunbooksClient) Create(ctx context.Context, createReq CreateRunbook
 	response, err := c.restClient().Post("runbooks").BodyJSON(&createReq).Receive(runbookResponse, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create runbook")
-	}
-
-	err = checkResponseStatusCode(response)
-	if err != nil {
-		return nil, err
-	}
-
-	runbookResponse, err = c.Update(ctx, runbookResponse.ID, UpdateRunbookRequest{
-		Steps:      createReq.Steps,
-		Severities: createReq.Severities,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "could not update created runbook")
 	}
 
 	err = checkResponseStatusCode(response)

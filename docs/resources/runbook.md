@@ -16,6 +16,11 @@ for mitigating incidents.
 
 Basic usage:
 ```hcl
+resource "firehydrant_team" "example-owner-team" {
+  name        = "my-example-owner-team"
+  description = "This is an example team that owns a runbook"
+}
+
 data "firehydrant_runbook_action" "notify-channel-action" {
   slug             = "notify_channel"
   integration_slug = "slack"
@@ -26,6 +31,7 @@ resource "firehydrant_runbook" "example-runbook" {
   name        = "example-runbook"
   type        = "incident"
   description = "This is an example runbook"
+  owner_id    = firehydrant_team.example-owner-team.id
   
   steps {
     name    = "Notify Channel"
@@ -45,6 +51,7 @@ The following arguments are supported:
 * `type` - (Required) The type of the runbook. Valid values are 
   `incident`, `general`, `infrastructure`, and `incident_role`.
 * `description` - (Optional) A description of the runbook.
+* `owner_id` - (Optional) The ID of the team that owns this runbook.
 * `severities` - (Optional) Severities to associate with the runbook.
 * `steps` - (Optional) Steps to add to the runbook.
 

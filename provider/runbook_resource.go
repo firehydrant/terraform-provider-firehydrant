@@ -33,6 +33,10 @@ func resourceRunbook() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"severities": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -117,6 +121,12 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 		"type":        runbookResponse.Type,
 	}
 
+	var ownerID string
+	if runbookResponse.Owner != nil {
+		ownerID = runbookResponse.Owner.ID
+	}
+	attributes["owner_id"] = ownerID
+
 	steps := make([]interface{}, len(runbookResponse.Steps))
 	for index, currentStep := range runbookResponse.Steps {
 		stepConfig := map[string]interface{}{}
@@ -164,6 +174,10 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Process any optional attributes and add to the create request if necessary
+	if ownerID, ok := d.GetOk("owner_id"); ok && ownerID.(string) != "" {
+		createRequest.Owner = &firehydrant.RunbookTeam{ID: ownerID.(string)}
+	}
+
 	steps := d.Get("steps").([]interface{})
 	for _, currentStep := range steps {
 		step := currentStep.(map[string]interface{})
@@ -209,6 +223,11 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Process any optional attributes and add to the update request if necessary
+	ownerID, ownerIDSet := d.GetOk("owner_id")
+	if ownerIDSet {
+		updateRequest.Owner = &firehydrant.RunbookTeam{ID: ownerID.(string)}
+	}
+
 	steps := d.Get("steps").([]interface{})
 	for _, currentStep := range steps {
 		step := currentStep.(map[string]interface{})

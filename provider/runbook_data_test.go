@@ -42,6 +42,7 @@ func TestAccRunbookDataSource_allAttributes(t *testing.T) {
 						"data.firehydrant_runbook.test_runbook", "name", fmt.Sprintf("test-runbook-%s", rName)),
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_runbook.test_runbook", "description", fmt.Sprintf("test-description-%s", rName)),
+					resource.TestCheckResourceAttrSet("data.firehydrant_runbook.test_runbook", "owner_id"),
 				),
 			},
 		},
@@ -76,6 +77,10 @@ data "firehydrant_runbook" "test_runbook" {
 
 func testAccRunbookDataSourceConfig_allAttributes(rName string) string {
 	return fmt.Sprintf(`
+resource "firehydrant_team" "test_team1" {
+  name = "test-team1-%s"
+}
+
 data "firehydrant_runbook_action" "create_incident_channel" {
   slug             = "create_incident_channel"
   integration_slug = "slack"
@@ -86,6 +91,7 @@ resource "firehydrant_runbook" "test_runbook" {
   name        = "test-runbook-%s"
   type        = "incident"
   description = "test-description-%s"
+  owner_id    = firehydrant_team.test_team1.id
 
   steps {
     name      = "Create Incident Channel"
@@ -98,5 +104,5 @@ resource "firehydrant_runbook" "test_runbook" {
 
 data "firehydrant_runbook" "test_runbook" {
   id = firehydrant_runbook.test_runbook.id
-}`, rName, rName)
+}`, rName, rName, rName)
 }
