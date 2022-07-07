@@ -173,11 +173,11 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 		Type:        d.Get("type").(string),
 	}
 
+	// Process any optional attributes and add to the create request if necessary
 	if ownerID, ok := d.GetOk("owner_id"); ok && ownerID.(string) != "" {
 		createRequest.Owner = &firehydrant.RunbookTeam{ID: ownerID.(string)}
 	}
 
-	// Process any optional attributes and add to the create request if necessary
 	steps := d.Get("steps").([]interface{})
 	for _, currentStep := range steps {
 		step := currentStep.(map[string]interface{})
