@@ -181,6 +181,10 @@ func testAccCheckRunbookResourceExistsWithAttributes_basic(resourceName string) 
 			return fmt.Errorf("Unexpected description. Expected no description, got: %s", runbookResponse.Description)
 		}
 
+		if runbookResponse.Owner != nil {
+			return fmt.Errorf("Unexpected owner. Expected no owner ID, got: %s", runbookResponse.Owner.ID)
+		}
+
 		if len(runbookResponse.Steps) != 1 {
 			return fmt.Errorf("Unexpected number of steps. Expected 1 step, got: %v", len(runbookResponse.Steps))
 		}
