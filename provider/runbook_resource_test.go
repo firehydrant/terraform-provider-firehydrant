@@ -318,7 +318,7 @@ resource "firehydrant_runbook" "test_runbook" {
 func testAccRunbookResourceConfig_update(rName string) string {
 	return fmt.Sprintf(`
 resource "firehydrant_team" "test_team1" {
-	name = "test-team1-%s"
+  name = "test-team1-%s"
 }
 data "firehydrant_runbook_action" "notify_channel" {
   slug             = "notify_channel"
