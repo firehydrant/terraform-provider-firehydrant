@@ -16,6 +16,11 @@ for mitigating incidents.
 
 Basic usage:
 ```hcl
+resource "firehydrant_team" "example-owner-team" {
+  name        = "my-example-owner-team"
+  description = "This is an example team that owns a service"
+}
+
 data "firehydrant_runbook_action" "notify-channel-action" {
   slug             = "notify_channel"
   integration_slug = "slack"
@@ -26,6 +31,7 @@ resource "firehydrant_runbook" "example-runbook" {
   name        = "example-runbook"
   type        = "incident"
   description = "This is an example runbook"
+  owner_id    = firehydrant_team.example-owner-team.id
   
   steps {
     name    = "Notify Channel"
