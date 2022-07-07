@@ -330,7 +330,7 @@ resource "firehydrant_runbook" "test_runbook" {
   name        = "test-runbook-%s"
   type        = "incident"
   description = "test-description-%s"
-	owner_id     = firehydrant_team.test_team1.id
+  owner_id    = firehydrant_team.test_team1.id
 
   steps {
     name    = "Notify Channel"
