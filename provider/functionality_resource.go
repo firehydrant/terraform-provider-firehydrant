@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -66,8 +67,7 @@ func readResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resourc
 	// Get the functionality
 	r, err := firehydrantAPIClient.GetFunctionality(ctx, d.Id())
 	if err != nil {
-		_, isNotFoundError := err.(firehydrant.NotFound)
-		if isNotFoundError {
+		if errors.Is(err, firehydrant.ErrorNotFound) {
 			d.SetId("")
 			return nil
 		}
@@ -230,8 +230,7 @@ func deleteResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 	functionalityID := d.Id()
 	err := firehydrantAPIClient.DeleteFunctionality(ctx, functionalityID)
 	if err != nil {
-		_, isNotFoundError := err.(firehydrant.NotFound)
-		if isNotFoundError {
+		if errors.Is(err, firehydrant.ErrorNotFound) {
 			d.SetId("")
 			return nil
 		}

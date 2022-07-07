@@ -21,14 +21,6 @@ const (
 	UserAgentPrefix = "firehydrant-terraform-provider"
 )
 
-// Errors
-// NotFound is returned when receiving a 404.
-type NotFound string
-
-func (err NotFound) Error() string {
-	return string(err)
-}
-
 // checkResponseStatusCode checks to see if the response's status
 // code corresponds to an error or not. An error is returned for
 // all status codes 300 and above
@@ -37,9 +29,9 @@ func checkResponseStatusCode(response *http.Response, apiError *APIError) error 
 	case code >= 200 && code <= 299:
 		return nil
 	case code == 404:
-		return NotFound("resource not found")
+		return ErrorNotFound
 	case code == 401:
-		return errors.New("invalid api key")
+		return fmt.Errorf("%s\n%s", ErrorUnauthorized, apiError)
 	default:
 		return fmt.Errorf("%d request failed with error\n%s", code, apiError)
 	}

@@ -1,8 +1,14 @@
 package firehydrant
 
 import (
+	"errors"
 	"fmt"
 	"strings"
+)
+
+var (
+	ErrorNotFound     = errors.New("resource not found")
+	ErrorUnauthorized = errors.New("unauthorized")
 )
 
 type APIError struct {

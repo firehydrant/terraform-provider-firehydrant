@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"regexp"
 	"strings"
@@ -64,8 +65,7 @@ func readResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData
 	priorityID := d.Id()
 	priorityResponse, err := firehydrantAPIClient.GetPriority(ctx, priorityID)
 	if err != nil {
-		_, isNotFoundError := err.(firehydrant.NotFound)
-		if isNotFoundError {
+		if errors.Is(err, firehydrant.ErrorNotFound) {
 			d.SetId("")
 			return nil
 		}
@@ -142,8 +142,7 @@ func deleteResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceDa
 	priorityID := d.Id()
 	err := firehydrantAPIClient.DeletePriority(ctx, priorityID)
 	if err != nil {
-		_, isNotFoundError := err.(firehydrant.NotFound)
-		if isNotFoundError {
+		if errors.Is(err, firehydrant.ErrorNotFound) {
 			return nil
 		}
 		return diag.FromErr(err)
