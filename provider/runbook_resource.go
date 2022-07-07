@@ -228,7 +228,6 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 		updateRequest.Owner = &firehydrant.RunbookTeam{ID: ownerID.(string)}
 	}
 
-	// Process any optional attributes and add to the update request if necessary
 	steps := d.Get("steps").([]interface{})
 	for _, currentStep := range steps {
 		step := currentStep.(map[string]interface{})
