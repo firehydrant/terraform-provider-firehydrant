@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -156,7 +157,7 @@ func testServiceDoesNotExist(resourceName string) resource.TestCheckFunc {
 			return fmt.Errorf("The service existed, when it should not")
 		}
 
-		if _, isNotFound := err.(firehydrant.NotFound); !isNotFound {
+		if !errors.Is(err, firehydrant.ErrorNotFound) {
 			return err
 		}
 

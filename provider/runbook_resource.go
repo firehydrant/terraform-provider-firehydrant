@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -112,8 +113,7 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 	})
 	runbookResponse, err := firehydrantAPIClient.Runbooks().Get(ctx, runbookID)
 	if err != nil {
-		_, isNotFoundError := err.(firehydrant.NotFound)
-		if isNotFoundError {
+		if errors.Is(err, firehydrant.ErrorNotFound) {
 			tflog.Debug(ctx, fmt.Sprintf("Runbook %s no longer exists", runbookID), map[string]interface{}{
 				"id": runbookID,
 			})
@@ -285,8 +285,7 @@ func deleteResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	})
 	err := firehydrantAPIClient.Runbooks().Delete(ctx, runbookID)
 	if err != nil {
-		_, isNotFoundError := err.(firehydrant.NotFound)
-		if isNotFoundError {
+		if errors.Is(err, firehydrant.ErrorNotFound) {
 			return nil
 		}
 		return diag.Errorf("Error deleting runbook %s: %v", runbookID, err)

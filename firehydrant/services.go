@@ -29,12 +29,13 @@ func (c *RESTServicesClient) restClient() *sling.Sling {
 // Get retrieves a service from the FireHydrant API
 func (c *RESTServicesClient) Get(ctx context.Context, id string) (*ServiceResponse, error) {
 	serviceResponse := &ServiceResponse{}
-	response, err := c.restClient().Get("services/"+id).Receive(serviceResponse, nil)
+	apiError := &APIError{}
+	response, err := c.restClient().Get("services/"+id).Receive(serviceResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get service")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -45,12 +46,13 @@ func (c *RESTServicesClient) Get(ctx context.Context, id string) (*ServiceRespon
 // List retrieves a list of services based on a service query
 func (c *RESTServicesClient) List(ctx context.Context, req *ServiceQuery) (*ServicesResponse, error) {
 	servicesResponse := &ServicesResponse{}
-	response, err := c.restClient().Get("services").QueryStruct(req).Receive(servicesResponse, nil)
+	apiError := &APIError{}
+	response, err := c.restClient().Get("services").QueryStruct(req).Receive(servicesResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get services")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -61,12 +63,13 @@ func (c *RESTServicesClient) List(ctx context.Context, req *ServiceQuery) (*Serv
 // Create creates a brand spankin new service in FireHydrant
 func (c *RESTServicesClient) Create(ctx context.Context, createReq CreateServiceRequest) (*ServiceResponse, error) {
 	serviceResponse := &ServiceResponse{}
-	response, err := c.restClient().Post("services").BodyJSON(&createReq).Receive(serviceResponse, nil)
+	apiError := &APIError{}
+	response, err := c.restClient().Post("services").BodyJSON(&createReq).Receive(serviceResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create service")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -77,12 +80,13 @@ func (c *RESTServicesClient) Create(ctx context.Context, createReq CreateService
 // UpdateService updates a old spankin service in FireHydrant
 func (c *RESTServicesClient) Update(ctx context.Context, serviceID string, updateReq UpdateServiceRequest) (*ServiceResponse, error) {
 	serviceResponse := &ServiceResponse{}
-	response, err := c.restClient().Patch("services/"+serviceID).BodyJSON(&updateReq).Receive(serviceResponse, nil)
+	apiError := &APIError{}
+	response, err := c.restClient().Patch("services/"+serviceID).BodyJSON(&updateReq).Receive(serviceResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not update service")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return nil, err
 	}
@@ -92,12 +96,13 @@ func (c *RESTServicesClient) Update(ctx context.Context, serviceID string, updat
 
 // DeleteService updates a old spankin service in FireHydrant
 func (c *RESTServicesClient) Delete(ctx context.Context, serviceID string) error {
-	response, err := c.restClient().Delete("services/"+serviceID).Receive(nil, nil)
+	apiError := &APIError{}
+	response, err := c.restClient().Delete("services/"+serviceID).Receive(nil, apiError)
 	if err != nil {
 		return errors.Wrap(err, "could not delete service")
 	}
 
-	err = checkResponseStatusCode(response)
+	err = checkResponseStatusCode(response, apiError)
 	if err != nil {
 		return err
 	}

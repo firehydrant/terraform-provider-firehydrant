@@ -105,7 +105,7 @@ func testSeverityDoesNotExist(resourceName string) resource.TestCheckFunc {
 		// 	return fmt.Errorf("The severity existed, when it should not")
 		// }
 
-		// if _, isNotFound := err.(firehydrant.NotFound); !isNotFound {
+		// if errors.Is(err, firehydrant.ErrorNotFound) {
 		// 	return err
 		// }
 
