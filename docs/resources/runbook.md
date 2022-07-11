@@ -65,7 +65,6 @@ The `steps` block supports:
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should be automatically execute.
 * `config` - (Optional) Config block for the step.
-* `delation_duration` - (Optional) How long this step should wait before executing.
 * `repeats` - (Optional) Whether this step should repeat.
 * `repeats_duration` - (Optional) How often this step should repeat.
 

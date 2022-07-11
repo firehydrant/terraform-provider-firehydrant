@@ -77,10 +77,6 @@ func resourceRunbook() *schema.Resource {
 							Type:     schema.TypeMap,
 							Optional: true,
 						},
-						"delation_duration": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
 						"repeats": {
 							Type:     schema.TypeBool,
 							Optional: true,
