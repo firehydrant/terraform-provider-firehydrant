@@ -29,6 +29,7 @@ type RunbookRelation struct {
 // RunbookStep is a step inside of a runbook that can automate something (like creating a incident slack channel)
 type RunbookStep struct {
 	Name            string            `json:"name"`
+	Action          *RunbookAction    `json:"action"`
 	ActionID        string            `json:"action_id"`
 	StepID          string            `json:"step_id,omitempty"`
 	Config          map[string]string `json:"config,omitempty"`
