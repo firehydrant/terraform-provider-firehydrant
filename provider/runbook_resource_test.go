@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -35,6 +36,10 @@ func TestAccRunbookResource_basic(t *testing.T) {
 						"firehydrant_runbook.test_runbook", "steps.0.name", "Create Incident Channel"),
 					resource.TestCheckResourceAttrSet(
 						"firehydrant_runbook.test_runbook", "steps.0.action_id"),
+					resource.TestCheckResourceAttrSet(
+						"firehydrant_runbook.test_runbook", "steps.0.action_integration_slug"),
+					resource.TestCheckResourceAttrSet(
+						"firehydrant_runbook.test_runbook", "steps.0.action_slug"),
 				),
 			},
 		},
@@ -65,6 +70,10 @@ func TestAccRunbookResource_update(t *testing.T) {
 						"firehydrant_runbook.test_runbook", "steps.0.name", "Create Incident Channel"),
 					resource.TestCheckResourceAttrSet(
 						"firehydrant_runbook.test_runbook", "steps.0.action_id"),
+					resource.TestCheckResourceAttrSet(
+						"firehydrant_runbook.test_runbook", "steps.0.action_integration_slug"),
+					resource.TestCheckResourceAttrSet(
+						"firehydrant_runbook.test_runbook", "steps.0.action_slug"),
 				),
 			},
 			{
@@ -85,9 +94,13 @@ func TestAccRunbookResource_update(t *testing.T) {
 						"firehydrant_runbook.test_runbook", "steps.0.name", "Notify Channel"),
 					resource.TestCheckResourceAttrSet(
 						"firehydrant_runbook.test_runbook", "steps.0.action_id"),
+					resource.TestCheckResourceAttrSet(
+						"firehydrant_runbook.test_runbook", "steps.0.action_integration_slug"),
+					resource.TestCheckResourceAttrSet(
+						"firehydrant_runbook.test_runbook", "steps.0.action_slug"),
 				),
 			},
-			// TODO: fix error causing description to not be removed on update and then add this step back in
+			//TODO: fix error causing description to not be removed on update and then add this step back in
 			//{
 			//	Config: testAccRunbookResourceConfig_basic(rNameUpdated),
 			//	Check: resource.ComposeAggregateTestCheckFunc(
@@ -103,8 +116,42 @@ func TestAccRunbookResource_update(t *testing.T) {
 			//			"firehydrant_runbook.test_runbook", "steps.0.name", "Create Incident Channel"),
 			//		resource.TestCheckResourceAttrSet(
 			//			"firehydrant_runbook.test_runbook", "steps.0.action_id"),
+			//		resource.TestCheckResourceAttrSet(
+			//			"firehydrant_runbook.test_runbook", "steps.0.action_integration_slug"),
+			//		resource.TestCheckResourceAttrSet(
+			//			"firehydrant_runbook.test_runbook", "steps.0.action_slug"),
 			//	),
 			//},
+		},
+	})
+}
+
+func TestAccRunbookResource_validateSchemaAttributesStepsActionSlug(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccRunbookResourceConfig_stepsActionSlugInvalid(rName),
+				ExpectError: regexp.MustCompile(`expected steps.0.action_slug to be one of`),
+			},
+		},
+	})
+}
+
+func TestAccRunbookResource_validateSchemaAttributesStepsActionIntegrationSlug(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccRunbookResourceConfig_stepsActionIntegrationSlugInvalid(rName),
+				ExpectError: regexp.MustCompile(`expected steps.0.action_integration_slug to be one of`),
+			},
 		},
 	})
 }
@@ -197,6 +244,12 @@ func testAccCheckRunbookResourceExistsWithAttributes_basic(resourceName string) 
 			if runbookResource.Primary.Attributes[key+".action_id"] != step.ActionID {
 				return fmt.Errorf("Unexpected runbook step action_id. Expected %s, got: %s", step.Name, runbookResource.Primary.Attributes[key+".action_id"])
 			}
+			if runbookResource.Primary.Attributes[key+".action_integration_slug"] != step.Action.Integration.Slug {
+				return fmt.Errorf("Unexpected runbook step action_integration_slug. Expected %s, got: %s", step.Name, runbookResource.Primary.Attributes[key+".action_integration_slug"])
+			}
+			if runbookResource.Primary.Attributes[key+".action_slug"] != step.Action.Slug {
+				return fmt.Errorf("Unexpected runbook step action_slug. Expected %s, got: %s", step.Name, runbookResource.Primary.Attributes[key+".action_slug"])
+			}
 			// TODO: Test that config matches
 		}
 
@@ -259,6 +312,12 @@ func testAccCheckRunbookResourceExistsWithAttributes_update(resourceName string)
 			if runbookResource.Primary.Attributes[key+".action_id"] != step.ActionID {
 				return fmt.Errorf("Unexpected runbook step action_id. Expected %s, got: %s", step.Name, runbookResource.Primary.Attributes[key+".action_id"])
 			}
+			if runbookResource.Primary.Attributes[key+".action_integration_slug"] != step.Action.Integration.Slug {
+				return fmt.Errorf("Unexpected runbook step action_integration_slug. Expected %s, got: %s", step.Name, runbookResource.Primary.Attributes[key+".action_integration_slug"])
+			}
+			if runbookResource.Primary.Attributes[key+".action_slug"] != step.Action.Slug {
+				return fmt.Errorf("Unexpected runbook step action_slug. Expected %s, got: %s", step.Name, runbookResource.Primary.Attributes[key+".action_slug"])
+			}
 			// TODO: Test that config matches
 		}
 
@@ -294,7 +353,6 @@ func testAccCheckRunbookResourceDestroy() resource.TestCheckFunc {
 
 func testAccRunbookResourceConfig_basic(rName string) string {
 	return fmt.Sprintf(`
-
 data "firehydrant_runbook_action" "create_incident_channel" {
   slug             = "create_incident_channel"
   integration_slug = "slack"
@@ -302,12 +360,15 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 }
 
 resource "firehydrant_runbook" "test_runbook" {
-  name        = "test-runbook-%s"
-  type        = "incident"
+  name = "test-runbook-%s"
+  type = "incident"
 
   steps {
-    name      = "Create Incident Channel"
-    action_id = data.firehydrant_runbook_action.create_incident_channel.id
+    name                    = "Create Incident Channel"
+    action_id               = data.firehydrant_runbook_action.create_incident_channel.id
+    action_integration_slug = data.firehydrant_runbook_action.create_incident_channel.integration_slug
+    action_slug             = data.firehydrant_runbook_action.create_incident_channel.slug
+    
     config = {
       channel_name_format = "-inc-{{ number }}"
     }
@@ -320,6 +381,7 @@ func testAccRunbookResourceConfig_update(rName string) string {
 resource "firehydrant_team" "test_team1" {
   name = "test-team1-%s"
 }
+
 data "firehydrant_runbook_action" "notify_channel" {
   slug             = "notify_channel"
   integration_slug = "slack"
@@ -333,11 +395,64 @@ resource "firehydrant_runbook" "test_runbook" {
   owner_id    = firehydrant_team.test_team1.id
 
   steps {
-    name    = "Notify Channel"
-    action_id = data.firehydrant_runbook_action.notify_channel.id
+    name                    = "Notify Channel"
+    action_id               = data.firehydrant_runbook_action.notify_channel.id
+    action_integration_slug = data.firehydrant_runbook_action.notify_channel.integration_slug
+    action_slug             = data.firehydrant_runbook_action.notify_channel.slug
+    
     config = {
       "channels" = "#incidents"
     }
   }
 }`, rName, rName, rName)
+}
+
+func testAccRunbookResourceConfig_stepsActionSlugInvalid(rName string) string {
+	return fmt.Sprintf(`
+data "firehydrant_runbook_action" "create_incident_channel" {
+  slug             = "create_incident_channel"
+  integration_slug = "slack"
+  type             = "incident"
+}
+
+resource "firehydrant_runbook" "test_runbook" {
+  name = "test-runbook-%s"
+  type = "incident"
+
+  steps {
+    name                    = "Create Incident Channel"
+    action_id               = data.firehydrant_runbook_action.create_incident_channel.id
+    action_integration_slug = data.firehydrant_runbook_action.create_incident_channel.integration_slug
+    action_slug             = "action_slug_invalid"
+    
+    config = {
+      channel_name_format = "-inc-{{ number }}"
+    }
+  }
+}`, rName)
+}
+
+func testAccRunbookResourceConfig_stepsActionIntegrationSlugInvalid(rName string) string {
+	return fmt.Sprintf(`
+data "firehydrant_runbook_action" "create_incident_channel" {
+  slug             = "create_incident_channel"
+  integration_slug = "slack"
+  type             = "incident"
+}
+
+resource "firehydrant_runbook" "test_runbook" {
+  name = "test-runbook-%s"
+  type = "incident"
+
+  steps {
+    name                    = "Create Incident Channel"
+    action_id               = data.firehydrant_runbook_action.create_incident_channel.id
+    action_integration_slug = "action_integration_slug_invalid"
+    action_slug             = data.firehydrant_runbook_action.create_incident_channel.slug
+    
+    config = {
+      channel_name_format = "-inc-{{ number }}"
+    }
+  }
+}`, rName)
 }

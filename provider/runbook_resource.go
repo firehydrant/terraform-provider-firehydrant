@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceRunbook() *schema.Resource {
@@ -62,6 +63,69 @@ func resourceRunbook() *schema.Resource {
 						"action_id": {
 							Type:     schema.TypeString,
 							Required: true,
+						},
+						"action_slug": {
+							Type:     schema.TypeString,
+							Required: true,
+							ValidateFunc: validation.StringInSlice(
+								[]string{
+									string(firehydrant.RunbookActionSlugAddServicesRelatedToFunctionality),
+									string(firehydrant.RunbookActionSlugAddTaskList),
+									string(firehydrant.RunbookActionSlugArchiveIncidentChannel),
+									string(firehydrant.RunbookActionSlugAssignARole),
+									string(firehydrant.RunbookActionSlugAssignATeam),
+									string(firehydrant.RunbookActionSlugAttachARunbook),
+									string(firehydrant.RunbookActionSlugCreateGoogleMeetLink),
+									string(firehydrant.RunbookActionSlugCreateIncidentChannel),
+									string(firehydrant.RunbookActionSlugCreateIncidentIssue),
+									string(firehydrant.RunbookActionSlugCreateIncidentTicket),
+									string(firehydrant.RunbookActionSlugCreateMeeting),
+									string(firehydrant.RunbookActionSlugCreateNewOpsgenieIncident),
+									string(firehydrant.RunbookActionSlugCreateNewPagerDutyIncident),
+									string(firehydrant.RunbookActionSlugCreateNunc),
+									string(firehydrant.RunbookActionSlugCreateStatuspage),
+									string(firehydrant.RunbookActionSlugEmailNotification),
+									string(firehydrant.RunbookActionSlugExportRetrospective),
+									string(firehydrant.RunbookActionSlugFreeformText),
+									string(firehydrant.RunbookActionSlugIncidentChannelGif),
+									string(firehydrant.RunbookActionSlugIncidentUpdate),
+									string(firehydrant.RunbookActionSlugNotifyChannel),
+									string(firehydrant.RunbookActionSlugNotifyChannelCustomMessage),
+									string(firehydrant.RunbookActionSlugNotifyIncidentChannelCustomMessage),
+									string(firehydrant.RunbookActionSlugScript),
+									string(firehydrant.RunbookActionSlugSendWebhook),
+									string(firehydrant.RunbookActionSlugSetLinkedAlertsStatus),
+									string(firehydrant.RunbookActionSlugUpdateStatuspage),
+									string(firehydrant.RunbookActionSlugVictorOpsCreateNewIncident),
+								},
+								false,
+							),
+						},
+						"action_integration_slug": {
+							Type:     schema.TypeString,
+							Required: true,
+							ValidateFunc: validation.StringInSlice(
+								[]string{
+									string(firehydrant.RunbookActionIntegrationSlugConfluenceCloud),
+									string(firehydrant.RunbookActionIntegrationSlugFireHydrant),
+									string(firehydrant.RunbookActionIntegrationSlugFireHydrantNunc),
+									string(firehydrant.RunbookActionIntegrationSlugGiphy),
+									string(firehydrant.RunbookActionIntegrationSlugGoogleDocs),
+									string(firehydrant.RunbookActionIntegrationSlugGoogleMeet),
+									string(firehydrant.RunbookActionIntegrationSlugJiraCloud),
+									string(firehydrant.RunbookActionIntegrationSlugJiraServer),
+									string(firehydrant.RunbookActionIntegrationSlugMicrosoftTeams),
+									string(firehydrant.RunbookActionIntegrationSlugOpsgenie),
+									string(firehydrant.RunbookActionIntegrationSlugPagerDuty),
+									string(firehydrant.RunbookActionIntegrationSlugShortcut),
+									string(firehydrant.RunbookActionIntegrationSlugSlack),
+									string(firehydrant.RunbookActionIntegrationSlugStatuspage),
+									string(firehydrant.RunbookActionIntegrationSlugVictorOps),
+									string(firehydrant.RunbookActionIntegrationSlugWebex),
+									string(firehydrant.RunbookActionIntegrationSlugZoom),
+								},
+								false,
+							),
 						},
 						"name": {
 							Type:     schema.TypeString,
@@ -144,11 +208,13 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 		}
 
 		steps[index] = map[string]interface{}{
-			"step_id":   currentStep.StepID,
-			"name":      currentStep.Name,
-			"action_id": currentStep.ActionID,
-			"config":    stepConfig,
-			"automatic": currentStep.Automatic,
+			"step_id":                 currentStep.StepID,
+			"name":                    currentStep.Name,
+			"action_id":               currentStep.ActionID,
+			"action_integration_slug": currentStep.Action.Integration.Slug,
+			"action_slug":             currentStep.Action.Slug,
+			"config":                  stepConfig,
+			"automatic":               currentStep.Automatic,
 		}
 	}
 	attributes["steps"] = steps

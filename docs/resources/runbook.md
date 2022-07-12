@@ -32,10 +32,13 @@ resource "firehydrant_runbook" "example-runbook" {
   type        = "incident"
   description = "This is an example runbook"
   owner_id    = firehydrant_team.example-owner-team.id
-  
+
   steps {
-    name    = "Notify Channel"
-    action_id = data.firehydrant_runbook_action.notify-channel-action.id
+    name                    = "Notify Channel"
+    action_id               = data.firehydrant_runbook_action.notify-channel-action.id
+    action_integration_slug = data.firehydrant_runbook_action.notify-channel-action.integration_slug
+    action_slug             = data.firehydrant_runbook_action.notify-channel-action.slug
+
     config = {
       "channels" = "#incidents"
     }
@@ -62,6 +65,8 @@ The `severities` block supports:
 The `steps` block supports:
 
 * `action_id` - (Required) The ID of the runbook action for the step.
+* `action_integration_slug` - (Required) The slug of the integration associated with the runbook action for the step.
+* `action_slug` - (Required) The slug of the runbook action for the step.
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should be automatically execute.
 * `config` - (Optional) Config block for the step.
