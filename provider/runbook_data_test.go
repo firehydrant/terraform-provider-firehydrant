@@ -58,12 +58,15 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 }
 
 resource "firehydrant_runbook" "test_runbook" {
-  name        = "test-runbook-%s"
-  type        = "incident"
+  name = "test-runbook-%s"
+  type = "incident"
 
   steps {
-    name      = "Create Incident Channel"
-    action_id = data.firehydrant_runbook_action.create_incident_channel.id
+    name                    = "Create Incident Channel"
+    action_id               = data.firehydrant_runbook_action.create_incident_channel.id
+    action_integration_slug = data.firehydrant_runbook_action.create_incident_channel.integration_slug
+    action_slug             = data.firehydrant_runbook_action.create_incident_channel.slug
+
     config = {
       channel_name_format = "-inc-{{ number }}"
     }
@@ -94,8 +97,11 @@ resource "firehydrant_runbook" "test_runbook" {
   owner_id    = firehydrant_team.test_team1.id
 
   steps {
-    name      = "Create Incident Channel"
-    action_id = data.firehydrant_runbook_action.create_incident_channel.id
+    name                    = "Create Incident Channel"
+    action_id               = data.firehydrant_runbook_action.create_incident_channel.id
+    action_integration_slug = data.firehydrant_runbook_action.create_incident_channel.integration_slug
+    action_slug             = data.firehydrant_runbook_action.create_incident_channel.slug
+
     config = {
       channel_name_format = "-inc-{{ number }}"
     }
