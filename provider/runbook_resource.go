@@ -140,11 +140,13 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 		}
 
 		steps[index] = map[string]interface{}{
-			"step_id":   currentStep.StepID,
-			"name":      currentStep.Name,
-			"action_id": currentStep.ActionID,
-			"config":    stepConfig,
-			"automatic": currentStep.Automatic,
+			"step_id":          currentStep.StepID,
+			"name":             currentStep.Name,
+			"action_id":        currentStep.ActionID,
+			"config":           stepConfig,
+			"automatic":        currentStep.Automatic,
+			"repeats":          currentStep.Repeats,
+			"repeats_duration": currentStep.RepeatsDuration,
 		}
 	}
 	attributes["steps"] = steps
@@ -188,10 +190,12 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 		step := currentStep.(map[string]interface{})
 
 		createRequest.Steps = append(createRequest.Steps, firehydrant.RunbookStep{
-			Name:      step["name"].(string),
-			ActionID:  step["action_id"].(string),
-			Automatic: step["automatic"].(bool),
-			Config:    convertStringMap(step["config"].(map[string]interface{})),
+			Name:            step["name"].(string),
+			ActionID:        step["action_id"].(string),
+			Automatic:       step["automatic"].(bool),
+			Repeats:         step["repeats"].(bool),
+			RepeatsDuration: step["repeats_duration"].(string),
+			Config:          convertStringMap(step["config"].(map[string]interface{})),
 		})
 	}
 
@@ -241,10 +245,12 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 		step := currentStep.(map[string]interface{})
 
 		updateRequest.Steps = append(updateRequest.Steps, firehydrant.RunbookStep{
-			Name:      step["name"].(string),
-			ActionID:  step["action_id"].(string),
-			Automatic: step["automatic"].(bool),
-			Config:    convertStringMap(step["config"].(map[string]interface{})),
+			Name:            step["name"].(string),
+			ActionID:        step["action_id"].(string),
+			Automatic:       step["automatic"].(bool),
+			Repeats:         step["repeats"].(bool),
+			RepeatsDuration: step["repeats_duration"].(string),
+			Config:          convertStringMap(step["config"].(map[string]interface{})),
 		})
 	}
 
