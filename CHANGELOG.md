@@ -10,9 +10,12 @@ ENHANCEMENTS:
 * provider: Improved error messages by adding details from the API response ([#75](https://github.com/firehydrant/terraform-provider-firehydrant/pull/75))
 * resource/runbook: Added logging ([#74](https://github.com/firehydrant/terraform-provider-firehydrant/pull/74))
 * resource/runbook: Added the `owner_id` attribute to runbook ([#76](https://github.com/firehydrant/terraform-provider-firehydrant/pull/76))
+* resource/runbook: Added `action_slug` and `action_integration_slug` attributes to runbook `steps` attributes ([#77](https://github.com/firehydrant/terraform-provider-firehydrant/pull/77))
 * data_source/runbook: Added logging ([#74](https://github.com/firehydrant/terraform-provider-firehydrant/pull/74))
 * data_source/runbook: Added the `owner_id` attribute to runbook ([#76](https://github.com/firehydrant/terraform-provider-firehydrant/pull/76))
+* data_source/runbook: Added `action_slug` and `action_integration_slug` attributes to runbook `steps` attributes ([#77](https://github.com/firehydrant/terraform-provider-firehydrant/pull/77))
 * data_source/runbook_action: Added logging ([#74](https://github.com/firehydrant/terraform-provider-firehydrant/pull/74))
+* data_source/runbook_action: Added validation for `slug` and `integration_slug` attributes ([#77](https://github.com/firehydrant/terraform-provider-firehydrant/pull/77))
 
 ## 0.2.1
 
