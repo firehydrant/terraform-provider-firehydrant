@@ -6,10 +6,10 @@ import (
 	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
-
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/senseyeio/duration"
 )
 
 func resourceRunbook() *schema.Resource {
@@ -84,6 +84,16 @@ func resourceRunbook() *schema.Resource {
 						"repeats_duration": {
 							Type:     schema.TypeString,
 							Optional: true,
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								v := val.(string)
+
+								_, err := duration.ParseISO8601(v)
+
+								if err != nil {
+									errs = append(errs, fmt.Errorf("%s must be an ISO8601 string, got: %v", key, v))
+								}
+								return
+							},
 						},
 
 						// Computed
@@ -189,6 +199,10 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	for _, currentStep := range steps {
 		step := currentStep.(map[string]interface{})
 
+		if step["repeats"].(bool) == true && step["repeats_duration"].(string) == "" {
+			return diag.Errorf("Error creating runbook, step repeats requires repeat_duration to be set")
+		}
+
 		createRequest.Steps = append(createRequest.Steps, firehydrant.RunbookStep{
 			Name:            step["name"].(string),
 			ActionID:        step["action_id"].(string),
@@ -243,6 +257,10 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	steps := d.Get("steps").([]interface{})
 	for _, currentStep := range steps {
 		step := currentStep.(map[string]interface{})
+
+		if step["repeats"].(bool) == true && step["repeats_duration"].(string) == "" {
+			return diag.Errorf("Error updating runbook, step repeats requires repeat_duration to be set")
+		}
 
 		updateRequest.Steps = append(updateRequest.Steps, firehydrant.RunbookStep{
 			Name:            step["name"].(string),

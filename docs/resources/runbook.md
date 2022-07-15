@@ -34,8 +34,10 @@ resource "firehydrant_runbook" "example-runbook" {
   owner_id    = firehydrant_team.example-owner-team.id
   
   steps {
-    name    = "Notify Channel"
-    action_id = data.firehydrant_runbook_action.notify-channel-action.id
+    name             = "Notify Channel"
+    action_id        = data.firehydrant_runbook_action.notify-channel-action.id
+    repeats          = true
+    repeats_duration = "PT15M"
     config = {
       "channels" = "#incidents"
     }

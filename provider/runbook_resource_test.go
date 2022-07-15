@@ -84,6 +84,10 @@ func TestAccRunbookResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.0.name", "Notify Channel"),
 					resource.TestCheckResourceAttrSet(
+						"firehydrant_runbook.test_runbook", "steps.0.repeats"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.0.repeats_duration", "PT15M"),
+					resource.TestCheckResourceAttrSet(
 						"firehydrant_runbook.test_runbook", "steps.0.action_id"),
 				),
 			},
@@ -318,26 +322,28 @@ resource "firehydrant_runbook" "test_runbook" {
 func testAccRunbookResourceConfig_update(rName string) string {
 	return fmt.Sprintf(`
 resource "firehydrant_team" "test_team1" {
-  name = "test-team1-%s"
+	name = "test-team1-%s"
 }
 data "firehydrant_runbook_action" "notify_channel" {
-  slug             = "notify_channel"
-  integration_slug = "slack"
-  type             = "incident"
+	slug             = "notify_channel"
+	integration_slug = "slack"
+	type             = "incident"
 }
 
 resource "firehydrant_runbook" "test_runbook" {
-  name        = "test-runbook-%s"
-  type        = "incident"
-  description = "test-description-%s"
-  owner_id    = firehydrant_team.test_team1.id
+	name        = "test-runbook-%s"
+	type        = "incident"
+	description = "test-description-%s"
+	owner_id    = firehydrant_team.test_team1.id
 
-  steps {
-    name    = "Notify Channel"
-    action_id = data.firehydrant_runbook_action.notify_channel.id
-    config = {
-      "channels" = "#incidents"
-    }
-  }
+	steps {
+		name             = "Notify Channel"
+		action_id        = data.firehydrant_runbook_action.notify_channel.id
+		repeats          = true
+		repeats_duration = "PT15M"
+		config = {
+			"channels" = "#incidents"
+		}
+	}
 }`, rName, rName, rName)
 }
