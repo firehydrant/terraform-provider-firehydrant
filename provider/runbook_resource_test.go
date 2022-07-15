@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -146,6 +147,21 @@ func TestAccRunbookResourceImport_allAttributes(t *testing.T) {
 				ResourceName:      "firehydrant_runbook.test_runbook",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccRunbookResourceImport_repeatDurationAttribute(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccRunbookResourceConfig_required_repeat_duration(rName),
+				ExpectError: regexp.MustCompile("Error creating runbook, step repeats requires repeat_duration to be set"),
 			},
 		},
 	})
@@ -346,4 +362,28 @@ resource "firehydrant_runbook" "test_runbook" {
 		}
 	}
 }`, rName, rName, rName)
+}
+
+func testAccRunbookResourceConfig_required_repeat_duration(rName string) string {
+	return fmt.Sprintf(`
+
+data "firehydrant_runbook_action" "create_incident_channel" {
+  slug             = "create_incident_channel"
+  integration_slug = "slack"
+  type             = "incident"
+}
+
+resource "firehydrant_runbook" "test_runbook" {
+  name        = "test-runbook-%s"
+  type        = "incident"
+
+  steps {
+    name      = "Create Incident Channel"
+		repeats   = true
+    action_id = data.firehydrant_runbook_action.create_incident_channel.id
+    config = {
+      channel_name_format = "-inc-{{ number }}"
+    }
+  }
+}`, rName)
 }
