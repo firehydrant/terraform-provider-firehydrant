@@ -201,7 +201,10 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 		step := currentStep.(map[string]interface{})
 
 		if step["repeats"].(bool) == true && step["repeats_duration"].(string) == "" {
-			return diag.Errorf("Error creating runbook, step repeats requires repeat_duration to be set")
+			return diag.Errorf("step repeats requires step repeats_duration to be set")
+		}
+		if step["repeats"].(bool) == false && step["repeats_duration"].(string) != "" {
+			return diag.Errorf("step repeats_duration requires step repeats to be set to true")
 		}
 
 		createRequest.Steps = append(createRequest.Steps, firehydrant.RunbookStep{
