@@ -35,7 +35,6 @@ type RunbookStep struct {
 	Automatic       bool              `json:"automatic,omitempty"`
 	Repeats         bool              `json:"repeats,omitempty"`
 	RepeatsDuration string            `json:"repeats_duration,omitempty"`
-	DelayDuration   string            `json:"delay_duration,omitempty"`
 }
 
 // UpdateRunbookRequest is the payload for updating a service

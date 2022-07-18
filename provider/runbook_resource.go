@@ -6,10 +6,10 @@ import (
 	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
-
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/senseyeio/duration"
 )
 
 func resourceRunbook() *schema.Resource {
@@ -77,17 +77,24 @@ func resourceRunbook() *schema.Resource {
 							Type:     schema.TypeMap,
 							Optional: true,
 						},
-						"delation_duration": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
 						"repeats": {
+							Default: false,
 							Type:     schema.TypeBool,
 							Optional: true,
 						},
 						"repeats_duration": {
 							Type:     schema.TypeString,
 							Optional: true,
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								v := val.(string)
+
+								_, err := duration.ParseISO8601(v)
+
+								if err != nil {
+									errs = append(errs, fmt.Errorf("%s must be an ISO8601 string, got: %v", key, v))
+								}
+								return
+							},
 						},
 
 						// Computed
@@ -144,11 +151,13 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 		}
 
 		steps[index] = map[string]interface{}{
-			"step_id":   currentStep.StepID,
-			"name":      currentStep.Name,
-			"action_id": currentStep.ActionID,
-			"config":    stepConfig,
-			"automatic": currentStep.Automatic,
+			"step_id":          currentStep.StepID,
+			"name":             currentStep.Name,
+			"action_id":        currentStep.ActionID,
+			"config":           stepConfig,
+			"automatic":        currentStep.Automatic,
+			"repeats":          currentStep.Repeats,
+			"repeats_duration": currentStep.RepeatsDuration,
 		}
 	}
 	attributes["steps"] = steps
@@ -191,11 +200,20 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	for _, currentStep := range steps {
 		step := currentStep.(map[string]interface{})
 
+		if step["repeats"].(bool) == true && step["repeats_duration"].(string) == "" {
+			return diag.Errorf("step repeats requires step repeats_duration to be set")
+		}
+		if step["repeats"].(bool) == false && step["repeats_duration"].(string) != "" {
+			return diag.Errorf("step repeats_duration requires step repeats to be set to true")
+		}
+
 		createRequest.Steps = append(createRequest.Steps, firehydrant.RunbookStep{
-			Name:      step["name"].(string),
-			ActionID:  step["action_id"].(string),
-			Automatic: step["automatic"].(bool),
-			Config:    convertStringMap(step["config"].(map[string]interface{})),
+			Name:            step["name"].(string),
+			ActionID:        step["action_id"].(string),
+			Automatic:       step["automatic"].(bool),
+			Repeats:         step["repeats"].(bool),
+			RepeatsDuration: step["repeats_duration"].(string),
+			Config:          convertStringMap(step["config"].(map[string]interface{})),
 		})
 	}
 
@@ -244,11 +262,20 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	for _, currentStep := range steps {
 		step := currentStep.(map[string]interface{})
 
+		if step["repeats"].(bool) == true && step["repeats_duration"].(string) == "" {
+			return diag.Errorf("step repeats requires step repeats_duration to be set")
+		}
+		if step["repeats"].(bool) == false && step["repeats_duration"].(string) != "" {
+			return diag.Errorf("step repeats_duration requires step repeat to be set to true")
+		}
+
 		updateRequest.Steps = append(updateRequest.Steps, firehydrant.RunbookStep{
-			Name:      step["name"].(string),
-			ActionID:  step["action_id"].(string),
-			Automatic: step["automatic"].(bool),
-			Config:    convertStringMap(step["config"].(map[string]interface{})),
+			Name:            step["name"].(string),
+			ActionID:        step["action_id"].(string),
+			Automatic:       step["automatic"].(bool),
+			Repeats:         step["repeats"].(bool),
+			RepeatsDuration: step["repeats_duration"].(string),
+			Config:          convertStringMap(step["config"].(map[string]interface{})),
 		})
 	}
 

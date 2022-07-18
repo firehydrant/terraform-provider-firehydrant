@@ -12,7 +12,7 @@ require (
 	github.com/hashicorp/go-hclog v1.0.0 // indirect
 	github.com/hashicorp/go-plugin v1.4.3 // indirect
 	github.com/hashicorp/hcl/v2 v2.11.1 // indirect
-	github.com/hashicorp/terraform-plugin-log v0.2.0 // indirect
+	github.com/hashicorp/terraform-plugin-log v0.2.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
 	github.com/hashicorp/terraform-registry-address v0.0.0-20210816115301-cb2034eba045 // indirect
 	github.com/hashicorp/yamux v0.0.0-20211028200310-0bc27b27de87 // indirect
@@ -21,6 +21,7 @@ require (
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46
 	github.com/stretchr/testify v1.7.0
 	github.com/zclconf/go-cty v1.10.0 // indirect
 	golang.org/x/mod v0.4.0 // indirect

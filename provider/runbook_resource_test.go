@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -83,6 +84,10 @@ func TestAccRunbookResource_update(t *testing.T) {
 						"firehydrant_runbook.test_runbook", "steps.#", "1"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.0.name", "Notify Channel"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.0.repeats", "true"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.0.repeats_duration", "PT15M"),
 					resource.TestCheckResourceAttrSet(
 						"firehydrant_runbook.test_runbook", "steps.0.action_id"),
 				),
@@ -101,6 +106,10 @@ func TestAccRunbookResource_update(t *testing.T) {
 			//			"firehydrant_runbook.test_runbook", "steps.#", "1"),
 			//		resource.TestCheckResourceAttr(
 			//			"firehydrant_runbook.test_runbook", "steps.0.name", "Create Incident Channel"),
+			//    resource.TestCheckResourceAttr(
+			// 	    "firehydrant_runbook.test_runbook", "steps.0.repeats", "true"),
+			//    resource.TestCheckResourceAttr(
+			// 	    "firehydrant_runbook.test_runbook", "steps.0.repeats_duration", "PT15M"),
 			//		resource.TestCheckResourceAttrSet(
 			//			"firehydrant_runbook.test_runbook", "steps.0.action_id"),
 			//	),
@@ -142,6 +151,36 @@ func TestAccRunbookResourceImport_allAttributes(t *testing.T) {
 				ResourceName:      "firehydrant_runbook.test_runbook",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccRunbookResourceImport_repeatDurationNotSetAttribute(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccRunbookResourceConfig_required_repeat_duration_not_set(rName),
+				ExpectError: regexp.MustCompile("Error: step repeats requires step repeats_duration to be set"),
+			},
+		},
+	})
+}
+
+func TestAccRunbookResourceImport_repeatsNotSetAttribute(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccRunbookResourceConfig_required_repeats_not_set(rName),
+				ExpectError: regexp.MustCompile("Error: step repeats_duration requires step repeats to be set to true"),
 			},
 		},
 	})
@@ -318,26 +357,74 @@ resource "firehydrant_runbook" "test_runbook" {
 func testAccRunbookResourceConfig_update(rName string) string {
 	return fmt.Sprintf(`
 resource "firehydrant_team" "test_team1" {
-  name = "test-team1-%s"
+	name = "test-team1-%s"
 }
 data "firehydrant_runbook_action" "notify_channel" {
-  slug             = "notify_channel"
-  integration_slug = "slack"
-  type             = "incident"
+	slug             = "notify_channel"
+	integration_slug = "slack"
+	type             = "incident"
 }
 
 resource "firehydrant_runbook" "test_runbook" {
-  name        = "test-runbook-%s"
-  type        = "incident"
-  description = "test-description-%s"
-  owner_id    = firehydrant_team.test_team1.id
+	name        = "test-runbook-%s"
+	type        = "incident"
+	description = "test-description-%s"
+	owner_id    = firehydrant_team.test_team1.id
 
-  steps {
-    name    = "Notify Channel"
-    action_id = data.firehydrant_runbook_action.notify_channel.id
-    config = {
-      "channels" = "#incidents"
-    }
-  }
+	steps {
+		name             = "Notify Channel"
+		action_id        = data.firehydrant_runbook_action.notify_channel.id
+		repeats          = true
+		repeats_duration = "PT15M"
+		config = {
+			"channels" = "#incidents"
+		}
+	}
 }`, rName, rName, rName)
+}
+
+func testAccRunbookResourceConfig_required_repeat_duration_not_set(rName string) string {
+	return fmt.Sprintf(`
+data "firehydrant_runbook_action" "create_incident_channel" {
+	slug             = "create_incident_channel"
+	integration_slug = "slack"
+	type             = "incident"
+}
+
+resource "firehydrant_runbook" "test_runbook" {
+	name = "test-runbook-%s"
+	type = "incident"
+
+	steps {
+		name      = "Create Incident Channel"
+		repeats   = true
+		action_id = data.firehydrant_runbook_action.create_incident_channel.id
+		config = {
+			channel_name_format = "-inc-{{ number }}"
+		}
+	}
+}`, rName)
+}
+
+func testAccRunbookResourceConfig_required_repeats_not_set(rName string) string {
+	return fmt.Sprintf(`
+data "firehydrant_runbook_action" "create_incident_channel" {
+	slug             = "create_incident_channel"
+	integration_slug = "slack"
+	type             = "incident"
+}
+
+resource "firehydrant_runbook" "test_runbook" {
+	name = "test-runbook-%s"
+	type = "incident"
+
+	steps {
+		name             = "Create Incident Channel"
+		repeats_duration = "PT15M"
+		action_id        = data.firehydrant_runbook_action.create_incident_channel.id
+		config = {
+			channel_name_format = "-inc-{{ number }}"
+		}
+	}
+}`, rName)
 }
