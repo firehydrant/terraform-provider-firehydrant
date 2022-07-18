@@ -31,10 +31,6 @@ func resourceRunbook() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"type": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
 
 			// Optional
 			"description": {
@@ -129,7 +125,6 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 	attributes := map[string]interface{}{
 		"name":        runbookResponse.Name,
 		"description": runbookResponse.Description,
-		"type":        runbookResponse.Type,
 	}
 
 	var ownerID string
@@ -179,7 +174,6 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	createRequest := firehydrant.CreateRunbookRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
-		Type:        d.Get("type").(string),
 	}
 
 	// Process any optional attributes and add to the create request if necessary
