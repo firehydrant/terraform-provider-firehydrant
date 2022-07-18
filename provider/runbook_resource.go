@@ -31,19 +31,9 @@ func resourceRunbook() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
-			// Optional
-			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"owner_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"steps": {
 				Type:     schema.TypeList,
-				Optional: true,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						// Required
@@ -95,6 +85,16 @@ func resourceRunbook() *schema.Resource {
 						},
 					},
 				},
+			},
+
+			// Optional
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"owner_id": {
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 		},
 	}

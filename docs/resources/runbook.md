@@ -50,9 +50,9 @@ resource "firehydrant_runbook" "example-runbook" {
 The following arguments are supported:
 
 * `name` - (Required) The name of the runbook.
+* `steps` - (Required) Steps to add to the runbook.
 * `description` - (Optional) A description of the runbook.
 * `owner_id` - (Optional) The ID of the team that owns this runbook.
-* `steps` - (Optional) Steps to add to the runbook.
 
 The `steps` block supports:
 
