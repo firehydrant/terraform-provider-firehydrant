@@ -78,6 +78,7 @@ func resourceRunbook() *schema.Resource {
 							Optional: true,
 						},
 						"repeats": {
+							Default: false,
 							Type:     schema.TypeBool,
 							Optional: true,
 						},
