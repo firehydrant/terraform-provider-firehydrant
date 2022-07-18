@@ -3,6 +3,13 @@
 BREAKING CHANGES:
 
 * resource/runbook: Changed the type of the `steps` `config` attribute to a JSON string ([#79](https://github.com/firehydrant/terraform-provider-firehydrant/pull/79))
+* resource/runbook: Removed deprecated `type` attribute ([#80](https://github.com/firehydrant/terraform-provider-firehydrant/pull/80))
+* resource/runbook: Removed deprecated `severities` attribute ([#80](https://github.com/firehydrant/terraform-provider-firehydrant/pull/80))
+* resource/runbook: Changed `steps` attribute to be required ([#80](https://github.com/firehydrant/terraform-provider-firehydrant/pull/80))
+
+BUG FIXES:
+
+* resource/runbook: Fixed bug that prevented the `description` attribute from being unset ([#80](https://github.com/firehydrant/terraform-provider-firehydrant/pull/80))
 
 FEATURES:
 
