@@ -91,26 +91,23 @@ func TestAccRunbookResource_update(t *testing.T) {
 						"firehydrant_runbook.test_runbook", "steps.0.action_id"),
 				),
 			},
-			// TODO: fix error causing description to not be removed on update and then add this step back in
-			//{
-			//	Config: testAccRunbookResourceConfig_basic(rNameUpdated),
-			//	Check: resource.ComposeAggregateTestCheckFunc(
-			//		testAccCheckRunbookResourceExistsWithAttributes_basic("firehydrant_runbook.test_runbook"),
-			//		resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "id"),
-			//		resource.TestCheckResourceAttr(
-			//			"firehydrant_runbook.test_runbook", "name", fmt.Sprintf("test-runbook-%s", rNameUpdated)),
-			//		resource.TestCheckResourceAttr(
-			//			"firehydrant_runbook.test_runbook", "steps.#", "1"),
-			//		resource.TestCheckResourceAttr(
-			//			"firehydrant_runbook.test_runbook", "steps.0.name", "Create Incident Channel"),
-			//    resource.TestCheckResourceAttr(
-			// 	    "firehydrant_runbook.test_runbook", "steps.0.repeats", "true"),
-			//    resource.TestCheckResourceAttr(
-			// 	    "firehydrant_runbook.test_runbook", "steps.0.repeats_duration", "PT15M"),
-			//		resource.TestCheckResourceAttrSet(
-			//			"firehydrant_runbook.test_runbook", "steps.0.action_id"),
-			//	),
-			//},
+			{
+				Config: testAccRunbookResourceConfig_basic(rNameUpdated),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckRunbookResourceExistsWithAttributes_basic("firehydrant_runbook.test_runbook"),
+					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "id"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "name", fmt.Sprintf("test-runbook-%s", rNameUpdated)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.#", "1"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.0.name", "Create Incident Channel"),
+					resource.TestCheckResourceAttrSet(
+						"firehydrant_runbook.test_runbook", "steps.0.action_id"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.0.repeats", "false"),
+				),
+			},
 		},
 	})
 }

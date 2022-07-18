@@ -41,7 +41,7 @@ type RunbookStep struct {
 // URL: PATCH https://api.firehydrant.io/v1/runbooks/{id}
 type UpdateRunbookRequest struct {
 	Name        string        `json:"name,omitempty"`
-	Description string        `json:"description,omitempty"`
+	Description string        `json:"description"`
 	Owner       *RunbookTeam  `json:"owner,omitempty"`
 	Steps       []RunbookStep `json:"steps,omitempty"`
 }
