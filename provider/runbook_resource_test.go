@@ -366,24 +366,23 @@ resource "firehydrant_runbook" "test_runbook" {
 
 func testAccRunbookResourceConfig_required_repeat_duration(rName string) string {
 	return fmt.Sprintf(`
-
 data "firehydrant_runbook_action" "create_incident_channel" {
-  slug             = "create_incident_channel"
-  integration_slug = "slack"
-  type             = "incident"
+	slug             = "create_incident_channel"
+	integration_slug = "slack"
+	type             = "incident"
 }
 
 resource "firehydrant_runbook" "test_runbook" {
-  name        = "test-runbook-%s"
-  type        = "incident"
+	name = "test-runbook-%s"
+	type = "incident"
 
-  steps {
-    name      = "Create Incident Channel"
+	steps {
+		name      = "Create Incident Channel"
 		repeats   = true
-    action_id = data.firehydrant_runbook_action.create_incident_channel.id
-    config = {
-      channel_name_format = "-inc-{{ number }}"
-    }
-  }
+		action_id = data.firehydrant_runbook_action.create_incident_channel.id
+		config = {
+			channel_name_format = "-inc-{{ number }}"
+		}
+	}
 }`, rName)
 }
