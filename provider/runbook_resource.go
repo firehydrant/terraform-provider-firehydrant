@@ -45,18 +45,6 @@ func resourceRunbook() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"severities": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-					},
-				},
-			},
 			"steps": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -173,14 +161,6 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 	}
 	attributes["steps"] = steps
 
-	severities := make([]interface{}, len(runbookResponse.Severities))
-	for index, currentSeverity := range runbookResponse.Severities {
-		severities[index] = map[string]interface{}{
-			"id": currentSeverity.ID,
-		}
-	}
-	attributes["severities"] = severities
-
 	// Set the resource attributes to the values we got from the API
 	for key, value := range attributes {
 		if err := d.Set(key, value); err != nil {
@@ -234,15 +214,6 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 			Config:          configMap,
 			Repeats:         step["repeats"].(bool),
 			RepeatsDuration: step["repeats_duration"].(string),
-		})
-	}
-
-	severities := d.Get("severities").([]interface{})
-	for _, severity := range severities {
-		currentSeverity := severity.(map[string]interface{})
-
-		createRequest.Severities = append(createRequest.Severities, firehydrant.RunbookRelation{
-			ID: currentSeverity["id"].(string),
 		})
 	}
 
@@ -305,15 +276,6 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 			Config:          configMap,
 			Repeats:         step["repeats"].(bool),
 			RepeatsDuration: step["repeats_duration"].(string),
-		})
-	}
-
-	severities := d.Get("severities").([]interface{})
-	for _, currentSeverity := range severities {
-		severity := currentSeverity.(map[string]interface{})
-
-		updateRequest.Severities = append(updateRequest.Severities, firehydrant.RunbookRelation{
-			ID: severity["id"].(string),
 		})
 	}
 

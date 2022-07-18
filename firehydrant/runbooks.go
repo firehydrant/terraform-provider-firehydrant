@@ -16,14 +16,7 @@ type CreateRunbookRequest struct {
 	Description string       `json:"description"`
 	Owner       *RunbookTeam `json:"owner,omitempty"`
 
-	Severities []RunbookRelation `json:"severities"`
-
 	Steps []RunbookStep `json:"steps,omitempty"`
-}
-
-// RunbookRelation associates a runbook to a type in FireHydrant (such as a severity)
-type RunbookRelation struct {
-	ID string `json:"id"`
 }
 
 // RunbookStep is a step inside of a runbook that can automate something (like creating a incident slack channel)
@@ -40,11 +33,10 @@ type RunbookStep struct {
 // UpdateRunbookRequest is the payload for updating a service
 // URL: PATCH https://api.firehydrant.io/v1/runbooks/{id}
 type UpdateRunbookRequest struct {
-	Name        string            `json:"name,omitempty"`
-	Description string            `json:"description,omitempty"`
-	Owner       *RunbookTeam      `json:"owner,omitempty"`
-	Steps       []RunbookStep     `json:"steps,omitempty"`
-	Severities  []RunbookRelation `json:"severities"`
+	Name        string        `json:"name,omitempty"`
+	Description string        `json:"description,omitempty"`
+	Owner       *RunbookTeam  `json:"owner,omitempty"`
+	Steps       []RunbookStep `json:"steps,omitempty"`
 }
 
 // RunbookResponse is the payload for retrieving a service
@@ -56,8 +48,6 @@ type RunbookResponse struct {
 	Description string        `json:"description"`
 	Owner       *RunbookTeam  `json:"owner"`
 	Steps       []RunbookStep `json:"steps"`
-
-	Severities []RunbookRelation `json:"severities"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
