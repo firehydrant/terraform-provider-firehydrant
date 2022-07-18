@@ -84,8 +84,8 @@ func TestAccRunbookResource_update(t *testing.T) {
 						"firehydrant_runbook.test_runbook", "steps.#", "1"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.0.name", "Notify Channel"),
-					resource.TestCheckResourceAttrSet(
-						"firehydrant_runbook.test_runbook", "steps.0.repeats"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.0.repeats", "true"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.0.repeats_duration", "PT15M"),
 					resource.TestCheckResourceAttrSet(
