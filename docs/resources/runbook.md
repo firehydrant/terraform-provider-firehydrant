@@ -29,7 +29,6 @@ data "firehydrant_runbook_action" "notify-channel-action" {
 
 resource "firehydrant_runbook" "example-runbook" {
   name        = "example-runbook"
-  type        = "incident"
   description = "This is an example runbook"
   owner_id    = firehydrant_team.example-owner-team.id
 
@@ -51,16 +50,9 @@ resource "firehydrant_runbook" "example-runbook" {
 The following arguments are supported:
 
 * `name` - (Required) The name of the runbook.
-* `type` - (Required) The type of the runbook. Valid values are 
-  `incident`, `general`, `infrastructure`, and `incident_role`.
+* `steps` - (Required) Steps to add to the runbook.
 * `description` - (Optional) A description of the runbook.
 * `owner_id` - (Optional) The ID of the team that owns this runbook.
-* `severities` - (Optional) Severities to associate with the runbook.
-* `steps` - (Optional) Steps to add to the runbook.
-
-The `severities` block supports:
-
-* `id` - (Required) The ID of the severity.
 
 The `steps` block supports:
 

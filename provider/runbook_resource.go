@@ -31,35 +31,9 @@ func resourceRunbook() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"type": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			// Optional
-			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"owner_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"severities": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-					},
-				},
-			},
 			"steps": {
 				Type:     schema.TypeList,
-				Optional: true,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						// Required
@@ -112,6 +86,16 @@ func resourceRunbook() *schema.Resource {
 					},
 				},
 			},
+
+			// Optional
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"owner_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -141,7 +125,6 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 	attributes := map[string]interface{}{
 		"name":        runbookResponse.Name,
 		"description": runbookResponse.Description,
-		"type":        runbookResponse.Type,
 	}
 
 	var ownerID string
@@ -173,14 +156,6 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 	}
 	attributes["steps"] = steps
 
-	severities := make([]interface{}, len(runbookResponse.Severities))
-	for index, currentSeverity := range runbookResponse.Severities {
-		severities[index] = map[string]interface{}{
-			"id": currentSeverity.ID,
-		}
-	}
-	attributes["severities"] = severities
-
 	// Set the resource attributes to the values we got from the API
 	for key, value := range attributes {
 		if err := d.Set(key, value); err != nil {
@@ -199,7 +174,6 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	createRequest := firehydrant.CreateRunbookRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
-		Type:        d.Get("type").(string),
 	}
 
 	// Process any optional attributes and add to the create request if necessary
@@ -234,15 +208,6 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 			Config:          configMap,
 			Repeats:         step["repeats"].(bool),
 			RepeatsDuration: step["repeats_duration"].(string),
-		})
-	}
-
-	severities := d.Get("severities").([]interface{})
-	for _, severity := range severities {
-		currentSeverity := severity.(map[string]interface{})
-
-		createRequest.Severities = append(createRequest.Severities, firehydrant.RunbookRelation{
-			ID: currentSeverity["id"].(string),
 		})
 	}
 
@@ -305,15 +270,6 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 			Config:          configMap,
 			Repeats:         step["repeats"].(bool),
 			RepeatsDuration: step["repeats_duration"].(string),
-		})
-	}
-
-	severities := d.Get("severities").([]interface{})
-	for _, currentSeverity := range severities {
-		severity := currentSeverity.(map[string]interface{})
-
-		updateRequest.Severities = append(updateRequest.Severities, firehydrant.RunbookRelation{
-			ID: severity["id"].(string),
 		})
 	}
 
