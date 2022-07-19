@@ -52,7 +52,6 @@ resource "firehydrant_runbook" "example-runbook" {
     }
     }
   )
-}
 
   steps {
     name             = "Notify Channel"
