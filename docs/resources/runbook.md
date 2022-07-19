@@ -59,9 +59,10 @@ resource "firehydrant_runbook" "example-runbook" {
     action_id        = data.firehydrant_runbook_action.notify-channel-action.id
     repeats          = true
     repeats_duration = "PT15M"
-    config = {
-      "channels" = "#incidents"
-    }
+
+    config = jsonencode({
+      channels = "#incidents"
+    })
   }
 }
 ```
@@ -88,9 +89,12 @@ The `steps` block supports:
 * `action_id` - (Required) The ID of the runbook action for the step.
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should be automatically execute.
-* `config` - (Optional) Config block for the step.
+* `config` - (Optional) JSON string representing the configuration settings for the step. 
+  Use [Terraform's jsonencode](https://www.terraform.io/language/functions/jsonencode) 
+  function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
 * `repeats` - (Optional) Whether this step should repeat.
-* `repeats_duration` - (Optional) How often this step should repeat in ISO8601. Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
+* `repeats_duration` - (Optional) How often this step should repeat in ISO8601. 
+  Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
 
 ## Attributes Reference
 

@@ -59,15 +59,16 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 }
 
 resource "firehydrant_runbook" "test_runbook" {
-  name        = "test-runbook-%s"
-  type        = "incident"
+  name = "test-runbook-%s"
+  type = "incident"
 
   steps {
     name      = "Create Incident Channel"
     action_id = data.firehydrant_runbook_action.create_incident_channel.id
-    config = {
+
+    config = jsonencode({
       channel_name_format = "-inc-{{ number }}"
-    }
+    })
   }
 }
 
@@ -117,9 +118,10 @@ resource "firehydrant_runbook" "test_runbook" {
   steps {
     name      = "Create Incident Channel"
     action_id = data.firehydrant_runbook_action.create_incident_channel.id
-    config = {
+
+    config = jsonencode({
       channel_name_format = "-inc-{{ number }}"
-    }
+    })
   }
 }
 

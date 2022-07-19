@@ -30,13 +30,13 @@ type RunbookRelation struct {
 
 // RunbookStep is a step inside of a runbook that can automate something (like creating a incident slack channel)
 type RunbookStep struct {
-	Name            string            `json:"name"`
-	ActionID        string            `json:"action_id"`
-	StepID          string            `json:"step_id,omitempty"`
-	Config          map[string]string `json:"config,omitempty"`
-	Automatic       bool              `json:"automatic,omitempty"`
-	Repeats         bool              `json:"repeats,omitempty"`
-	RepeatsDuration string            `json:"repeats_duration,omitempty"`
+	Name            string                 `json:"name"`
+	ActionID        string                 `json:"action_id"`
+	StepID          string                 `json:"step_id,omitempty"`
+	Config          map[string]interface{} `json:"config,omitempty"`
+	Automatic       bool                   `json:"automatic,omitempty"`
+	Repeats         bool                   `json:"repeats,omitempty"`
+	RepeatsDuration string                 `json:"repeats_duration,omitempty"`
 }
 
 // UpdateRunbookRequest is the payload for updating a service
