@@ -44,8 +44,8 @@ resource "firehydrant_runbook" "example-runbook" {
     }
     user_data = {
       "1" = {
-        type  = "Milestone",
-        value = "started",
+        type  = "Milestone"
+        value = "started"
         label = "Started"
       }
     }
@@ -91,7 +91,9 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the runbook.
 * `steps` - (Required) Steps to add to the runbook.
-* `attachment_rule` - (Optional) JSON string representing the attachment rule configuration for the runbook. 
+* `attachment_rule` - (Optional) JSON string representing the attachment rule configuration for the runbook.
+  Use [Terraform's jsonencode](https://www.terraform.io/language/functions/jsonencode)
+  function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
   Defaults to attaching manually:
   ```hcl
   attachment_rule = jsonencode({
@@ -110,16 +112,21 @@ The following arguments are supported:
 
 The `steps` block supports:
 
+Available attributes and whether they are available and required varies depending on the specific runbook step in question.
+See [Runbook Steps Configuration documentation](../runbook_steps.md) for more detailed documentation on each step. 
+
 * `action_id` - (Required) The ID of the runbook action for the step.
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should be automatically execute.
   Defaults to `false`.
-* `config` - (Optional) JSON string representing the configuration settings for the step. 
+* `config` - (Optional/Required) JSON string representing the configuration settings for the step.
   Use [Terraform's jsonencode](https://www.terraform.io/language/functions/jsonencode) 
   function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
-* `repeats` - (Optional) Whether this step should repeat.
+* `repeats` - (Optional) Whether this step should repeat. Defaults to `false`.
+  When this value is `true`, `repeats_duration` _must_ be provided.
 * `repeats_duration` - (Optional) How often this step should repeat in ISO8601. 
   Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
+  This value _must_ be provided if `repeats` is `true`. This value _must not_ be provided if `repeats` is `false`.
 * `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
   The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
