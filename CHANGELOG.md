@@ -1,5 +1,9 @@
 ## 0.3.0 (Unreleased)
 
+BREAKING CHANGES:
+
+* resource/runbook: Changed the type of the `steps` `config` attribute to a JSON string ([#79](https://github.com/firehydrant/terraform-provider-firehydrant/pull/79))
+
 FEATURES:
 
 * **New Resource:** `firehydrant_priority` ([#65](https://github.com/firehydrant/terraform-provider-firehydrant/pull/65))

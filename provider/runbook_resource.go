@@ -2,13 +2,17 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/senseyeio/duration"
 )
 
@@ -74,22 +78,25 @@ func resourceRunbook() *schema.Resource {
 							Optional: true,
 						},
 						"config": {
-							Type:     schema.TypeMap,
-							Optional: true,
+							Type:             schema.TypeString,
+							Optional:         true,
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsJSON),
+							StateFunc: func(value interface{}) string {
+								normalizedJSON, _ := structure.NormalizeJsonString(value)
+								return normalizedJSON
+							},
 						},
 						"repeats": {
-							Default: false,
 							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  false,
 						},
 						"repeats_duration": {
 							Type:     schema.TypeString,
 							Optional: true,
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								v := val.(string)
-
 								_, err := duration.ParseISO8601(v)
-
 								if err != nil {
 									errs = append(errs, fmt.Errorf("%s must be an ISO8601 string, got: %v", key, v))
 								}
@@ -145,20 +152,24 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 
 	steps := make([]interface{}, len(runbookResponse.Steps))
 	for index, currentStep := range runbookResponse.Steps {
-		stepConfig := map[string]interface{}{}
-		for key, value := range currentStep.Config {
-			stepConfig[key] = value
-		}
-
-		steps[index] = map[string]interface{}{
+		currentStepAttributes := map[string]interface{}{
 			"step_id":          currentStep.StepID,
 			"name":             currentStep.Name,
 			"action_id":        currentStep.ActionID,
-			"config":           stepConfig,
 			"automatic":        currentStep.Automatic,
 			"repeats":          currentStep.Repeats,
 			"repeats_duration": currentStep.RepeatsDuration,
 		}
+
+		if len(currentStep.Config) > 0 {
+			config, err := json.Marshal(currentStep.Config)
+			if err != nil {
+				return diag.Errorf("Error converting step config to JSON due invalid JSON returned by FireHydrant: %v", err)
+			}
+			currentStepAttributes["config"] = string(config)
+		}
+
+		steps[index] = currentStepAttributes
 	}
 	attributes["steps"] = steps
 
@@ -207,13 +218,22 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 			return diag.Errorf("step repeats_duration requires step repeats to be set to true")
 		}
 
+		configMap := map[string]interface{}{}
+		config := step["config"].(string)
+		if config != "" {
+			err := json.Unmarshal([]byte(config), &configMap)
+			if err != nil {
+				return diag.Errorf("Error converting step config %s to map: %v", config, err)
+			}
+		}
+
 		createRequest.Steps = append(createRequest.Steps, firehydrant.RunbookStep{
 			Name:            step["name"].(string),
 			ActionID:        step["action_id"].(string),
 			Automatic:       step["automatic"].(bool),
+			Config:          configMap,
 			Repeats:         step["repeats"].(bool),
 			RepeatsDuration: step["repeats_duration"].(string),
-			Config:          convertStringMap(step["config"].(map[string]interface{})),
 		})
 	}
 
@@ -269,13 +289,22 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 			return diag.Errorf("step repeats_duration requires step repeat to be set to true")
 		}
 
+		configMap := map[string]interface{}{}
+		config := step["config"].(string)
+		if config != "" {
+			err := json.Unmarshal([]byte(config), &configMap)
+			if err != nil {
+				return diag.Errorf("Error converting step config %s to map: %v", config, err)
+			}
+		}
+
 		updateRequest.Steps = append(updateRequest.Steps, firehydrant.RunbookStep{
 			Name:            step["name"].(string),
 			ActionID:        step["action_id"].(string),
 			Automatic:       step["automatic"].(bool),
+			Config:          configMap,
 			Repeats:         step["repeats"].(bool),
 			RepeatsDuration: step["repeats_duration"].(string),
-			Config:          convertStringMap(step["config"].(map[string]interface{})),
 		})
 	}
 
