@@ -79,6 +79,7 @@ func TestAccRunbookResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
 					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "owner_id"),
+					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "attachment_rule"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.#", "2"),
 					resource.TestCheckResourceAttr(
@@ -122,6 +123,21 @@ func TestAccRunbookResource_validateSchemaAttributesStepsConfig(t *testing.T) {
 			{
 				Config:      testAccRunbookResourceConfig_stepsConfigInvalidJSON(rName),
 				ExpectError: regexp.MustCompile(`"config" contains an invalid JSON`),
+			},
+		},
+	})
+}
+
+func TestAccRunbookResource_validateSchemaAttributesStepsAttachmentRule(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccRunbookResourceConfig_attachmentRuleInvalidJSON(rName),
+				ExpectError: regexp.MustCompile(`"attachment_rule" contains an invalid JSON`),
 			},
 		},
 	})
@@ -228,6 +244,10 @@ func testAccCheckRunbookResourceExistsWithAttributes_basic(resourceName string) 
 			return fmt.Errorf("Unexpected owner. Expected no owner ID, got: %s", runbookResponse.Owner.ID)
 		}
 
+		if runbookResponse.AttachmentRule != nil {
+			return fmt.Errorf("Unexpected attachment_rule. Expected no attachment_rule, got: %s", runbookResponse.AttachmentRule)
+		}
+
 		if len(runbookResponse.Steps) != 1 {
 			return fmt.Errorf("Unexpected number of steps. Expected 1 step, got: %v", len(runbookResponse.Steps))
 		}
@@ -294,6 +314,10 @@ func testAccCheckRunbookResourceExistsWithAttributes_update(resourceName string)
 		expected, got = runbookResource.Primary.Attributes["description"], runbookResponse.Description
 		if expected != got {
 			return fmt.Errorf("Unexpected description. Expected: %s, got: %s", expected, got)
+		}
+
+		if runbookResponse.AttachmentRule == nil {
+			return fmt.Errorf("Unexpected attachment_rule. Expected: %s, got: %s", expected, got)
 		}
 
 		if runbookResponse.Owner == nil {
@@ -412,6 +436,26 @@ resource "firehydrant_runbook" "test_runbook" {
   name        = "test-runbook-%s"
   description = "test-description-%s"
   owner_id    = firehydrant_team.test_team1.id
+	attachment_rule = jsonencode({
+		"logic" = {
+			"eq" = [
+				{
+					"var" = "incident_current_milestone",
+				},
+				{
+					"var" = "usr.1"
+				}
+			]
+		},
+		"user_data" = {
+			"1" = {
+				"type"  = "Milestone",
+				"value" = "started",
+				"label" = "Started"
+			}
+		}
+		}
+	)
 
   steps {
     name             = "Notify Channel"
@@ -441,6 +485,26 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 
 resource "firehydrant_runbook" "test_runbook" {
   name = "test-runbook-%s"
+	attachment_rule = jsonencode({
+		"logic" = {
+			"eq" = [
+				{
+					"var" = "incident_current_milestone",
+				},
+				{
+					"var" = "usr.1"
+				}
+			]
+		},
+		"user_data" = {
+			"1" = {
+				"type"  = "Milestone",
+				"value" = "started",
+				"label" = "Started"
+			}
+		}
+		}
+	)
 
   steps {
     name      = "Create Incident Channel"
@@ -464,6 +528,26 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 
 resource "firehydrant_runbook" "test_runbook" {
   name = "test-runbook-%s"
+	attachment_rule = jsonencode({
+		"logic" = {
+			"eq" = [
+				{
+					"var" = "incident_current_milestone",
+				},
+				{
+					"var" = "usr.1"
+				}
+			]
+		},
+		"user_data" = {
+			"1" = {
+				"type"  = "Milestone",
+				"value" = "started",
+				"label" = "Started"
+			}
+		}
+		}
+	)
 
   steps {
     name             = "Create Incident Channel"
@@ -493,6 +577,25 @@ resource "firehydrant_runbook" "test_runbook" {
     action_id = data.firehydrant_runbook_action.create_incident_channel.id
 
     config = "{invalid_json = {{}}"
+  }
+}`, rName)
+}
+
+func testAccRunbookResourceConfig_attachmentRuleInvalidJSON(rName string) string {
+	return fmt.Sprintf(`
+data "firehydrant_runbook_action" "create_incident_channel" {
+  slug             = "create_incident_channel"
+  integration_slug = "slack"
+  type             = "incident"
+}
+
+resource "firehydrant_runbook" "test_runbook" {
+  name = "test-runbook-%s"
+	attachment_rule = "{invalid_json = {{}}"
+
+  steps {
+    name      = "Create Incident Channel"
+    action_id = data.firehydrant_runbook_action.create_incident_channel.id
   }
 }`, rName)
 }

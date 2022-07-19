@@ -97,6 +97,7 @@ func resourceRunbook() *schema.Resource {
 				Optional: true,
 			},
 			"attachment_rule": {
+				Default:          "null",
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsJSON),
@@ -137,9 +138,12 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 
 	// Gather values from API response
 	attributes := map[string]interface{}{
-		"name":            runbookResponse.Name,
-		"description":     runbookResponse.Description,
-		"attachment_rule": string(attachmentRule),
+		"name":        runbookResponse.Name,
+		"description": runbookResponse.Description,
+	}
+
+	if attachmentRule != nil {
+		attributes["attachment_rule"] = string(attachmentRule)
 	}
 
 	var ownerID string
