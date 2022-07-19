@@ -47,11 +47,6 @@ data "firehydrant_runbook_action" "firehydrant_add_services_related_to_functiona
   slug             = "add_services_related_to_functionality"
 }
 
-data "firehydrant_runbook_action" "firehydrant_create_incident_ticket" {
-  integration_slug = "patchy"
-  slug             = "create_incident_ticket"
-}
-
 data "firehydrant_runbook_action" "firehydrant_email_notification" {
   integration_slug = "patchy"
   slug             = "email_notification"
