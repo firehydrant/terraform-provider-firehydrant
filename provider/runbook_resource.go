@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -9,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/senseyeio/duration"
 )
 
@@ -40,6 +43,15 @@ func resourceRunbook() *schema.Resource {
 			"owner_id": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"attachment_rule": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsJSON),
+				StateFunc: func(value interface{}) string {
+					normalizedJSON, _ := structure.NormalizeJsonString(value)
+					return normalizedJSON
+				},
 			},
 			"severities": {
 				Type:     schema.TypeList,
@@ -78,7 +90,7 @@ func resourceRunbook() *schema.Resource {
 							Optional: true,
 						},
 						"repeats": {
-							Default: false,
+							Default:  false,
 							Type:     schema.TypeBool,
 							Optional: true,
 						},
@@ -130,11 +142,17 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Error reading runbook %s: %v", runbookID, err)
 	}
 
+	attachmentRule, err := json.Marshal(runbookResponse.AttachmentRule)
+	if err != nil {
+		return diag.Errorf("Error converting step config to JSON due invalid JSON returned by FireHydrant: %v", err)
+	}
+
 	// Gather values from API response
 	attributes := map[string]interface{}{
-		"name":        runbookResponse.Name,
-		"description": runbookResponse.Description,
-		"type":        runbookResponse.Type,
+		"name":            runbookResponse.Name,
+		"description":     runbookResponse.Description,
+		"type":            runbookResponse.Type,
+		"attachment_rule": string(attachmentRule),
 	}
 
 	var ownerID string
@@ -184,11 +202,21 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	// Get the API client
 	firehydrantAPIClient := m.(firehydrant.Client)
 
+	attachmentRuleMap := map[string]interface{}{}
+	attachmentRule := d.Get("attachment_rule").(string)
+	if attachmentRule != "" {
+		err := json.Unmarshal([]byte(attachmentRule), &attachmentRuleMap)
+		if err != nil {
+			return diag.Errorf("Error converting attachment_rule %s to map: %v", attachmentRule, err)
+		}
+	}
+
 	// Get attributes from config and construct the create request
 	createRequest := firehydrant.CreateRunbookRequest{
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
-		Type:        d.Get("type").(string),
+		Name:           d.Get("name").(string),
+		Description:    d.Get("description").(string),
+		Type:           d.Get("type").(string),
+		AttachmentRule: attachmentRuleMap,
 	}
 
 	// Process any optional attributes and add to the create request if necessary
@@ -246,10 +274,20 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	// Get the API client
 	firehydrantAPIClient := m.(firehydrant.Client)
 
+	attachmentRuleMap := map[string]interface{}{}
+	attachmentRule := d.Get("attachment_rule").(string)
+	if attachmentRule != "" {
+		err := json.Unmarshal([]byte(attachmentRule), &attachmentRuleMap)
+		if err != nil {
+			return diag.Errorf("Error converting attachment_rule %s to map: %v", attachmentRule, err)
+		}
+	}
+
 	// Construct the update request
 	updateRequest := firehydrant.UpdateRunbookRequest{
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
+		Name:           d.Get("name").(string),
+		Description:    d.Get("description").(string),
+		AttachmentRule: attachmentRuleMap,
 	}
 
 	// Process any optional attributes and add to the update request if necessary

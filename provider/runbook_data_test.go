@@ -43,6 +43,7 @@ func TestAccRunbookDataSource_allAttributes(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_runbook.test_runbook", "description", fmt.Sprintf("test-description-%s", rName)),
 					resource.TestCheckResourceAttrSet("data.firehydrant_runbook.test_runbook", "owner_id"),
+					resource.TestCheckResourceAttrSet("data.firehydrant_runbook.test_runbook", "attachment_rule"),
 				),
 			},
 		},
@@ -92,6 +93,26 @@ resource "firehydrant_runbook" "test_runbook" {
   type        = "incident"
   description = "test-description-%s"
   owner_id    = firehydrant_team.test_team1.id
+	attachment_rule = jsonencode({
+    "logic" = {
+      "eq" = [
+        {
+          "var" = "incident_current_milestone",
+        },
+        {
+          "var" = "usr.1"
+        }
+      ]
+    },
+    "user_data" = {
+      "1" = {
+        "type"  = "Milestone",
+        "value" = "started",
+        "label" = "Started"
+      }
+    }
+    }
+  )
 
   steps {
     name      = "Create Incident Channel"

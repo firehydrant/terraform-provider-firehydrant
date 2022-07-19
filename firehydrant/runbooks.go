@@ -16,6 +16,8 @@ type CreateRunbookRequest struct {
 	Description string       `json:"description"`
 	Owner       *RunbookTeam `json:"owner,omitempty"`
 
+	AttachmentRule map[string]interface{} `json:"attachment_rule,omitempty"`
+
 	Severities []RunbookRelation `json:"severities"`
 
 	Steps []RunbookStep `json:"steps,omitempty"`
@@ -40,11 +42,12 @@ type RunbookStep struct {
 // UpdateRunbookRequest is the payload for updating a service
 // URL: PATCH https://api.firehydrant.io/v1/runbooks/{id}
 type UpdateRunbookRequest struct {
-	Name        string            `json:"name,omitempty"`
-	Description string            `json:"description,omitempty"`
-	Owner       *RunbookTeam      `json:"owner,omitempty"`
-	Steps       []RunbookStep     `json:"steps,omitempty"`
-	Severities  []RunbookRelation `json:"severities"`
+	Name           string                 `json:"name,omitempty"`
+	Description    string                 `json:"description,omitempty"`
+	Owner          *RunbookTeam           `json:"owner,omitempty"`
+	Steps          []RunbookStep          `json:"steps,omitempty"`
+	Severities     []RunbookRelation      `json:"severities"`
+	AttachmentRule map[string]interface{} `json:"attachment_rule,omitempty"`
 }
 
 // RunbookResponse is the payload for retrieving a service
@@ -56,6 +59,8 @@ type RunbookResponse struct {
 	Description string        `json:"description"`
 	Owner       *RunbookTeam  `json:"owner"`
 	Steps       []RunbookStep `json:"steps"`
+
+	AttachmentRule map[string]interface{} `json:"attachment_rule"`
 
 	Severities []RunbookRelation `json:"severities"`
 

@@ -32,7 +32,28 @@ resource "firehydrant_runbook" "example-runbook" {
   type        = "incident"
   description = "This is an example runbook"
   owner_id    = firehydrant_team.example-owner-team.id
-  
+  attachment_rule = jsonencode({
+    "logic" = {
+      "eq" = [
+        {
+          "var" = "incident_current_milestone",
+        },
+        {
+          "var" = "usr.1"
+        }
+      ]
+    },
+    "user_data" = {
+      "1" = {
+        "type"  = "Milestone",
+        "value" = "started",
+        "label" = "Started"
+      }
+    }
+    }
+  )
+}
+
   steps {
     name             = "Notify Channel"
     action_id        = data.firehydrant_runbook_action.notify-channel-action.id
@@ -52,6 +73,7 @@ The following arguments are supported:
 * `name` - (Required) The name of the runbook.
 * `type` - (Required) The type of the runbook. Valid values are 
   `incident`, `general`, `infrastructure`, and `incident_role`.
+* `attachment_rule` - (Optional) JSON string representing the attachment rule configuration for the runbook.
 * `description` - (Optional) A description of the runbook.
 * `owner_id` - (Optional) The ID of the team that owns this runbook.
 * `severities` - (Optional) Severities to associate with the runbook.
