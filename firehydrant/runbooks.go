@@ -8,6 +8,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+// RunbookType represents the type of the runbook.
+type RunbookType string
+
+// List of valid runbook types
+const (
+	RunbookTypeDefault RunbookType = "incident"
+)
+
 // CreateRunbookRequest is the payload for creating a service
 // URL: POST https://api.firehydrant.io/v1/runbooks
 type CreateRunbookRequest struct {
@@ -25,7 +33,12 @@ type CreateRunbookRequest struct {
 
 // RunbookRelation associates a runbook to a type in FireHydrant (such as a severity)
 type RunbookRelation struct {
-	ID string `json:"id"`
+	ID          string        `json:"id"`
+	Name        string        `json:"name"`
+	Description string        `json:"description"`
+	Owner       *RunbookTeam  `json:"owner,omitempty"`
+	Steps       []RunbookStep `json:"steps"`
+	Type        string        `json:"type"`
 }
 
 // RunbookStep is a step inside of a runbook that can automate something (like creating a incident slack channel)
@@ -43,10 +56,9 @@ type RunbookStep struct {
 // URL: PATCH https://api.firehydrant.io/v1/runbooks/{id}
 type UpdateRunbookRequest struct {
 	Name           string                 `json:"name,omitempty"`
-	Description    string                 `json:"description,omitempty"`
+	Description    string                 `json:"description"`
 	Owner          *RunbookTeam           `json:"owner,omitempty"`
 	Steps          []RunbookStep          `json:"steps,omitempty"`
-	Severities     []RunbookRelation      `json:"severities"`
 	AttachmentRule map[string]interface{} `json:"attachment_rule,omitempty"`
 }
 
@@ -55,14 +67,11 @@ type UpdateRunbookRequest struct {
 type RunbookResponse struct {
 	ID          string        `json:"id"`
 	Name        string        `json:"name"`
-	Type        string        `json:"type"`
 	Description string        `json:"description"`
 	Owner       *RunbookTeam  `json:"owner"`
 	Steps       []RunbookStep `json:"steps"`
 
 	AttachmentRule map[string]interface{} `json:"attachment_rule"`
-
-	Severities []RunbookRelation `json:"severities"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -106,6 +115,9 @@ func (c *RESTRunbooksClient) Get(ctx context.Context, id string) (*RunbookRespon
 
 // Create creates a brand spankin new runbook in FireHydrant
 func (c *RESTRunbooksClient) Create(ctx context.Context, createReq CreateRunbookRequest) (*RunbookResponse, error) {
+	// Set the default type of the runbook
+	createReq.Type = string(RunbookTypeDefault)
+
 	runbookResponse := &RunbookResponse{}
 	apiError := &APIError{}
 	response, err := c.restClient().Post("runbooks").BodyJSON(&createReq).Receive(runbookResponse, apiError)

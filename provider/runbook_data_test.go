@@ -60,7 +60,6 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 
 resource "firehydrant_runbook" "test_runbook" {
   name = "test-runbook-%s"
-  type = "incident"
 
   steps {
     name      = "Create Incident Channel"
@@ -91,7 +90,6 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 
 resource "firehydrant_runbook" "test_runbook" {
   name        = "test-runbook-%s"
-  type        = "incident"
   description = "test-description-%s"
   owner_id    = firehydrant_team.test_team1.id
 	attachment_rule = jsonencode({

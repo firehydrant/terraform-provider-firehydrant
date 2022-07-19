@@ -30,8 +30,6 @@ func TestAccRunbookResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "name", fmt.Sprintf("test-runbook-%s", rName)),
 					resource.TestCheckResourceAttr(
-						"firehydrant_runbook.test_runbook", "type", "incident"),
-					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.#", "1"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.0.name", "Create Incident Channel"),
@@ -62,8 +60,6 @@ func TestAccRunbookResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "name", fmt.Sprintf("test-runbook-%s", rName)),
 					resource.TestCheckResourceAttr(
-						"firehydrant_runbook.test_runbook", "type", "incident"),
-					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.#", "1"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.0.name", "Create Incident Channel"),
@@ -81,8 +77,6 @@ func TestAccRunbookResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "name", fmt.Sprintf("test-runbook-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
-						"firehydrant_runbook.test_runbook", "type", "incident"),
-					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
 					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "owner_id"),
 					resource.TestCheckResourceAttr(
@@ -97,28 +91,23 @@ func TestAccRunbookResource_update(t *testing.T) {
 						"firehydrant_runbook.test_runbook", "steps.0.action_id"),
 				),
 			},
-			// TODO: fix error causing description to not be removed on update and then add this step back in
-			//{
-			//	Config: testAccRunbookResourceConfig_basic(rNameUpdated),
-			//	Check: resource.ComposeAggregateTestCheckFunc(
-			//		testAccCheckRunbookResourceExistsWithAttributes_basic("firehydrant_runbook.test_runbook"),
-			//		resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "id"),
-			//		resource.TestCheckResourceAttr(
-			//			"firehydrant_runbook.test_runbook", "name", fmt.Sprintf("test-runbook-%s", rNameUpdated)),
-			//		resource.TestCheckResourceAttr(
-			//			"firehydrant_runbook.test_runbook", "type", "incident"),
-			//		resource.TestCheckResourceAttr(
-			//			"firehydrant_runbook.test_runbook", "steps.#", "1"),
-			//		resource.TestCheckResourceAttr(
-			//			"firehydrant_runbook.test_runbook", "steps.0.name", "Create Incident Channel"),
-			//    resource.TestCheckResourceAttr(
-			// 	    "firehydrant_runbook.test_runbook", "steps.0.repeats", "true"),
-			//    resource.TestCheckResourceAttr(
-			// 	    "firehydrant_runbook.test_runbook", "steps.0.repeats_duration", "PT15M"),
-			//		resource.TestCheckResourceAttrSet(
-			//			"firehydrant_runbook.test_runbook", "steps.0.action_id"),
-			//	),
-			//},
+			{
+				Config: testAccRunbookResourceConfig_basic(rNameUpdated),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckRunbookResourceExistsWithAttributes_basic("firehydrant_runbook.test_runbook"),
+					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "id"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "name", fmt.Sprintf("test-runbook-%s", rNameUpdated)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.#", "1"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.0.name", "Create Incident Channel"),
+					resource.TestCheckResourceAttrSet(
+						"firehydrant_runbook.test_runbook", "steps.0.action_id"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.0.repeats", "false"),
+				),
+			},
 		},
 	})
 }
@@ -231,11 +220,6 @@ func testAccCheckRunbookResourceExistsWithAttributes_basic(resourceName string) 
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = runbookResource.Primary.Attributes["type"], fmt.Sprintf("%s", runbookResponse.Type)
-		if expected != got {
-			return fmt.Errorf("Unexpected type. Expected: %s, got: %s", expected, got)
-		}
-
 		if runbookResponse.Description != "" {
 			return fmt.Errorf("Unexpected description. Expected no description, got: %s", runbookResponse.Description)
 		}
@@ -305,11 +289,6 @@ func testAccCheckRunbookResourceExistsWithAttributes_update(resourceName string)
 		expected, got := runbookResource.Primary.Attributes["name"], runbookResponse.Name
 		if expected != got {
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
-		}
-
-		expected, got = runbookResource.Primary.Attributes["type"], fmt.Sprintf("%s", runbookResponse.Type)
-		if expected != got {
-			return fmt.Errorf("Unexpected type. Expected: %s, got: %s", expected, got)
 		}
 
 		expected, got = runbookResource.Primary.Attributes["description"], runbookResponse.Description
@@ -399,7 +378,6 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 
 resource "firehydrant_runbook" "test_runbook" {
   name = "test-runbook-%s"
-  type = "incident"
 
   steps {
     name      = "Create Incident Channel"
@@ -432,7 +410,6 @@ data "firehydrant_runbook_action" "archive_channel" {
 
 resource "firehydrant_runbook" "test_runbook" {
   name        = "test-runbook-%s"
-  type        = "incident"
   description = "test-description-%s"
   owner_id    = firehydrant_team.test_team1.id
 
@@ -464,7 +441,6 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 
 resource "firehydrant_runbook" "test_runbook" {
   name = "test-runbook-%s"
-  type = "incident"
 
   steps {
     name      = "Create Incident Channel"
@@ -488,7 +464,6 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 
 resource "firehydrant_runbook" "test_runbook" {
   name = "test-runbook-%s"
-  type = "incident"
 
   steps {
     name             = "Create Incident Channel"
@@ -512,7 +487,6 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 
 resource "firehydrant_runbook" "test_runbook" {
   name = "test-runbook-%s"
-  type = "incident"
 
   steps {
     name      = "Create Incident Channel"

@@ -36,7 +36,6 @@ data "firehydrant_runbook_action" "email_notification" {
 
 resource "firehydrant_runbook" "default" {
   name = "Default Incident Process"
-  type = "incident"
   attachment_rule = jsonencode({
     "logic" = {
       "eq" = [
