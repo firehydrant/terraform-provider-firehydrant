@@ -97,7 +97,6 @@ func resourceRunbook() *schema.Resource {
 				Optional: true,
 			},
 			"attachment_rule": {
-				Default:          "null",
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsJSON),
@@ -131,18 +130,18 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Error reading runbook %s: %v", runbookID, err)
 	}
 
-	attachmentRule, err := json.Marshal(runbookResponse.AttachmentRule)
-	if err != nil {
-		return diag.Errorf("Error converting step config to JSON due invalid JSON returned by FireHydrant: %v", err)
-	}
-
 	// Gather values from API response
 	attributes := map[string]interface{}{
 		"name":        runbookResponse.Name,
 		"description": runbookResponse.Description,
 	}
 
-	if attachmentRule != nil {
+	if len(runbookResponse.AttachmentRule) > 0 {
+		attachmentRule, err := json.Marshal(runbookResponse.AttachmentRule)
+		if err != nil {
+			return diag.Errorf("Error converting attachment_rule to JSON due invalid JSON returned by FireHydrant: %v", err)
+		}
+
 		attributes["attachment_rule"] = string(attachmentRule)
 	}
 
@@ -189,6 +188,17 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	// Get the API client
 	firehydrantAPIClient := m.(firehydrant.Client)
 
+	// Get attributes from config and construct the create request
+	createRequest := firehydrant.CreateRunbookRequest{
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
+	}
+
+	// Process any optional attributes and add to the create request if necessary
+	if ownerID, ok := d.GetOk("owner_id"); ok && ownerID.(string) != "" {
+		createRequest.Owner = &firehydrant.RunbookTeam{ID: ownerID.(string)}
+	}
+
 	attachmentRuleMap := map[string]interface{}{}
 	attachmentRule := d.Get("attachment_rule").(string)
 	if attachmentRule != "" {
@@ -196,18 +206,7 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.Errorf("Error converting attachment_rule %s to map: %v", attachmentRule, err)
 		}
-	}
-
-	// Get attributes from config and construct the create request
-	createRequest := firehydrant.CreateRunbookRequest{
-		Name:           d.Get("name").(string),
-		Description:    d.Get("description").(string),
-		AttachmentRule: attachmentRuleMap,
-	}
-
-	// Process any optional attributes and add to the create request if necessary
-	if ownerID, ok := d.GetOk("owner_id"); ok && ownerID.(string) != "" {
-		createRequest.Owner = &firehydrant.RunbookTeam{ID: ownerID.(string)}
+		createRequest.AttachmentRule = attachmentRuleMap
 	}
 
 	steps := d.Get("steps").([]interface{})
@@ -260,6 +259,18 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	// Get the API client
 	firehydrantAPIClient := m.(firehydrant.Client)
 
+	// Construct the update request
+	updateRequest := firehydrant.UpdateRunbookRequest{
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
+	}
+
+	// Process any optional attributes and add to the update request if necessary
+	ownerID, ownerIDSet := d.GetOk("owner_id")
+	if ownerIDSet {
+		updateRequest.Owner = &firehydrant.RunbookTeam{ID: ownerID.(string)}
+	}
+
 	attachmentRuleMap := map[string]interface{}{}
 	attachmentRule := d.Get("attachment_rule").(string)
 	if attachmentRule != "" {
@@ -267,19 +278,7 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.Errorf("Error converting attachment_rule %s to map: %v", attachmentRule, err)
 		}
-	}
-
-	// Construct the update request
-	updateRequest := firehydrant.UpdateRunbookRequest{
-		Name:           d.Get("name").(string),
-		Description:    d.Get("description").(string),
-		AttachmentRule: attachmentRuleMap,
-	}
-
-	// Process any optional attributes and add to the update request if necessary
-	ownerID, ownerIDSet := d.GetOk("owner_id")
-	if ownerIDSet {
-		updateRequest.Owner = &firehydrant.RunbookTeam{ID: ownerID.(string)}
+		updateRequest.AttachmentRule = attachmentRuleMap
 	}
 
 	steps := d.Get("steps").([]interface{})
