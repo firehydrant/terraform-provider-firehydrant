@@ -317,7 +317,7 @@ func testAccCheckRunbookResourceExistsWithAttributes_update(resourceName string)
 		}
 
 		if runbookResponse.AttachmentRule == nil {
-			return fmt.Errorf("Unexpected attachment_rule. Expected attachment_rule to be set.)
+			return fmt.Errorf("Unexpected attachment_rule. Expected attachment_rule to be set.")
 		}
 		var attachmentRule []byte
 		if len(runbookResponse.AttachmentRule) > 0 {
