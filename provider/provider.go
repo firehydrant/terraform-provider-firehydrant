@@ -56,13 +56,14 @@ func Provider() *schema.Provider {
 			"firehydrant_runbook":       resourceRunbook(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"firehydrant_service":        dataSourceService(),
-			"firehydrant_services":       dataSourceServices(),
 			"firehydrant_environment":    dataSourceEnvironment(),
 			"firehydrant_functionality":  dataSourceFunctionality(),
 			"firehydrant_priority":       dataSourcePriority(),
 			"firehydrant_runbook":        dataSourceRunbook(),
 			"firehydrant_runbook_action": dataSourceRunbookAction(),
+			"firehydrant_service":        dataSourceService(),
+			"firehydrant_services":       dataSourceServices(),
+			"firehydrant_task_list":      dataSourceTaskList(),
 		},
 	}
 
