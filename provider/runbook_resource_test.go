@@ -531,25 +531,25 @@ resource "firehydrant_runbook" "test_runbook" {
       channels = "#incidents"
     })
 		rule = jsonencode({
-			"logic" = {
-				"eq" = [
-					{
-						"var" = "incident_current_milestone",
-					},
-					{
-						"var" = "usr.1"
-					}
-				]
-			},
-			"user_data" = {
-				"1" = {
-					"type"  = "Milestone",
-					"value" = "started",
-					"label" = "Started"
-				}
-			}
-			}
-		)
+      logic = {
+        eq = [
+          {
+            var = "incident_current_milestone",
+          },
+          {
+            var = "usr.1"
+          }
+        ]
+      },
+      user_data = {
+        1 = {
+          type  = "Milestone",
+          value = "resolved",
+          label = "Resolved"
+        }
+      }
+      }
+    )
   }
 
   steps {
@@ -599,25 +599,25 @@ resource "firehydrant_runbook" "test_runbook" {
       channel_name_format = "-inc-{{ number }}"
     })
 		rule = jsonencode({
-			"logic" = {
-				"eq" = [
-					{
-						"var" = "incident_current_milestone",
-					},
-					{
-						"var" = "usr.1"
-					}
-				]
-			},
-			"user_data" = {
-				"1" = {
-					"type"  = "Milestone",
-					"value" = "started",
-					"label" = "Started"
-				}
-			}
-			}
-		)
+      logic = {
+        eq = [
+          {
+            var = "incident_current_milestone",
+          },
+          {
+            var = "usr.1"
+          }
+        ]
+      },
+      user_data = {
+        1 = {
+          type  = "Milestone",
+          value = "resolved",
+          label = "Resolved"
+        }
+      }
+      }
+    )
   }
 }`, rName)
 }
@@ -661,25 +661,25 @@ resource "firehydrant_runbook" "test_runbook" {
       channel_name_format = "-inc-{{ number }}"
     })
 		rule = jsonencode({
-			"logic" = {
-				"eq" = [
-					{
-						"var" = "incident_current_milestone",
-					},
-					{
-						"var" = "usr.1"
-					}
-				]
-			},
-			"user_data" = {
-				"1" = {
-					"type"  = "Milestone",
-					"value" = "started",
-					"label" = "Started"
-				}
-			}
-			}
-		)
+      logic = {
+        eq = [
+          {
+            var = "incident_current_milestone",
+          },
+          {
+            var = "usr.1"
+          }
+        ]
+      },
+      user_data = {
+        1 = {
+          type  = "Milestone",
+          value = "resolved",
+          label = "Resolved"
+        }
+      }
+      }
+    )
   }
 }`, rName)
 }
