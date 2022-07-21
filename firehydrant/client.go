@@ -59,6 +59,7 @@ type Client interface {
 	Ping(ctx context.Context) (*PingResponse, error)
 
 	Services() ServicesClient
+	TaskLists() TaskListsClient
 	Runbooks() RunbooksClient
 	RunbookActions() RunbookActionsClient
 
@@ -153,6 +154,11 @@ func (c *APIClient) Ping(ctx context.Context) (*PingResponse, error) {
 // Services returns a ServicesClient interface for interacting with services in FireHydrant
 func (c *APIClient) Services() ServicesClient {
 	return &RESTServicesClient{client: c}
+}
+
+// TaskLists returns a TaskListsClient interface for interacting with task lists in FireHydrant
+func (c *APIClient) TaskLists() TaskListsClient {
+	return &RESTTaskListsClient{client: c}
 }
 
 // Runbooks returns a RunbooksClient interface for interacting with runbooks in FireHydrant
