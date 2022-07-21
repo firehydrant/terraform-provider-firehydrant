@@ -62,6 +62,25 @@ resource "firehydrant_runbook" "example-runbook" {
     automatic        = false
     repeats          = true
     repeats_duration = "PT15M"
+    rule = jsonencode({
+      logic = {
+        eq = [
+          {
+            var = "incident_current_milestone",
+          },
+          {
+            var = "usr.1"
+          }
+        ]
+      },
+      user_data = {
+        1 = {
+          type  = "Milestone",
+          value = "resolved",
+          label = "Resolved"
+        }
+      }
+    })
   }
 }
 ```
@@ -88,6 +107,7 @@ The `steps` block supports:
 * `repeats` - (Optional) Whether this step should repeat.
 * `repeats_duration` - (Optional) How often this step should repeat in ISO8601. 
   Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
 
 ## Attributes Reference
 

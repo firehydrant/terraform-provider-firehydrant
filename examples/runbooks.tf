@@ -140,7 +140,27 @@ resource "firehydrant_runbook" "default" {
   steps {
     action_id = data.firehydrant_runbook_action.archive_channel.id
     name      = "Archive incident channel after retrospective completion"
-    automatic = true
+    automatic = false
     repeats   = false
+    rule = jsonencode({
+      "logic" = {
+        "eq" = [
+          {
+            "var" = "incident_current_milestone",
+          },
+          {
+            "var" = "usr.1"
+          }
+        ]
+      },
+      "user_data" = {
+        "1" = {
+          "type"  = "Milestone",
+          "value" = "resolved",
+          "label" = "Resolved"
+        }
+      }
+      }
+    )
   }
 }
