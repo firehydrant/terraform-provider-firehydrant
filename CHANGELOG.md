@@ -38,6 +38,7 @@ ENHANCEMENTS:
 * resource/runbook: Added the `attachment_rule` attribute to runbook ([#82](https://github.com/firehydrant/terraform-provider-firehydrant/pull/82))
 * resource/runbook: Added default value of `false` to the steps `automatic` attribute ([#83](https://github.com/firehydrant/terraform-provider-firehydrant/pull/83))
 * resource/runbook: Added the `rule` attribute to runbook steps ([#84](https://github.com/firehydrant/terraform-provider-firehydrant/pull/84))
+* resource/runbook: Added documentation for step configuration for every runbook action ([#81](https://github.com/firehydrant/terraform-provider-firehydrant/pull/81))
 * resource/service: Added logging ([#96](https://github.com/firehydrant/terraform-provider-firehydrant/pull/96))
 * resource/severity: Added logging to the resource and validation to the `slug` attribute ([#88](https://github.com/firehydrant/terraform-provider-firehydrant/pull/88))
 * resource/severity: Added support for the `type` attribute ([#88](https://github.com/firehydrant/terraform-provider-firehydrant/pull/88))
