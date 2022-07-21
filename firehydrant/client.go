@@ -49,7 +49,7 @@ type APIClient struct {
 
 const (
 	// DefaultBaseURL is the URL that is used to make requests to the FireHydrant API
-	DefaultBaseURL = "https://api.local.firehydrant.io/v1/"
+	DefaultBaseURL = "https://api.firehydrant.io/v1/"
 )
 
 var _ Client = &APIClient{}
