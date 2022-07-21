@@ -22,6 +22,11 @@ data "firehydrant_runbook_action" "confluence_cloud_export_retro" {
 }
 
 # FireHydrant
+data "firehydrant_runbook_action" "firehydrant_add_services_related_to_functionality" {
+  integration_slug = "patchy"
+  slug             = "add_services_related_to_functionality"
+}
+
 data "firehydrant_runbook_action" "firehydrant_add_task_list" {
   integration_slug = "patchy"
   slug             = "add_task_list"
@@ -42,11 +47,6 @@ data "firehydrant_runbook_action" "firehydrant_attach_a_runbook" {
   slug             = "attach_a_runbook"
 }
 
-data "firehydrant_runbook_action" "firehydrant_add_services_related_to_functionality" {
-  integration_slug = "patchy"
-  slug             = "add_services_related_to_functionality"
-}
-
 data "firehydrant_runbook_action" "firehydrant_email_notification" {
   integration_slug = "patchy"
   slug             = "email_notification"
@@ -62,6 +62,11 @@ data "firehydrant_runbook_action" "firehydrant_incident_update" {
   slug             = "incident_update"
 }
 
+data "firehydrant_runbook_action" "firehydrant_publish_to_statuspage" {
+  integration_slug = "nunc"
+  slug             = "create_nunc"
+}
+
 data "firehydrant_runbook_action" "firehydrant_resolve_linked_alerts" {
   integration_slug = "patchy"
   slug             = "set_linked_alerts_status"
@@ -75,11 +80,6 @@ data "firehydrant_runbook_action" "firehydrant_script" {
 data "firehydrant_runbook_action" "firehydrant_send_webhook" {
   integration_slug = "patchy"
   slug             = "send_webhook"
-}
-
-data "firehydrant_runbook_action" "firehydrant_publish_to_statuspage" {
-  integration_slug = "nunc"
-  slug             = "create_nunc"
 }
 
 # Giphy
