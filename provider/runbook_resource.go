@@ -88,6 +88,15 @@ func resourceRunbook() *schema.Resource {
 			},
 
 			// Optional
+			"attachment_rule": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsJSON),
+				StateFunc: func(value interface{}) string {
+					normalizedJSON, _ := structure.NormalizeJsonString(value)
+					return normalizedJSON
+				},
+			},
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -125,6 +134,15 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 	attributes := map[string]interface{}{
 		"name":        runbookResponse.Name,
 		"description": runbookResponse.Description,
+	}
+
+	if len(runbookResponse.AttachmentRule) > 0 {
+		attachmentRule, err := json.Marshal(runbookResponse.AttachmentRule)
+		if err != nil {
+			return diag.Errorf("Error converting attachment_rule to JSON due invalid JSON returned by FireHydrant: %v", err)
+		}
+
+		attributes["attachment_rule"] = string(attachmentRule)
 	}
 
 	var ownerID string
@@ -179,6 +197,16 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	// Process any optional attributes and add to the create request if necessary
 	if ownerID, ok := d.GetOk("owner_id"); ok && ownerID.(string) != "" {
 		createRequest.Owner = &firehydrant.RunbookTeam{ID: ownerID.(string)}
+	}
+
+	attachmentRuleMap := map[string]interface{}{}
+	attachmentRule := d.Get("attachment_rule").(string)
+	if attachmentRule != "" {
+		err := json.Unmarshal([]byte(attachmentRule), &attachmentRuleMap)
+		if err != nil {
+			return diag.Errorf("Error converting attachment_rule %s to map: %v", attachmentRule, err)
+		}
+		createRequest.AttachmentRule = attachmentRuleMap
 	}
 
 	steps := d.Get("steps").([]interface{})
@@ -241,6 +269,16 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	ownerID, ownerIDSet := d.GetOk("owner_id")
 	if ownerIDSet {
 		updateRequest.Owner = &firehydrant.RunbookTeam{ID: ownerID.(string)}
+	}
+
+	attachmentRuleMap := map[string]interface{}{}
+	attachmentRule := d.Get("attachment_rule").(string)
+	if attachmentRule != "" {
+		err := json.Unmarshal([]byte(attachmentRule), &attachmentRuleMap)
+		if err != nil {
+			return diag.Errorf("Error converting attachment_rule %s to map: %v", attachmentRule, err)
+		}
+		updateRequest.AttachmentRule = attachmentRuleMap
 	}
 
 	steps := d.Get("steps").([]interface{})

@@ -36,6 +36,26 @@ data "firehydrant_runbook_action" "email_notification" {
 
 resource "firehydrant_runbook" "default" {
   name = "Default Incident Process"
+  attachment_rule = jsonencode({
+    "logic" = {
+      "eq" = [
+        {
+          "var" = "incident_current_milestone",
+        },
+        {
+          "var" = "usr.1"
+        }
+      ]
+    },
+    "user_data" = {
+      "1" = {
+        "type"  = "Milestone",
+        "value" = "started",
+        "label" = "Started"
+      }
+    }
+    }
+  )
 
   steps {
     action_id = data.firehydrant_runbook_action.slack_channel.id

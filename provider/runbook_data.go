@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -9,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 )
 
 // Singular services data source
@@ -23,6 +25,10 @@ func dataSourceRunbook() *schema.Resource {
 			},
 
 			// Computed
+			"attachment_rule": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -62,6 +68,16 @@ func dataFireHydrantRunbook(ctx context.Context, d *schema.ResourceData, m inter
 	if runbookResponse.Owner != nil {
 		attributes["owner_id"] = runbookResponse.Owner.ID
 	}
+
+	var attachmentRule []byte
+	if len(runbookResponse.AttachmentRule) > 0 {
+		attachmentRule, err = json.Marshal(runbookResponse.AttachmentRule)
+		if err != nil {
+			return diag.Errorf("Error converting attachment_rule to JSON due invalid JSON returned by FireHydrant: %v", err)
+		}
+	}
+	normalizedAttachmentRuleJSON, _ := structure.NormalizeJsonString(string(attachmentRule))
+	attributes["attachment_rule"] = normalizedAttachmentRuleJSON
 
 	// Set the data source attributes to the values we got from the API
 	for key, value := range attributes {
