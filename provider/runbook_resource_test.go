@@ -317,7 +317,17 @@ func testAccCheckRunbookResourceExistsWithAttributes_update(resourceName string)
 		}
 
 		if runbookResponse.AttachmentRule == nil {
-			return fmt.Errorf("Unexpected attachment_rule. Expected: %s, got: %s", expected, got)
+			return fmt.Errorf("Unexpected attachment_rule. Expected attachment_rule to be set.)
+		}
+		var attachmentRule []byte
+		if len(runbookResponse.AttachmentRule) > 0 {
+			attachmentRule, err = json.Marshal(runbookResponse.AttachmentRule)
+			if err != nil {
+				return fmt.Errorf("Unexpected error converting attachment_rule to JSON: %v", err)
+			}
+		}
+		if runbookResource.Primary.Attributes["attachment_rule"] != string(attachmentRule) {
+			return fmt.Errorf("Unexpected attachment_rule. Expected %s, got: %s", runbookResponse.AttachmentRule, runbookResource.Primary.Attributes["attachment_rule"])
 		}
 
 		if runbookResponse.Owner == nil {
