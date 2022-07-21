@@ -88,14 +88,6 @@ func resourceRunbook() *schema.Resource {
 			},
 
 			// Optional
-			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"owner_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"attachment_rule": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -104,6 +96,14 @@ func resourceRunbook() *schema.Resource {
 					normalizedJSON, _ := structure.NormalizeJsonString(value)
 					return normalizedJSON
 				},
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"owner_id": {
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 		},
 	}

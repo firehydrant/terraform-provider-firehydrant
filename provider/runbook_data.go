@@ -25,6 +25,10 @@ func dataSourceRunbook() *schema.Resource {
 			},
 
 			// Computed
+			"attachment_rule": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -34,10 +38,6 @@ func dataSourceRunbook() *schema.Resource {
 				Computed: true,
 			},
 			"owner_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"attachment_rule": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
