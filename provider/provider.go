@@ -47,13 +47,14 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"firehydrant_service":       resourceService(),
 			"firehydrant_environment":   resourceEnvironment(),
 			"firehydrant_functionality": resourceFunctionality(),
-			"firehydrant_team":          resourceTeam(),
 			"firehydrant_priority":      resourcePriority(),
-			"firehydrant_severity":      resourceSeverity(),
 			"firehydrant_runbook":       resourceRunbook(),
+			"firehydrant_service":       resourceService(),
+			"firehydrant_severity":      resourceSeverity(),
+			"firehydrant_task_list":     resourceTaskList(),
+			"firehydrant_team":          resourceTeam(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"firehydrant_environment":    dataSourceEnvironment(),
