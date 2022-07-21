@@ -50,6 +50,7 @@ func resourceRunbook() *schema.Resource {
 						"automatic": {
 							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  false,
 						},
 						"config": {
 							Type:             schema.TypeString,

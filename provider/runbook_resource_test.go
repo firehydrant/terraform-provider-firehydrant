@@ -36,6 +36,8 @@ func TestAccRunbookResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"firehydrant_runbook.test_runbook", "steps.0.action_id"),
 					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.0.automatic", "false"),
+					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.0.repeats", "false"),
 				),
 			},
@@ -66,6 +68,8 @@ func TestAccRunbookResource_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"firehydrant_runbook.test_runbook", "steps.0.action_id"),
 					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.0.automatic", "false"),
+					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.0.repeats", "false"),
 				),
 			},
@@ -84,6 +88,8 @@ func TestAccRunbookResource_update(t *testing.T) {
 						"firehydrant_runbook.test_runbook", "steps.#", "2"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.0.name", "Notify Channel"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.0.automatic", "true"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.0.repeats", "true"),
 					resource.TestCheckResourceAttr(
@@ -105,6 +111,8 @@ func TestAccRunbookResource_update(t *testing.T) {
 						"firehydrant_runbook.test_runbook", "steps.0.name", "Create Incident Channel"),
 					resource.TestCheckResourceAttrSet(
 						"firehydrant_runbook.test_runbook", "steps.0.action_id"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_runbook.test_runbook", "steps.0.automatic", "false"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.0.repeats", "false"),
 				),
@@ -273,6 +281,10 @@ func testAccCheckRunbookResourceExistsWithAttributes_basic(resourceName string) 
 				return fmt.Errorf("Unexpected runbook step config. Expected %s, got: %s", step.Config, runbookResource.Primary.Attributes[key+".config"])
 			}
 
+			if runbookResource.Primary.Attributes[key+".automatic"] != fmt.Sprintf("%t", step.Automatic) {
+				return fmt.Errorf("Unexpected runbook step automatic. Expected %t, got: %s", step.Automatic, runbookResource.Primary.Attributes[key+".automatic"])
+			}
+
 			if runbookResource.Primary.Attributes[key+".repeats"] != fmt.Sprintf("%t", step.Repeats) {
 				return fmt.Errorf("Unexpected runbook step repeats. Expected %t, got: %s", step.Repeats, runbookResource.Primary.Attributes[key+".repeats"])
 			}
@@ -363,6 +375,10 @@ func testAccCheckRunbookResourceExistsWithAttributes_update(resourceName string)
 				return fmt.Errorf("Unexpected runbook step config. Expected %s, got: %s", step.Config, runbookResource.Primary.Attributes[key+".config"])
 			}
 
+			if runbookResource.Primary.Attributes[key+".automatic"] != fmt.Sprintf("%t", step.Automatic) {
+				return fmt.Errorf("Unexpected runbook step automatic. Expected %t, got: %s", step.Automatic, runbookResource.Primary.Attributes[key+".automatic"])
+			}
+
 			if runbookResource.Primary.Attributes[key+".repeats"] != fmt.Sprintf("%t", step.Repeats) {
 				return fmt.Errorf("Unexpected runbook step repeats. Expected %t, got: %s", step.Repeats, runbookResource.Primary.Attributes[key+".repeats"])
 			}
@@ -446,30 +462,30 @@ resource "firehydrant_runbook" "test_runbook" {
   name        = "test-runbook-%s"
   description = "test-description-%s"
   owner_id    = firehydrant_team.test_team1.id
-	attachment_rule = jsonencode({
-		"logic" = {
-			"eq" = [
-				{
-					"var" = "incident_current_milestone",
-				},
-				{
-					"var" = "usr.1"
-				}
-			]
-		},
-		"user_data" = {
-			"1" = {
-				"type"  = "Milestone",
-				"value" = "started",
-				"label" = "Started"
-			}
-		}
-		}
-	)
+  attachment_rule = jsonencode({
+    logic = {
+      eq = [
+        {
+          var = "incident_current_milestone"
+        },
+        {
+          var = "usr.1"
+        }
+      ]
+    }
+    user_data = {
+      "1" = {
+        type  = "Milestone"
+        value = "started"
+        label = "Started"
+      }
+    }
+  })
 
   steps {
     name             = "Notify Channel"
     action_id        = data.firehydrant_runbook_action.notify_channel.id
+    automatic        = true
     repeats          = true
     repeats_duration = "PT15M"
 
@@ -482,7 +498,8 @@ resource "firehydrant_runbook" "test_runbook" {
     name      = "Archive Channel"
     action_id = data.firehydrant_runbook_action.archive_channel.id
   }
-}`, rName, rName, rName)
+}
+`, rName, rName, rName)
 }
 
 func testAccRunbookResourceConfig_stepsRequiredRepeatsDurationNotSet(rName string) string {
@@ -495,26 +512,25 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 
 resource "firehydrant_runbook" "test_runbook" {
   name = "test-runbook-%s"
-	attachment_rule = jsonencode({
-		"logic" = {
-			"eq" = [
-				{
-					"var" = "incident_current_milestone",
-				},
-				{
-					"var" = "usr.1"
-				}
-			]
-		},
-		"user_data" = {
-			"1" = {
-				"type"  = "Milestone",
-				"value" = "started",
-				"label" = "Started"
-			}
-		}
-		}
-	)
+  attachment_rule = jsonencode({
+    logic = {
+      eq = [
+        {
+          var = "incident_current_milestone"
+        },
+        {
+          var = "usr.1"
+        }
+      ]
+    }
+    user_data = {
+      "1" = {
+        type  = "Milestone"
+        value = "started"
+        label = "Started"
+      }
+    }
+  })
 
   steps {
     name      = "Create Incident Channel"
@@ -538,26 +554,25 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 
 resource "firehydrant_runbook" "test_runbook" {
   name = "test-runbook-%s"
-	attachment_rule = jsonencode({
-		"logic" = {
-			"eq" = [
-				{
-					"var" = "incident_current_milestone",
-				},
-				{
-					"var" = "usr.1"
-				}
-			]
-		},
-		"user_data" = {
-			"1" = {
-				"type"  = "Milestone",
-				"value" = "started",
-				"label" = "Started"
-			}
-		}
-		}
-	)
+  attachment_rule = jsonencode({
+    logic = {
+      eq = [
+        {
+          var = "incident_current_milestone"
+        },
+        {
+          var = "usr.1"
+        }
+      ]
+    }
+    user_data = {
+      "1" = {
+        type  = "Milestone"
+        value = "started"
+        label = "Started"
+      }
+    }
+  })
 
   steps {
     name             = "Create Incident Channel"
@@ -600,8 +615,8 @@ data "firehydrant_runbook_action" "create_incident_channel" {
 }
 
 resource "firehydrant_runbook" "test_runbook" {
-  name = "test-runbook-%s"
-	attachment_rule = "{invalid_json = {{}}"
+  name            = "test-runbook-%s"
+  attachment_rule = "{invalid_json = {{}}"
 
   steps {
     name      = "Create Incident Channel"

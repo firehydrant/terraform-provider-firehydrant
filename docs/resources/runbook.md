@@ -32,35 +32,36 @@ resource "firehydrant_runbook" "example-runbook" {
   description = "This is an example runbook"
   owner_id    = firehydrant_team.example-owner-team.id
   attachment_rule = jsonencode({
-    "logic" = {
-      "eq" = [
+    logic = {
+      eq = [
         {
-          "var" = "incident_current_milestone",
+          var = "incident_current_milestone"
         },
         {
-          "var" = "usr.1"
+          var = "usr.1"
         }
       ]
-    },
-    "user_data" = {
+    }
+    user_data = {
       "1" = {
-        "type"  = "Milestone",
-        "value" = "started",
-        "label" = "Started"
+        type  = "Milestone",
+        value = "started",
+        label = "Started"
       }
     }
-    }
-  )
+  })
 
   steps {
-    name             = "Notify Channel"
-    action_id        = data.firehydrant_runbook_action.notify-channel-action.id
-    repeats          = true
-    repeats_duration = "PT15M"
+    name      = "Notify Channel"
+    action_id = data.firehydrant_runbook_action.notify-channel-action.id
 
     config = jsonencode({
       channels = "#incidents"
     })
+
+    automatic        = false
+    repeats          = true
+    repeats_duration = "PT15M"
   }
 }
 ```
@@ -80,6 +81,7 @@ The `steps` block supports:
 * `action_id` - (Required) The ID of the runbook action for the step.
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should be automatically execute.
+  Defaults to `false`.
 * `config` - (Optional) JSON string representing the configuration settings for the step. 
   Use [Terraform's jsonencode](https://www.terraform.io/language/functions/jsonencode) 
   function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
