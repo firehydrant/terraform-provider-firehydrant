@@ -71,7 +71,7 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the runbook.
 * `steps` - (Required) Steps to add to the runbook.
-* `attachment_rule` - (Optional) JSON string representing the attachment rule configuration for the runbook.
+* `attachment_rule` - (Optional) JSON string representing the attachment rule configuration for the runbook. This will default to attaching automatically if attachment rule is not specified.
 * `description` - (Optional) A description of the runbook.
 * `owner_id` - (Optional) The ID of the team that owns this runbook.
 
