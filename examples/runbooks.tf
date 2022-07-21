@@ -154,7 +154,7 @@ resource "firehydrant_runbook" "default" {
         ]
       },
       user_data = {
-        1 = {
+        "1" = {
           type  = "Milestone",
           value = "resolved",
           label = "Resolved"

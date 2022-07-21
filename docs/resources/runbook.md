@@ -74,7 +74,7 @@ resource "firehydrant_runbook" "example-runbook" {
         ]
       },
       user_data = {
-        1 = {
+        "1" = {
           type  = "Milestone",
           value = "resolved",
           label = "Resolved"

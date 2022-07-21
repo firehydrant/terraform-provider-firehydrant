@@ -542,7 +542,7 @@ resource "firehydrant_runbook" "test_runbook" {
         ]
       },
       user_data = {
-        1 = {
+        "1" = {
           type  = "Milestone",
           value = "resolved",
           label = "Resolved"
@@ -609,7 +609,7 @@ resource "firehydrant_runbook" "test_runbook" {
         ]
       },
       user_data = {
-        1 = {
+        "1" = {
           type  = "Milestone",
           value = "resolved",
           label = "Resolved"
@@ -670,7 +670,7 @@ resource "firehydrant_runbook" "test_runbook" {
         ]
       },
       user_data = {
-        1 = {
+        "1" = {
           type  = "Milestone",
           value = "resolved",
           label = "Resolved"
