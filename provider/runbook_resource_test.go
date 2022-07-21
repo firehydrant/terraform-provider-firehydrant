@@ -530,7 +530,7 @@ resource "firehydrant_runbook" "test_runbook" {
     config = jsonencode({
       channels = "#incidents"
     })
-		rule = jsonencode({
+    rule = jsonencode({
       logic = {
         eq = [
           {
@@ -548,8 +548,7 @@ resource "firehydrant_runbook" "test_runbook" {
           label = "Resolved"
         }
       }
-      }
-    )
+    })
   }
 
   steps {
@@ -598,7 +597,7 @@ resource "firehydrant_runbook" "test_runbook" {
     config = jsonencode({
       channel_name_format = "-inc-{{ number }}"
     })
-		rule = jsonencode({
+    rule = jsonencode({
       logic = {
         eq = [
           {
@@ -616,8 +615,7 @@ resource "firehydrant_runbook" "test_runbook" {
           label = "Resolved"
         }
       }
-      }
-    )
+    })
   }
 }`, rName)
 }
@@ -660,7 +658,7 @@ resource "firehydrant_runbook" "test_runbook" {
     config = jsonencode({
       channel_name_format = "-inc-{{ number }}"
     })
-		rule = jsonencode({
+    rule = jsonencode({
       logic = {
         eq = [
           {
@@ -678,8 +676,7 @@ resource "firehydrant_runbook" "test_runbook" {
           label = "Resolved"
         }
       }
-      }
-    )
+    })
   }
 }`, rName)
 }

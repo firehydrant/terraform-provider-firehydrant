@@ -143,24 +143,23 @@ resource "firehydrant_runbook" "default" {
     automatic = false
     repeats   = false
     rule = jsonencode({
-      "logic" = {
-        "eq" = [
+      logic = {
+        eq = [
           {
-            "var" = "incident_current_milestone",
+            var = "incident_current_milestone",
           },
           {
-            "var" = "usr.1"
+            var = "usr.1"
           }
         ]
       },
-      "user_data" = {
-        "1" = {
-          "type"  = "Milestone",
-          "value" = "resolved",
-          "label" = "Resolved"
+      user_data = {
+        1 = {
+          type  = "Milestone",
+          value = "resolved",
+          label = "Resolved"
         }
       }
-      }
-    )
+    })
   }
 }
