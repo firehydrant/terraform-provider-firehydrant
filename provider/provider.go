@@ -59,6 +59,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"firehydrant_environment":    dataSourceEnvironment(),
 			"firehydrant_functionality":  dataSourceFunctionality(),
+			"firehydrant_incident_role":  dataSourceIncidentRole(),
 			"firehydrant_priority":       dataSourcePriority(),
 			"firehydrant_runbook":        dataSourceRunbook(),
 			"firehydrant_runbook_action": dataSourceRunbookAction(),
