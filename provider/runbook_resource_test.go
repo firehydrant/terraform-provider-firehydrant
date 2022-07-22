@@ -11,6 +11,7 @@ import (
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
@@ -29,6 +30,7 @@ func TestAccRunbookResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "name", fmt.Sprintf("test-runbook-%s", rName)),
+					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "attachment_rule"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.#", "1"),
 					resource.TestCheckResourceAttr(
@@ -61,6 +63,7 @@ func TestAccRunbookResource_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "name", fmt.Sprintf("test-runbook-%s", rName)),
+					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "attachment_rule"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.#", "1"),
 					resource.TestCheckResourceAttr(
@@ -106,6 +109,7 @@ func TestAccRunbookResource_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "name", fmt.Sprintf("test-runbook-%s", rNameUpdated)),
+					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "attachment_rule"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_runbook.test_runbook", "steps.#", "1"),
 					resource.TestCheckResourceAttr(
@@ -268,8 +272,25 @@ func testAccCheckRunbookResourceExistsWithAttributes_basic(resourceName string) 
 			return fmt.Errorf("Unexpected owner. Expected no owner ID, got: %s", runbookResponse.Owner.ID)
 		}
 
-		if runbookResponse.AttachmentRule != nil {
-			return fmt.Errorf("Unexpected attachment_rule. Expected no attachment_rule, got: %s", runbookResponse.AttachmentRule)
+		if runbookResponse.AttachmentRule == nil {
+			return fmt.Errorf("Unexpected attachment_rule. Expected attachment_rule to be set.")
+		}
+		var attachmentRule []byte
+		if len(runbookResponse.AttachmentRule) > 0 {
+			attachmentRule, err = json.Marshal(runbookResponse.AttachmentRule)
+			if err != nil {
+				return fmt.Errorf("Unexpected error converting attachment_rule to JSON: %v", err)
+			}
+		}
+		normalizedAttachmentRuleJSON, _ := structure.NormalizeJsonString(firehydrant.RunbookAttachmentRuleDefaultJSON)
+		if err != nil {
+			return fmt.Errorf("Unexpected error normalizing runbook default attachment_rule JSON: %v", err)
+		}
+		if string(attachmentRule) != normalizedAttachmentRuleJSON {
+			return fmt.Errorf("Unexpected attachment_rule. Expected attachment_rule to be set to the default value %s, got: %s", firehydrant.RunbookAttachmentRuleDefaultJSON, string(attachmentRule))
+		}
+		if runbookResource.Primary.Attributes["attachment_rule"] != string(attachmentRule) {
+			return fmt.Errorf("Unexpected attachment_rule. Expected %s, got: %s", runbookResponse.AttachmentRule, runbookResource.Primary.Attributes["attachment_rule"])
 		}
 
 		if len(runbookResponse.Steps) != 1 {

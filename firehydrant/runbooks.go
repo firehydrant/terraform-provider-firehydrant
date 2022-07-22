@@ -16,6 +16,18 @@ const (
 	RunbookTypeDefault RunbookType = "incident"
 )
 
+const RunbookAttachmentRuleDefaultJSON = `
+{
+  "logic": {
+    "manually": [
+      {
+        "var": "when_invoked"
+      }
+    ]
+  },
+  "user_data": {}
+}`
+
 // CreateRunbookRequest is the payload for creating a service
 // URL: POST https://api.firehydrant.io/v1/runbooks
 type CreateRunbookRequest struct {
