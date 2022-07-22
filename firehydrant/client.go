@@ -58,10 +58,11 @@ var _ Client = &APIClient{}
 type Client interface {
 	Ping(ctx context.Context) (*PingResponse, error)
 
-	Services() ServicesClient
-	TaskLists() TaskListsClient
+	IncidentRoles() IncidentRolesClient
 	Runbooks() RunbooksClient
 	RunbookActions() RunbookActionsClient
+	Services() ServicesClient
+	TaskLists() TaskListsClient
 
 	// Environments
 	GetEnvironment(ctx context.Context, id string) (*EnvironmentResponse, error)
@@ -151,14 +152,9 @@ func (c *APIClient) Ping(ctx context.Context) (*PingResponse, error) {
 	return pingResponse, nil
 }
 
-// Services returns a ServicesClient interface for interacting with services in FireHydrant
-func (c *APIClient) Services() ServicesClient {
-	return &RESTServicesClient{client: c}
-}
-
-// TaskLists returns a TaskListsClient interface for interacting with task lists in FireHydrant
-func (c *APIClient) TaskLists() TaskListsClient {
-	return &RESTTaskListsClient{client: c}
+// IncidentRoles returns a IncidentRolesClient interface for interacting with incident roles in FireHydrant
+func (c *APIClient) IncidentRoles() IncidentRolesClient {
+	return &RESTIncidentRolesClient{client: c}
 }
 
 // Runbooks returns a RunbooksClient interface for interacting with runbooks in FireHydrant
@@ -169,6 +165,16 @@ func (c *APIClient) Runbooks() RunbooksClient {
 // RunbookActions returns a RunbookActionsClient interface for interacting with runbook actions in FireHydrant
 func (c *APIClient) RunbookActions() RunbookActionsClient {
 	return &RESTRunbookActionsClient{client: c}
+}
+
+// Services returns a ServicesClient interface for interacting with services in FireHydrant
+func (c *APIClient) Services() ServicesClient {
+	return &RESTServicesClient{client: c}
+}
+
+// TaskLists returns a TaskListsClient interface for interacting with task lists in FireHydrant
+func (c *APIClient) TaskLists() TaskListsClient {
+	return &RESTTaskListsClient{client: c}
 }
 
 // GetEnvironment retrieves an environment from FireHydrant
