@@ -108,6 +108,7 @@ The `steps` block supports:
 * `repeats_duration` - (Optional) How often this step should repeat in ISO8601. 
   Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
 * `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 ## Attributes Reference
 
