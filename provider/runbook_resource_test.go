@@ -96,6 +96,7 @@ func TestAccRunbookResource_update(t *testing.T) {
 						"firehydrant_runbook.test_runbook", "steps.0.repeats_duration", "PT15M"),
 					resource.TestCheckResourceAttrSet(
 						"firehydrant_runbook.test_runbook", "steps.0.action_id"),
+					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "steps.0.rule"),
 				),
 			},
 			{
@@ -136,7 +137,7 @@ func TestAccRunbookResource_validateSchemaAttributesStepsConfig(t *testing.T) {
 	})
 }
 
-func TestAccRunbookResource_validateSchemaAttributesStepsAttachmentRule(t *testing.T) {
+func TestAccRunbookResource_validateSchemaAttributesAttachmentRule(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -146,6 +147,21 @@ func TestAccRunbookResource_validateSchemaAttributesStepsAttachmentRule(t *testi
 			{
 				Config:      testAccRunbookResourceConfig_attachmentRuleInvalidJSON(rName),
 				ExpectError: regexp.MustCompile(`"attachment_rule" contains an invalid JSON`),
+			},
+		},
+	})
+}
+
+func TestAccRunbookResource_validateSchemaAttributesStepsRule(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccRunbookResourceConfig_stepsRuleInvalidJSON(rName),
+				ExpectError: regexp.MustCompile(`"rule" contains an invalid JSON`),
 			},
 		},
 	})
@@ -292,6 +308,17 @@ func testAccCheckRunbookResourceExistsWithAttributes_basic(resourceName string) 
 			if runbookResource.Primary.Attributes[key+".repeats_duration"] != step.RepeatsDuration {
 				return fmt.Errorf("Unexpected runbook step repeats_duration. Expected %s, got: %s", step.RepeatsDuration, runbookResource.Primary.Attributes[key+".repeats_duration"])
 			}
+
+			var rule []byte
+			if len(step.Rule) > 0 {
+				rule, err = json.Marshal(step.Rule)
+				if err != nil {
+					return fmt.Errorf("Unexpected error converting runbook step rule to JSON: %v", err)
+				}
+			}
+			if runbookResource.Primary.Attributes[key+".rule"] != string(rule) {
+				return fmt.Errorf("Unexpected runbook step rule. Expected %s, got: %s", step.Rule, runbookResource.Primary.Attributes[key+".rule"])
+			}
 		}
 
 		return nil
@@ -385,6 +412,17 @@ func testAccCheckRunbookResourceExistsWithAttributes_update(resourceName string)
 
 			if runbookResource.Primary.Attributes[key+".repeats_duration"] != step.RepeatsDuration {
 				return fmt.Errorf("Unexpected runbook step repeats_duration. Expected %s, got: %s", step.RepeatsDuration, runbookResource.Primary.Attributes[key+".repeats_duration"])
+			}
+
+			var rule []byte
+			if len(step.Rule) > 0 {
+				rule, err = json.Marshal(step.Rule)
+				if err != nil {
+					return fmt.Errorf("Unexpected error converting runbook step rule to JSON: %v", err)
+				}
+			}
+			if runbookResource.Primary.Attributes[key+".rule"] != string(rule) {
+				return fmt.Errorf("Unexpected runbook step rule. Expected %s, got: %s", step.Rule, runbookResource.Primary.Attributes[key+".rule"])
 			}
 		}
 
@@ -492,6 +530,25 @@ resource "firehydrant_runbook" "test_runbook" {
     config = jsonencode({
       channels = "#incidents"
     })
+    rule = jsonencode({
+      logic = {
+        eq = [
+          {
+            var = "incident_current_milestone",
+          },
+          {
+            var = "usr.1"
+          }
+        ]
+      },
+      user_data = {
+        "1" = {
+          type  = "Milestone",
+          value = "resolved",
+          label = "Resolved"
+        }
+      }
+    })
   }
 
   steps {
@@ -540,6 +597,25 @@ resource "firehydrant_runbook" "test_runbook" {
     config = jsonencode({
       channel_name_format = "-inc-{{ number }}"
     })
+    rule = jsonencode({
+      logic = {
+        eq = [
+          {
+            var = "incident_current_milestone",
+          },
+          {
+            var = "usr.1"
+          }
+        ]
+      },
+      user_data = {
+        "1" = {
+          type  = "Milestone",
+          value = "resolved",
+          label = "Resolved"
+        }
+      }
+    })
   }
 }`, rName)
 }
@@ -582,6 +658,25 @@ resource "firehydrant_runbook" "test_runbook" {
     config = jsonencode({
       channel_name_format = "-inc-{{ number }}"
     })
+    rule = jsonencode({
+      logic = {
+        eq = [
+          {
+            var = "incident_current_milestone",
+          },
+          {
+            var = "usr.1"
+          }
+        ]
+      },
+      user_data = {
+        "1" = {
+          type  = "Milestone",
+          value = "resolved",
+          label = "Resolved"
+        }
+      }
+    })
   }
 }`, rName)
 }
@@ -621,6 +716,25 @@ resource "firehydrant_runbook" "test_runbook" {
   steps {
     name      = "Create Incident Channel"
     action_id = data.firehydrant_runbook_action.create_incident_channel.id
+  }
+}`, rName)
+}
+
+func testAccRunbookResourceConfig_stepsRuleInvalidJSON(rName string) string {
+	return fmt.Sprintf(`
+data "firehydrant_runbook_action" "create_incident_channel" {
+  slug             = "create_incident_channel"
+  integration_slug = "slack"
+  type             = "incident"
+}
+
+resource "firehydrant_runbook" "test_runbook" {
+  name = "test-runbook-%s"
+
+  steps {
+    name      = "Create Incident Channel"
+    action_id = data.firehydrant_runbook_action.create_incident_channel.id
+		rule = "{invalid_json = {{}}"
   }
 }`, rName)
 }

@@ -78,6 +78,15 @@ func resourceRunbook() *schema.Resource {
 								return
 							},
 						},
+						"rule": {
+							Type:             schema.TypeString,
+							Optional:         true,
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsJSON),
+							StateFunc: func(value interface{}) string {
+								normalizedJSON, _ := structure.NormalizeJsonString(value)
+								return normalizedJSON
+							},
+						},
 
 						// Computed
 						"step_id": {
@@ -171,6 +180,15 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 			currentStepAttributes["config"] = string(config)
 		}
 
+		if len(currentStep.Rule) > 0 {
+			rule, err := json.Marshal(currentStep.Rule)
+			if err != nil {
+				return diag.Errorf("Error converting rule to JSON due invalid JSON returned by FireHydrant: %v", err)
+			}
+
+			currentStepAttributes["rule"] = string(rule)
+		}
+
 		steps[index] = currentStepAttributes
 	}
 	attributes["steps"] = steps
@@ -230,6 +248,15 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 			}
 		}
 
+		ruleMap := map[string]interface{}{}
+		rule := step["rule"].(string)
+		if rule != "" {
+			err := json.Unmarshal([]byte(rule), &ruleMap)
+			if err != nil {
+				return diag.Errorf("Error converting rule %s to map: %v", rule, err)
+			}
+		}
+
 		createRequest.Steps = append(createRequest.Steps, firehydrant.RunbookStep{
 			Name:            step["name"].(string),
 			ActionID:        step["action_id"].(string),
@@ -237,6 +264,7 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 			Config:          configMap,
 			Repeats:         step["repeats"].(bool),
 			RepeatsDuration: step["repeats_duration"].(string),
+			Rule:            ruleMap,
 		})
 	}
 
@@ -302,6 +330,15 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 			}
 		}
 
+		ruleMap := map[string]interface{}{}
+		rule := step["rule"].(string)
+		if rule != "" {
+			err := json.Unmarshal([]byte(rule), &ruleMap)
+			if err != nil {
+				return diag.Errorf("Error converting step rule %s to map: %v", rule, err)
+			}
+		}
+
 		updateRequest.Steps = append(updateRequest.Steps, firehydrant.RunbookStep{
 			Name:            step["name"].(string),
 			ActionID:        step["action_id"].(string),
@@ -309,6 +346,7 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 			Config:          configMap,
 			Repeats:         step["repeats"].(bool),
 			RepeatsDuration: step["repeats_duration"].(string),
+			Rule:            ruleMap,
 		})
 	}
 

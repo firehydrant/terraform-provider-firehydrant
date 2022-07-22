@@ -50,6 +50,7 @@ type RunbookStep struct {
 	Automatic       bool                   `json:"automatic,omitempty"`
 	Repeats         bool                   `json:"repeats,omitempty"`
 	RepeatsDuration string                 `json:"repeats_duration,omitempty"`
+	Rule            map[string]interface{} `json:"rule,omitempty"`
 }
 
 // UpdateRunbookRequest is the payload for updating a service
