@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -101,6 +100,7 @@ func resourceRunbook() *schema.Resource {
 			"attachment_rule": {
 				Type:             schema.TypeString,
 				Optional:         true,
+				Default:          firehydrant.RunbookAttachmentRuleDefaultJSON,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsJSON),
 				StateFunc: func(value interface{}) string {
 					normalizedJSON, _ := structure.NormalizeJsonString(value)
