@@ -66,17 +66,17 @@ resource "firehydrant_runbook" "example-runbook" {
       logic = {
         eq = [
           {
-            var = "incident_current_milestone",
+            var = "incident_current_milestone"
           },
           {
             var = "usr.1"
           }
         ]
-      },
+      }
       user_data = {
         "1" = {
-          type  = "Milestone",
-          value = "resolved",
+          type  = "Milestone"
+          value = "resolved"
           label = "Resolved"
         }
       }
