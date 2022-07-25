@@ -66,6 +66,7 @@ func Provider() *schema.Provider {
 			"firehydrant_runbook_action": dataSourceRunbookAction(),
 			"firehydrant_service":        dataSourceService(),
 			"firehydrant_services":       dataSourceServices(),
+			"firehydrant_severity":       dataSourceSeverity(),
 			"firehydrant_task_list":      dataSourceTaskList(),
 		},
 	}
