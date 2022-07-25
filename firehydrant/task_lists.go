@@ -27,7 +27,7 @@ func (c *RESTTaskListsClient) restClient() *sling.Sling {
 	return c.client.client()
 }
 
-// TaskListResponse is the payload for retrieving a service
+// TaskListResponse is the payload for retrieving a task list
 // URL: GET https://api.firehydrant.io/v1/task_lists/{id}
 type TaskListResponse struct {
 	ID          string `json:"id"`
@@ -64,7 +64,7 @@ func (c *RESTTaskListsClient) Get(ctx context.Context, id string) (*TaskListResp
 }
 
 // CreateTaskListRequest is the payload for creating a task list
-// URL: POST https://api.firehydrant.io/v1/task_list
+// URL: POST https://api.firehydrant.io/v1/task_lists
 type CreateTaskListRequest struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
