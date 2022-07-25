@@ -10,6 +10,7 @@ BREAKING CHANGES:
 BUG FIXES:
 
 * resource/runbook: Fixed bug that prevented the `description` attribute from being unset ([#80](https://github.com/firehydrant/terraform-provider-firehydrant/pull/80))
+* resource/severity: Fixed bug that prevented the `description` attribute from being unset ([#88](https://github.com/firehydrant/terraform-provider-firehydrant/pull/88))
 * data_source/runbook_action: Fixed bug that prevented the Slack `add_bookmark_to_incident_channel` action from working by making `type` optional ([#92](https://github.com/firehydrant/terraform-provider-firehydrant/pull/92))
 
 FEATURES:
@@ -20,6 +21,7 @@ FEATURES:
 * **New Data Source:** `firehydrant_priority` ([#65](https://github.com/firehydrant/terraform-provider-firehydrant/pull/65))
 * **New Data Source:** `firehydrant_task_list` ([#85](https://github.com/firehydrant/terraform-provider-firehydrant/pull/85))
 * **New Data Source:** `firehydrant_incident_role` ([#87](https://github.com/firehydrant/terraform-provider-firehydrant/pull/87))
+* **New Data Source:** `firehydrant_severity` ([#88](https://github.com/firehydrant/terraform-provider-firehydrant/pull/88))
 
 ENHANCEMENTS:
 
@@ -30,6 +32,8 @@ ENHANCEMENTS:
 * resource/runbook: Added the `attachment_rule` attribute to runbook ([#82](https://github.com/firehydrant/terraform-provider-firehydrant/pull/82))
 * resource/runbook: Added default value of `false` to the steps `automatic` attribute ([#83](https://github.com/firehydrant/terraform-provider-firehydrant/pull/83))
 * resource/runbook: Added the `rule` attribute to runbook steps ([#84](https://github.com/firehydrant/terraform-provider-firehydrant/pull/84))
+* resource/severity: Added logging to the resource and validation to the `slug` attribute ([#88](https://github.com/firehydrant/terraform-provider-firehydrant/pull/88))
+* resource/severity: Added support for the `type` attribute ([#88](https://github.com/firehydrant/terraform-provider-firehydrant/pull/88))
 * data_source/runbook: Added logging ([#74](https://github.com/firehydrant/terraform-provider-firehydrant/pull/74))
 * data_source/runbook: Added the `owner_id` attribute to runbook ([#76](https://github.com/firehydrant/terraform-provider-firehydrant/pull/76))
 * data_source/runbook: Added the `attachment_rule` attribute to runbook ([#82](https://github.com/firehydrant/terraform-provider-firehydrant/pull/82))
