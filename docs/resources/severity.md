@@ -1,6 +1,5 @@
 ---
 page_title: "FireHydrant Resource: firehydrant_severity"
-subcategory: "Beta"
 ---
 
 # firehydrant_severity Resource
@@ -29,12 +28,12 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - The ID of the severity.
+* `id` - The ID of the severity. This is the same as the slug.
 
 ## Import
 
-Severities can be imported; use `<SEVERITY ID>` as the import ID. For example:
+Severities can be imported; use `<SEVERITY SLUG>` as the import ID. For example:
 
 ```shell
-terraform import firehydrant_severity.test 3638b647-b99c-5051-b715-eda2c912c42e
+terraform import firehydrant_severity.test SEV3
 ```
