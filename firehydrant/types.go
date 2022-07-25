@@ -227,27 +227,6 @@ type UpdateTeamRequest struct {
 	Description string `json:"description"`
 }
 
-// SeverityResponse is the payload for a single environment
-// URL: GET https://api.firehydrant.io/v1/severities/{id}
-type SeverityResponse struct {
-	Slug        string `json:"slug"`
-	Description string `json:"description"`
-}
-
-// CreateSeverityRequest is the payload for creating a service
-// URL: POST https://api.firehydrant.io/v1/severities
-type CreateSeverityRequest struct {
-	Slug        string `json:"slug"`
-	Description string `json:"description"`
-}
-
-// UpdateSeverityRequest is the payload for updating a environment
-// URL: PATCH https://api.firehydrant.io/v1/severities/{id}
-type UpdateSeverityRequest struct {
-	Slug        string `json:"slug,omitempty"`
-	Description string `json:"description,omitempty"`
-}
-
 // PriorityResponse is the payload for a single priority
 // URL: GET https://api.firehydrant.io/v1/priorities/{id}
 type PriorityResponse struct {
