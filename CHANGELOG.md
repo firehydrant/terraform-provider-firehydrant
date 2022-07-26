@@ -10,6 +10,7 @@ BREAKING CHANGES:
 BUG FIXES:
 
 * resource/runbook: Fixed bug that prevented the `description` attribute from being unset ([#80](https://github.com/firehydrant/terraform-provider-firehydrant/pull/80))
+* data_source/runbook_action: Fixed bug that prevented the Slack `add_bookmark_to_incident_channel` action from working by making `type` optional ([#92](https://github.com/firehydrant/terraform-provider-firehydrant/pull/92))
 
 FEATURES:
 
