@@ -30,6 +30,8 @@ func TestAccSeverityResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("firehydrant_severity.test_severity", "id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_severity.test_severity", "slug", fmt.Sprintf("TESTSEVERITY%s", rSlug)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_severity.test_severity", "type", string(firehydrant.SeverityTypeUnexpectedDowntime)),
 				),
 			},
 		},
@@ -52,6 +54,8 @@ func TestAccSeverityResource_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet("firehydrant_severity.test_severity", "id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_severity.test_severity", "slug", fmt.Sprintf("TESTSEVERITY%s", rSlug)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_severity.test_severity", "type", string(firehydrant.SeverityTypeUnexpectedDowntime)),
 				),
 			},
 			{
@@ -63,6 +67,8 @@ func TestAccSeverityResource_update(t *testing.T) {
 						"firehydrant_severity.test_severity", "slug", fmt.Sprintf("TESTSEVERITY%s", rSlugUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_severity.test_severity", "description", fmt.Sprintf("test-description-%s", rSlugUpdated)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_severity.test_severity", "type", string(firehydrant.SeverityTypeMaintenance)),
 				),
 			},
 			{
@@ -72,6 +78,8 @@ func TestAccSeverityResource_update(t *testing.T) {
 					resource.TestCheckResourceAttrSet("firehydrant_severity.test_severity", "id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_severity.test_severity", "slug", fmt.Sprintf("TESTSEVERITY%s", rSlugUpdated)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_severity.test_severity", "type", string(firehydrant.SeverityTypeUnexpectedDowntime)),
 				),
 			},
 		},
@@ -164,6 +172,14 @@ func testAccCheckSeverityResourceExistsWithAttributes_basic(resourceSlug string)
 			return fmt.Errorf("Unexpected description. Expected no description, got: %s", severityResponse.Description)
 		}
 
+		if severityResponse.Type != string(firehydrant.SeverityTypeUnexpectedDowntime) {
+			return fmt.Errorf("Unexpected type. Expected default type of %s, got: %s", string(firehydrant.SeverityTypeUnexpectedDowntime), severityResponse.Type)
+		}
+		expected, got = severityResource.Primary.Attributes["type"], severityResponse.Type
+		if expected != got {
+			return fmt.Errorf("Unexpected type. Expected: %s, got: %s", expected, got)
+		}
+
 		return nil
 	}
 }
@@ -196,6 +212,11 @@ func testAccCheckSeverityResourceExistsWithAttributes_update(resourceSlug string
 		expected, got = severityResource.Primary.Attributes["description"], severityResponse.Description
 		if expected != got {
 			return fmt.Errorf("Unexpected description. Expected: %s, got: %s", expected, got)
+		}
+
+		expected, got = severityResource.Primary.Attributes["type"], severityResponse.Type
+		if expected != got {
+			return fmt.Errorf("Unexpected type. Expected: %s, got: %s", expected, got)
 		}
 
 		return nil
@@ -240,6 +261,7 @@ func testAccSeverityResourceConfig_update(rSlug string) string {
 resource "firehydrant_severity" "test_severity" {
   slug        = "TESTSEVERITY%s"
   description = "test-description-%s"
+  type        = "maintenance"
 }`, rSlug, rSlug)
 }
 

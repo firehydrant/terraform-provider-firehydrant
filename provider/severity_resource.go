@@ -51,6 +51,21 @@ func resourceSeverity() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  string(firehydrant.SeverityTypeUnexpectedDowntime),
+				ValidateDiagFunc: validation.ToDiagFunc(
+					validation.StringInSlice(
+						[]string{
+							string(firehydrant.SeverityTypeGameday),
+							string(firehydrant.SeverityTypeMaintenance),
+							string(firehydrant.SeverityTypeUnexpectedDowntime),
+						},
+						false,
+					),
+				),
+			},
 		},
 	}
 }
@@ -80,6 +95,7 @@ func readResourceFireHydrantSeverity(ctx context.Context, d *schema.ResourceData
 	attributes := map[string]interface{}{
 		"slug":        severityResponse.Slug,
 		"description": severityResponse.Description,
+		"type":        severityResponse.Type,
 	}
 
 	// Set the resource attributes to the values we got from the API
@@ -100,6 +116,7 @@ func createResourceFireHydrantSeverity(ctx context.Context, d *schema.ResourceDa
 	createRequest := firehydrant.CreateSeverityRequest{
 		Slug:        d.Get("slug").(string),
 		Description: d.Get("description").(string),
+		Type:        d.Get("type").(string),
 	}
 
 	// Create the new severity
@@ -126,6 +143,7 @@ func updateResourceFireHydrantSeverity(ctx context.Context, d *schema.ResourceDa
 	updateRequest := firehydrant.UpdateSeverityRequest{
 		Slug:        d.Get("slug").(string),
 		Description: d.Get("description").(string),
+		Type:        d.Get("type").(string),
 	}
 
 	// Update the severity
