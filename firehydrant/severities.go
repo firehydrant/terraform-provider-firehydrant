@@ -6,6 +6,16 @@ import (
 	"github.com/pkg/errors"
 )
 
+// SeverityType represents the type of the severity.
+type SeverityType string
+
+// List of valid severity types
+const (
+	SeverityTypeGameday            SeverityType = "gameday"
+	SeverityTypeMaintenance        SeverityType = "maintenance"
+	SeverityTypeUnexpectedDowntime SeverityType = "unexpected_downtime"
+)
+
 // SeveritiesClient is an interface for interacting with severities on FireHydrant
 type SeveritiesClient interface {
 	Get(ctx context.Context, slug string) (*SeverityResponse, error)
@@ -30,6 +40,7 @@ func (c *RESTSeveritiesClient) restClient() *sling.Sling {
 type SeverityResponse struct {
 	Slug        string `json:"slug"`
 	Description string `json:"description"`
+	Type        string `json:"type"`
 }
 
 // Get retrieves a severity from FireHydrant
@@ -54,6 +65,7 @@ func (c *RESTSeveritiesClient) Get(ctx context.Context, slug string) (*SeverityR
 type CreateSeverityRequest struct {
 	Slug        string `json:"slug"`
 	Description string `json:"description"`
+	Type        string `json:"type"`
 }
 
 // Create creates a severity
@@ -78,6 +90,7 @@ func (c *RESTSeveritiesClient) Create(ctx context.Context, createReq CreateSever
 type UpdateSeverityRequest struct {
 	Slug        string `json:"slug,omitempty"`
 	Description string `json:"description"`
+	Type        string `json:"type"`
 }
 
 // Update updates a severity in FireHydrant
