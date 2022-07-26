@@ -77,7 +77,7 @@ func (c *RESTSeveritiesClient) Create(ctx context.Context, createReq CreateSever
 // URL: PATCH https://api.firehydrant.io/v1/severities/{id}
 type UpdateSeverityRequest struct {
 	Slug        string `json:"slug,omitempty"`
-	Description string `json:"description,omitempty"`
+	Description string `json:"description"`
 }
 
 // Update updates a severity in FireHydrant
