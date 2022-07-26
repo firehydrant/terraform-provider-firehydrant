@@ -61,6 +61,7 @@ type Client interface {
 	IncidentRoles() IncidentRolesClient
 	Runbooks() RunbooksClient
 	RunbookActions() RunbookActionsClient
+	ServiceDependencies() ServiceDependenciesClient
 	Services() ServicesClient
 	TaskLists() TaskListsClient
 
@@ -165,6 +166,11 @@ func (c *APIClient) Runbooks() RunbooksClient {
 // RunbookActions returns a RunbookActionsClient interface for interacting with runbook actions in FireHydrant
 func (c *APIClient) RunbookActions() RunbookActionsClient {
 	return &RESTRunbookActionsClient{client: c}
+}
+
+// ServiceDependencies returns a ServiceDependenciesClient interface for interacting with service dependencies in FireHydrant
+func (c *APIClient) ServiceDependencies() ServiceDependenciesClient {
+	return &RESTServiceDependenciesClient{client: c}
 }
 
 // Services returns a ServicesClient interface for interacting with services in FireHydrant
