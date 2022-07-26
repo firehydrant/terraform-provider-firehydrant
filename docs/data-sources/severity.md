@@ -29,3 +29,5 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the severity. This is the same as the slug.
 * `description` - A description of the severity.
+* `type` - The type of the severity.
+  Possible values are `gameday`, `maintenance`, and `unexpected_downtime`.

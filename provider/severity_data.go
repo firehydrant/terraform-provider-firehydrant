@@ -26,6 +26,10 @@ func dataSourceSeverity() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -48,6 +52,7 @@ func dataFireHydrantSeverity(ctx context.Context, d *schema.ResourceData, m inte
 	attributes := map[string]interface{}{
 		"slug":        severityResponse.Slug,
 		"description": severityResponse.Description,
+		"type":        severityResponse.Type,
 	}
 
 	// Set the data source attributes to the values we got from the API
