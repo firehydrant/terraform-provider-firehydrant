@@ -482,7 +482,6 @@ func testAccRunbookResourceConfig_basic(rName string) string {
 data "firehydrant_runbook_action" "create_incident_channel" {
   slug             = "create_incident_channel"
   integration_slug = "slack"
-  type             = "incident"
 }
 
 resource "firehydrant_runbook" "test_runbook" {
@@ -508,13 +507,11 @@ resource "firehydrant_team" "test_team1" {
 data "firehydrant_runbook_action" "notify_channel" {
   slug             = "notify_channel"
   integration_slug = "slack"
-  type             = "incident"
 }
 
 data "firehydrant_runbook_action" "archive_channel" {
   slug             = "archive_incident_channel"
   integration_slug = "slack"
-  type             = "incident"
 }
 
 resource "firehydrant_runbook" "test_runbook" {
@@ -585,7 +582,6 @@ func testAccRunbookResourceConfig_stepsRequiredRepeatsDurationNotSet(rName strin
 data "firehydrant_runbook_action" "create_incident_channel" {
   slug             = "create_incident_channel"
   integration_slug = "slack"
-  type             = "incident"
 }
 
 resource "firehydrant_runbook" "test_runbook" {
@@ -646,7 +642,6 @@ func testAccRunbookResourceConfig_stepsRequiredRepeatsNotSet(rName string) strin
 data "firehydrant_runbook_action" "create_incident_channel" {
   slug             = "create_incident_channel"
   integration_slug = "slack"
-  type             = "incident"
 }
 
 resource "firehydrant_runbook" "test_runbook" {
@@ -707,7 +702,6 @@ func testAccRunbookResourceConfig_stepsConfigInvalidJSON(rName string) string {
 data "firehydrant_runbook_action" "create_incident_channel" {
   slug             = "create_incident_channel"
   integration_slug = "slack"
-  type             = "incident"
 }
 
 resource "firehydrant_runbook" "test_runbook" {
@@ -727,7 +721,6 @@ func testAccRunbookResourceConfig_attachmentRuleInvalidJSON(rName string) string
 data "firehydrant_runbook_action" "create_incident_channel" {
   slug             = "create_incident_channel"
   integration_slug = "slack"
-  type             = "incident"
 }
 
 resource "firehydrant_runbook" "test_runbook" {
@@ -746,7 +739,6 @@ func testAccRunbookResourceConfig_stepsRuleInvalidJSON(rName string) string {
 data "firehydrant_runbook_action" "create_incident_channel" {
   slug             = "create_incident_channel"
   integration_slug = "slack"
-  type             = "incident"
 }
 
 resource "firehydrant_runbook" "test_runbook" {

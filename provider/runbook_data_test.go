@@ -55,7 +55,6 @@ func testAccRunbookDataSourceConfig_basic(rName string) string {
 data "firehydrant_runbook_action" "create_incident_channel" {
   slug             = "create_incident_channel"
   integration_slug = "slack"
-  type             = "incident"
 }
 
 resource "firehydrant_runbook" "test_runbook" {
@@ -85,7 +84,6 @@ resource "firehydrant_team" "test_team1" {
 data "firehydrant_runbook_action" "create_incident_channel" {
   slug             = "create_incident_channel"
   integration_slug = "slack"
-  type             = "incident"
 }
 
 resource "firehydrant_runbook" "test_runbook" {

@@ -24,7 +24,6 @@ resource "firehydrant_team" "example-owner-team" {
 data "firehydrant_runbook_action" "notify-channel-action" {
   slug             = "notify_channel"
   integration_slug = "slack"
-  type             = "incident"
 }
 
 resource "firehydrant_runbook" "example-runbook" {
