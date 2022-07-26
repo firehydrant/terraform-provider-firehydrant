@@ -24,9 +24,11 @@ func dataSourceRunbookAction() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+
+			// Optional
 			"type": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 
 			// Computed
