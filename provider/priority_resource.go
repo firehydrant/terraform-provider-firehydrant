@@ -3,13 +3,15 @@ package provider
 import (
 	"context"
 	"errors"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourcePriority() *schema.Resource {
@@ -63,13 +65,19 @@ func readResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData
 
 	// Get the priority
 	priorityID := d.Id()
-	priorityResponse, err := firehydrantAPIClient.GetPriority(ctx, priorityID)
+	tflog.Debug(ctx, fmt.Sprintf("Read priority: %s", priorityID), map[string]interface{}{
+		"id": priorityID,
+	})
+	priorityResponse, err := firehydrantAPIClient.Priorities().Get(ctx, priorityID)
 	if err != nil {
 		if errors.Is(err, firehydrant.ErrorNotFound) {
+			tflog.Debug(ctx, fmt.Sprintf("Priority %s no longer exists", priorityID), map[string]interface{}{
+				"id": priorityID,
+			})
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(err)
+		return diag.Errorf("Error reading priority %s: %v", priorityID, err)
 	}
 
 	// Gather values from the API response
@@ -82,7 +90,7 @@ func readResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData
 	// Set the resource attributes to the values we got from the API
 	for key, val := range attributes {
 		if err := d.Set(key, val); err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf("Error setting %s for priority %s: %v", key, priorityID, err)
 		}
 	}
 
@@ -100,10 +108,13 @@ func createResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceDa
 		Description: d.Get("description").(string),
 	}
 
-	// Create the new service
-	priorityResponse, err := firehydrantAPIClient.CreatePriority(ctx, createRequest)
+	// Create the new priority
+	tflog.Debug(ctx, fmt.Sprintf("Create priority: %s", createRequest.Slug), map[string]interface{}{
+		"slug": createRequest.Slug,
+	})
+	priorityResponse, err := firehydrantAPIClient.Priorities().Create(ctx, createRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error creating priority %s: %v", createRequest.Slug, err)
 	}
 
 	// Set the new priority's ID in state
@@ -125,9 +136,12 @@ func updateResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// Update the priority
-	_, err := firehydrantAPIClient.UpdatePriority(ctx, d.Id(), updateRequest)
+	tflog.Debug(ctx, fmt.Sprintf("Update priority: %s", d.Id()), map[string]interface{}{
+		"id": d.Id(),
+	})
+	_, err := firehydrantAPIClient.Priorities().Update(ctx, d.Id(), updateRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error updating priority %s: %v", d.Id(), err)
 	}
 
 	// Update state with the latest information from the API
@@ -140,12 +154,15 @@ func deleteResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceDa
 
 	// Delete the priority
 	priorityID := d.Id()
-	err := firehydrantAPIClient.DeletePriority(ctx, priorityID)
+	tflog.Debug(ctx, fmt.Sprintf("Delete priority: %s", priorityID), map[string]interface{}{
+		"id": priorityID,
+	})
+	err := firehydrantAPIClient.Priorities().Delete(ctx, priorityID)
 	if err != nil {
 		if errors.Is(err, firehydrant.ErrorNotFound) {
 			return nil
 		}
-		return diag.FromErr(err)
+		return diag.Errorf("Error deleting priority %s: %v", priorityID, err)
 	}
 
 	return diag.Diagnostics{}
