@@ -1,6 +1,5 @@
 ---
 page_title: "FireHydrant Resource: firehydrant_functionality"
-subcategory: "Beta"
 ---
 
 # firehydrant_functionality Resource
@@ -39,9 +38,6 @@ The following arguments are supported:
 * `name` - (Required) The name of the functionality.
 * `description` - (Optional) A description of the functionality.
 * `service_ids` - (Optional) A set of IDs of the services this functionality is associated with.
-  This value _must not_ be provided if `services` is provided.
-* `services` - **Deprecated** Use `service_ids` instead. The services this functionality is associated with. 
-  This value _must not_ be provided if `service_ids` is provided.
 
 **Deprecated** The `services` block supports:
 
@@ -52,10 +48,6 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the functionality.
-
-**Deprecated** The `services` block contains:
-
-* `id` - The ID of the service.
 
 ## Import
 
