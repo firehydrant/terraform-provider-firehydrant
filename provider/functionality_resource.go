@@ -3,8 +3,11 @@ package provider
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -65,24 +68,32 @@ func readResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resourc
 	firehydrantAPIClient := m.(firehydrant.Client)
 
 	// Get the functionality
-	r, err := firehydrantAPIClient.GetFunctionality(ctx, d.Id())
+	functionalityID := d.Id()
+	tflog.Debug(ctx, fmt.Sprintf("Read functionality: %s", functionalityID), map[string]interface{}{
+		"id": functionalityID,
+	})
+	functionalityResponse, err := firehydrantAPIClient.Functionalities().Get(ctx, functionalityID)
 	if err != nil {
 		if errors.Is(err, firehydrant.ErrorNotFound) {
+			tflog.Debug(ctx, fmt.Sprintf("Functionality %s no longer exists", functionalityID), map[string]interface{}{
+				"id": functionalityID,
+			})
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(err)
+		return diag.Errorf("Error reading functionality %s: %v", functionalityID, err)
 	}
 
-	// Set values in state
-	svc := map[string]string{
-		"name":        r.Name,
-		"description": r.Description,
+	// Gather values from API response
+	attributes := map[string]interface{}{
+		"name":        functionalityResponse.Name,
+		"description": functionalityResponse.Description,
 	}
 
-	for key, val := range svc {
-		if err := d.Set(key, val); err != nil {
-			return diag.FromErr(err)
+	// Set the resource attributes to the values we got from the API
+	for key, value := range attributes {
+		if err := d.Set(key, value); err != nil {
+			return diag.Errorf("Error setting %s for functionality %s: %v", key, functionalityID, err)
 		}
 	}
 
@@ -93,7 +104,7 @@ func readResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resourc
 		// If the config is using the services attribute, update the services attribute
 		// in state with the information we got from the API
 		var services []interface{}
-		for _, service := range r.Services {
+		for _, service := range functionalityResponse.Services {
 			services = append(services, map[string]interface{}{
 				"id":   service.ID,
 				"name": service.Name,
@@ -106,7 +117,7 @@ func readResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resourc
 		// Otherwise, default to the preferred service_ids attribute and update the
 		// service_ids attribute in state with the information we got from the API
 		serviceIDs := make([]string, 0)
-		for _, service := range r.Services {
+		for _, service := range functionalityResponse.Services {
 			serviceIDs = append(serviceIDs, service.ID)
 		}
 		if err := d.Set("service_ids", serviceIDs); err != nil {
@@ -121,14 +132,13 @@ func createResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 	// Get the API client
 	firehydrantAPIClient := m.(firehydrant.Client)
 
-	// Construct the create functionality request
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	r := firehydrant.CreateFunctionalityRequest{
-		Name:        name,
-		Description: description,
+	// Get attributes from config and construct the create request
+	createRequest := firehydrant.CreateFunctionalityRequest{
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
 	}
 
+	// Process any optional attributes and add to the create request if necessary
 	// TODO: refactor this once deprecated attribute is removed
 	// Add service IDs to the create request
 	services, servicesSet := d.GetOk("services")
@@ -138,7 +148,7 @@ func createResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 		// to set the service IDs for the create functionality request
 		for _, service := range services.([]interface{}) {
 			serviceAttributes := service.(map[string]interface{})
-			r.Services = append(r.Services, firehydrant.FunctionalityService{
+			createRequest.Services = append(createRequest.Services, firehydrant.FunctionalityService{
 				ID: serviceAttributes["id"].(string),
 			})
 		}
@@ -146,7 +156,7 @@ func createResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 		// If the service_ids attribute is set, use the service IDs from that attribute
 		// to set the service IDs for the create functionality request
 		for _, serviceID := range serviceIDs.(*schema.Set).List() {
-			r.Services = append(r.Services, firehydrant.FunctionalityService{
+			createRequest.Services = append(createRequest.Services, firehydrant.FunctionalityService{
 				ID: serviceID.(string),
 			})
 		}
@@ -155,13 +165,16 @@ func createResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 	// which will create a functionality with no services
 
 	// Create the new functionality
-	resource, err := firehydrantAPIClient.CreateFunctionality(ctx, r)
+	tflog.Debug(ctx, fmt.Sprintf("Create functionality: %s", createRequest.Name), map[string]interface{}{
+		"name": createRequest.Name,
+	})
+	functionalityResponse, err := firehydrantAPIClient.Functionalities().Create(ctx, createRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error creating functionality %s: %v", createRequest.Name, err)
 	}
 
 	// Set the new functionality's ID in state
-	d.SetId(resource.ID)
+	d.SetId(functionalityResponse.ID)
 
 	// Update state with the latest information from the API
 	return readResourceFireHydrantFunctionality(ctx, d, m)
@@ -171,14 +184,13 @@ func updateResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 	// Get the API client
 	firehydrantAPIClient := m.(firehydrant.Client)
 
-	// Construct the update functionality request
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	r := firehydrant.UpdateFunctionalityRequest{
-		Name:        name,
-		Description: description,
+	// Construct the update request
+	updateRequest := firehydrant.UpdateFunctionalityRequest{
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
 	}
 
+	// Process any optional attributes and add to the update request if necessary
 	// TODO: refactor this once deprecated attribute is removed
 	// Add service IDs to the update request
 	services, servicesSet := d.GetOk("services")
@@ -207,15 +219,17 @@ func updateResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 	// has been removed from the config
 
 	// Set the service IDs for the update functionality request
-	r.Services = updatedServices
+	updateRequest.Services = updatedServices
 	// This will force the update request to replace the services with the ones we send
-	r.RemoveRemainingServices = true
+	updateRequest.RemoveRemainingServices = true
 
 	// Update the functionality
-	functionalityID := d.Id()
-	_, err := firehydrantAPIClient.UpdateFunctionality(ctx, functionalityID, r)
+	tflog.Debug(ctx, fmt.Sprintf("Update functionality: %s", d.Id()), map[string]interface{}{
+		"id": d.Id(),
+	})
+	_, err := firehydrantAPIClient.Functionalities().Update(ctx, d.Id(), updateRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error updating functionality %s: %v", d.Id(), err)
 	}
 
 	// Update state with the latest information from the API
@@ -228,7 +242,7 @@ func deleteResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 
 	// Delete the functionality
 	functionalityID := d.Id()
-	err := firehydrantAPIClient.DeleteFunctionality(ctx, functionalityID)
+	err := firehydrantAPIClient.Functionalities().Delete(ctx, functionalityID)
 	if err != nil {
 		if errors.Is(err, firehydrant.ErrorNotFound) {
 			d.SetId("")

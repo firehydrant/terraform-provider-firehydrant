@@ -289,7 +289,7 @@ func testAccCheckFunctionalityResourceExistsWithAttributes_basic(resourceName st
 			return err
 		}
 
-		functionalityResponse, err := client.GetFunctionality(context.TODO(), functionalityResource.Primary.ID)
+		functionalityResponse, err := client.Functionalities().Get(context.TODO(), functionalityResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -326,7 +326,7 @@ func testAccCheckFunctionalityResourceExistsWithAttributes_update(resourceName s
 			return err
 		}
 
-		functionalityResponse, err := client.GetFunctionality(context.TODO(), functionalityResource.Primary.ID)
+		functionalityResponse, err := client.Functionalities().Get(context.TODO(), functionalityResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -365,7 +365,7 @@ func testAccCheckFunctionalityResourceExistsWithAttributes_basicServices(resourc
 			return err
 		}
 
-		functionalityResponse, err := client.GetFunctionality(context.TODO(), functionalityResource.Primary.ID)
+		functionalityResponse, err := client.Functionalities().Get(context.TODO(), functionalityResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -403,7 +403,7 @@ func testAccCheckFunctionalityResourceExistsWithAttributes_basicServiceIDs(resou
 			return err
 		}
 
-		functionalityResponse, err := client.GetFunctionality(context.TODO(), functionalityResource.Primary.ID)
+		functionalityResponse, err := client.Functionalities().Get(context.TODO(), functionalityResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -441,7 +441,7 @@ func testAccCheckFunctionalityResourceExistsWithAttributes_updateServiceIDs(reso
 			return err
 		}
 
-		functionalityResponse, err := client.GetFunctionality(context.TODO(), functionalityResource.Primary.ID)
+		functionalityResponse, err := client.Functionalities().Get(context.TODO(), functionalityResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -481,7 +481,7 @@ func testAccCheckFunctionalityResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			_, err := client.GetFunctionality(context.TODO(), functionalityResource.Primary.ID)
+			_, err := client.Functionalities().Get(context.TODO(), functionalityResource.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("Functionality %s still exists", functionalityResource.Primary.ID)
 			}
