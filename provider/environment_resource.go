@@ -2,9 +2,12 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -20,10 +23,13 @@ func resourceEnvironment() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			// Required
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+
+			// Optional
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -33,86 +39,107 @@ func resourceEnvironment() *schema.Resource {
 }
 
 func readResourceFireHydrantEnvironment(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	r, err := ac.GetEnvironment(ctx, d.Id())
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
+
+	// Get the environment
+	environmentID := d.Id()
+	tflog.Debug(ctx, fmt.Sprintf("Read environment: %s", environmentID), map[string]interface{}{
+		"id": environmentID,
+	})
+	environmentResponse, err := firehydrantAPIClient.Environments().Get(ctx, environmentID)
 	if err != nil {
-		return diag.FromErr(err)
+		if errors.Is(err, firehydrant.ErrorNotFound) {
+			tflog.Debug(ctx, fmt.Sprintf("Environment %s no longer exists", environmentID), map[string]interface{}{
+				"id": environmentID,
+			})
+			d.SetId("")
+			return nil
+		}
+		return diag.Errorf("Error reading environment %s: %v", environmentID, err)
 	}
 
-	if err != nil {
-		return diag.FromErr(err)
+	// Gather values from API response
+	attributes := map[string]interface{}{
+		"name":        environmentResponse.Name,
+		"description": environmentResponse.Description,
 	}
 
-	var ds diag.Diagnostics
-	svc := map[string]string{
-		"name":        r.Name,
-		"description": r.Description,
-	}
-
-	for key, val := range svc {
-		if err := d.Set(key, val); err != nil {
-			return diag.FromErr(err)
+	// Set the resource attributes to the values we got from the API
+	for key, value := range attributes {
+		if err := d.Set(key, value); err != nil {
+			return diag.Errorf("Error setting %s for environment %s: %v", key, environmentID, err)
 		}
 	}
 
-	return ds
+	return diag.Diagnostics{}
 }
 
 func createResourceFireHydrantEnvironment(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	name, description := d.Get("name").(string), d.Get("description").(string)
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
-	r := firehydrant.CreateEnvironmentRequest{
-		Name:        name,
-		Description: description,
+	// Get attributes from config and construct the create request
+	createRequest := firehydrant.CreateEnvironmentRequest{
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
 	}
 
-	resource, err := ac.CreateEnvironment(ctx, r)
+	// Create the new environment
+	tflog.Debug(ctx, fmt.Sprintf("Create environment: %s", createRequest.Name), map[string]interface{}{
+		"name": createRequest.Name,
+	})
+	environmentResponse, err := firehydrantAPIClient.Environments().Create(ctx, createRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error creating environment %s: %v", createRequest.Name, err)
 	}
 
-	d.SetId(resource.ID)
+	// Set the new environment's ID in state
+	d.SetId(environmentResponse.ID)
 
-	attributes := map[string]interface{}{
-		"name":        resource.Name,
-		"description": resource.Description,
-	}
-	if err := setAttributesFromMap(d, attributes); err != nil {
-		return diag.FromErr(fmt.Errorf("could not set attributes: %w", err))
-	}
-
-	return diag.Diagnostics{}
+	// Update state with the latest information from the API
+	return readResourceFireHydrantEnvironment(ctx, d, m)
 }
 
 func updateResourceFireHydrantEnvironment(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	id := d.Id()
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
-	r := firehydrant.UpdateEnvironmentRequest{
-		Name:        name,
-		Description: description,
+	// Construct the update request
+	updateRequest := firehydrant.UpdateEnvironmentRequest{
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
 	}
 
-	_, err := ac.UpdateEnvironment(ctx, id, r)
+	// Update the environment
+	tflog.Debug(ctx, fmt.Sprintf("Update environment: %s", d.Id()), map[string]interface{}{
+		"id": d.Id(),
+	})
+	_, err := firehydrantAPIClient.Environments().Update(ctx, d.Id(), updateRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error updating environment %s: %v", d.Id(), err)
 	}
 
-	return diag.Diagnostics{}
+	// Update state with the latest information from the API
+	return readResourceFireHydrantEnvironment(ctx, d, m)
 }
 
 func deleteResourceFireHydrantEnvironment(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	EnvironmentID := d.Id()
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
-	err := ac.DeleteEnvironment(ctx, EnvironmentID)
+	// Delete the environment
+	environmentID := d.Id()
+	tflog.Debug(ctx, fmt.Sprintf("Delete environment: %s", environmentID), map[string]interface{}{
+		"id": environmentID,
+	})
+	err := firehydrantAPIClient.Environments().Delete(ctx, environmentID)
 	if err != nil {
-		return diag.FromErr(err)
+		if errors.Is(err, firehydrant.ErrorNotFound) {
+			return nil
+		}
+		return diag.Errorf("Error deleting environment %s: %v", environmentID, err)
 	}
 
-	d.SetId("")
 	return diag.Diagnostics{}
 }
