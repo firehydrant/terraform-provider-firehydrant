@@ -2,9 +2,11 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -45,32 +47,35 @@ func dataFireHydrantFunctionality(ctx context.Context, d *schema.ResourceData, m
 
 	// Get the functionality
 	functionalityID := d.Get("functionality_id").(string)
-	r, err := firehydrantAPIClient.GetFunctionality(ctx, functionalityID)
+	tflog.Debug(ctx, fmt.Sprintf("Read functionality: %s", functionalityID), map[string]interface{}{
+		"id": functionalityID,
+	})
+	functionalityResponse, err := firehydrantAPIClient.Functionalities().Get(ctx, functionalityID)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error reading functionality %s: %v", functionalityID, err)
 	}
 
-	// Set values in state
-	env := map[string]string{
-		"name":        r.Name,
-		"description": r.Description,
-	}
-
-	for key, val := range env {
-		if err := d.Set(key, val); err != nil {
-			return diag.FromErr(err)
-		}
+	// Gather values from API response
+	attributes := map[string]interface{}{
+		"name":        functionalityResponse.Name,
+		"description": functionalityResponse.Description,
 	}
 
 	serviceIDs := make([]string, 0)
-	for _, service := range r.Services {
+	for _, service := range functionalityResponse.Services {
 		serviceIDs = append(serviceIDs, service.ID)
 	}
-	if err := d.Set("service_ids", serviceIDs); err != nil {
-		return diag.FromErr(err)
+	attributes["service_ids"] = serviceIDs
+
+	// Set the resource attributes to the values we got from the API
+	for key, value := range attributes {
+		if err := d.Set(key, value); err != nil {
+			return diag.Errorf("Error setting %s for functionality %s: %v", key, functionalityID, err)
+		}
 	}
 
-	d.SetId(r.ID)
+	// Set the functionality's ID in state
+	d.SetId(functionalityResponse.ID)
 
 	return diag.Diagnostics{}
 }
