@@ -2,9 +2,11 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -44,12 +46,16 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 	for key, value := range labels {
 		labelsSelector[key] = value.(string)
 	}
+	tflog.Debug(ctx, fmt.Sprintf("Read services"), map[string]interface{}{
+		"query":  query,
+		"labels": labels,
+	})
 	servicesResponse, err := firehydrantAPIClient.Services().List(ctx, &firehydrant.ServiceQuery{
 		Query:          query,
 		LabelsSelector: labelsSelector,
 	})
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error reading services: %v", err)
 	}
 
 	// Set the data source attributes to the values we got from the API
@@ -87,7 +93,7 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 		services = append(services, attributes)
 	}
 	if err := d.Set("services", services); err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error setting services: %v", err)
 	}
 
 	d.SetId("does-not-matter")
