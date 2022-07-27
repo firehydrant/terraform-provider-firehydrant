@@ -59,6 +59,7 @@ type Client interface {
 	Ping(ctx context.Context) (*PingResponse, error)
 
 	Environments() EnvironmentsClient
+	Functionalities() FunctionalitiesClient
 	IncidentRoles() IncidentRolesClient
 	Priorities() PrioritiesClient
 	Runbooks() RunbooksClient
@@ -67,12 +68,6 @@ type Client interface {
 	Services() ServicesClient
 	Severities() SeveritiesClient
 	TaskLists() TaskListsClient
-
-	// Functionalities
-	GetFunctionality(ctx context.Context, id string) (*FunctionalityResponse, error)
-	CreateFunctionality(ctx context.Context, req CreateFunctionalityRequest) (*FunctionalityResponse, error)
-	UpdateFunctionality(ctx context.Context, id string, req UpdateFunctionalityRequest) (*FunctionalityResponse, error)
-	DeleteFunctionality(ctx context.Context, id string) error
 
 	// Teams
 	GetTeam(ctx context.Context, id string) (*TeamResponse, error)
@@ -143,6 +138,11 @@ func (c *APIClient) Environments() EnvironmentsClient {
 	return &RESTEnvironmentsClient{client: c}
 }
 
+// Functionalities returns a FunctionalitiesClient interface for interacting with functionalities in FireHydrant
+func (c *APIClient) Functionalities() FunctionalitiesClient {
+	return &RESTFunctionalitiesClient{client: c}
+}
+
 // IncidentRoles returns a IncidentRolesClient interface for interacting with incident roles in FireHydrant
 func (c *APIClient) IncidentRoles() IncidentRolesClient {
 	return &RESTIncidentRolesClient{client: c}
@@ -181,73 +181,6 @@ func (c *APIClient) Severities() SeveritiesClient {
 // TaskLists returns a TaskListsClient interface for interacting with task lists in FireHydrant
 func (c *APIClient) TaskLists() TaskListsClient {
 	return &RESTTaskListsClient{client: c}
-}
-
-// GetFunctionality retrieves a functionality from FireHydrant
-func (c *APIClient) GetFunctionality(ctx context.Context, id string) (*FunctionalityResponse, error) {
-	funcResponse := &FunctionalityResponse{}
-	apiError := &APIError{}
-	response, err := c.client().Get("functionalities/"+id).Receive(funcResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get functionality")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
-	}
-
-	return funcResponse, nil
-}
-
-// CreateFunctionality creates a functionality in FireHydrant
-func (c *APIClient) CreateFunctionality(ctx context.Context, req CreateFunctionalityRequest) (*FunctionalityResponse, error) {
-	funcResponse := &FunctionalityResponse{}
-	apiError := &APIError{}
-	response, err := c.client().Post("functionalities").BodyJSON(&req).Receive(funcResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not create functionality")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
-	}
-
-	return funcResponse, nil
-}
-
-// UpdateFunctionality updates a functionality in FireHydrant
-func (c *APIClient) UpdateFunctionality(ctx context.Context, id string, req UpdateFunctionalityRequest) (*FunctionalityResponse, error) {
-	funcResponse := &FunctionalityResponse{}
-	apiError := &APIError{}
-	response, err := c.client().Patch("functionalities/"+id).BodyJSON(&req).Receive(funcResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not update functionality")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
-	}
-
-	return funcResponse, nil
-}
-
-// DeleteFunctionality deletes a functionality from FireHydrant
-func (c *APIClient) DeleteFunctionality(ctx context.Context, id string) error {
-	apiError := &APIError{}
-	response, err := c.client().Delete("functionalities/"+id).Receive(nil, apiError)
-	if err != nil {
-		return errors.Wrap(err, "could not delete functionality")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // GetTeam retrieves a team from FireHydrant
