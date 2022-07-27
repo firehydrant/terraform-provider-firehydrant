@@ -38,14 +38,18 @@ ENHANCEMENTS:
 * resource/runbook: Added the `attachment_rule` attribute to runbook ([#82](https://github.com/firehydrant/terraform-provider-firehydrant/pull/82))
 * resource/runbook: Added default value of `false` to the steps `automatic` attribute ([#83](https://github.com/firehydrant/terraform-provider-firehydrant/pull/83))
 * resource/runbook: Added the `rule` attribute to runbook steps ([#84](https://github.com/firehydrant/terraform-provider-firehydrant/pull/84))
+* resource/service: Added logging ([#96](https://github.com/firehydrant/terraform-provider-firehydrant/pull/96))
 * resource/severity: Added logging to the resource and validation to the `slug` attribute ([#88](https://github.com/firehydrant/terraform-provider-firehydrant/pull/88))
 * resource/severity: Added support for the `type` attribute ([#88](https://github.com/firehydrant/terraform-provider-firehydrant/pull/88))
+* resource/team: Added logging ([#96](https://github.com/firehydrant/terraform-provider-firehydrant/pull/96))
 * data_source/environment: Added logging ([#93](https://github.com/firehydrant/terraform-provider-firehydrant/pull/93))
 * data_source/functionality: Added logging ([#94](https://github.com/firehydrant/terraform-provider-firehydrant/pull/94))
 * data_source/runbook: Added logging ([#74](https://github.com/firehydrant/terraform-provider-firehydrant/pull/74))
 * data_source/runbook: Added the `owner_id` attribute to runbook ([#76](https://github.com/firehydrant/terraform-provider-firehydrant/pull/76))
 * data_source/runbook: Added the `attachment_rule` attribute to runbook ([#82](https://github.com/firehydrant/terraform-provider-firehydrant/pull/82))
 * data_source/runbook_action: Added logging ([#74](https://github.com/firehydrant/terraform-provider-firehydrant/pull/74))
+* data_source/service: Added logging ([#96](https://github.com/firehydrant/terraform-provider-firehydrant/pull/96))
+* data_source/services: Added logging ([#96](https://github.com/firehydrant/terraform-provider-firehydrant/pull/96))
 
 ## 0.2.1
 
