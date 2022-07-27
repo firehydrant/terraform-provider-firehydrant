@@ -15,6 +15,7 @@ BUG FIXES:
 FEATURES:
 
 * **New Resource:** `firehydrant_priority` ([#65](https://github.com/firehydrant/terraform-provider-firehydrant/pull/65))
+* **New Resource:** `firehydrant_service_dependency` ([#89](https://github.com/firehydrant/terraform-provider-firehydrant/pull/89))
 * **New Resource:** `firehydrant_task_list` ([#85](https://github.com/firehydrant/terraform-provider-firehydrant/pull/85))
 * **New Resource:** `firehydrant_incident_role` ([#87](https://github.com/firehydrant/terraform-provider-firehydrant/pull/87))
 * **New Data Source:** `firehydrant_priority` ([#65](https://github.com/firehydrant/terraform-provider-firehydrant/pull/65))
