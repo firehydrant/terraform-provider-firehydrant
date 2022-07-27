@@ -37,7 +37,7 @@ func TestGetEnvironment(t *testing.T) {
 		return
 	}
 
-	res, err := c.GetEnvironment(context.TODO(), expectedEnvironment.ID)
+	res, err := c.Environments().Get(context.TODO(), expectedEnvironment.ID)
 	if err != nil {
 		t.Fatalf("Received error hitting environment get endpoint: %s", err.Error())
 	}
@@ -90,7 +90,7 @@ func TestCreateEnvironment(t *testing.T) {
 		return
 	}
 
-	res, err := c.CreateEnvironment(context.TODO(), req)
+	res, err := c.Environments().Create(context.TODO(), req)
 	if err != nil {
 		t.Fatalf("Received error hitting environment create endpoint: %s", err.Error())
 	}
