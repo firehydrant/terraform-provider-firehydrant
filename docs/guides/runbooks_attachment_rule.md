@@ -1,115 +1,27 @@
 ---
-page_title: "Attachment Rule"
+page_title: "Conditional Logic"
 subcategory: "Runbooks"
 ---
 
-# Attachment Rule
+# Conditional Logic
 
-This JSON encoded string allows for configuring when a runbook is attached to an incident based off of conditions met within the incident. The values within the `attachment_rule` attribute consist of a tuple of keys for `logic` and `user_data`. 
-The `logic` object can consists of one or more sets conditions and can very based on the types of conditions added.
-```hcl
-attachment_rule = jsonencode({
-  logic = {
-    eq = [
-      {
-        var = "incident_current_milestone"
-      },
-      {
-        var = "usr.1"
-      }
-    ]
-  }
-  user_data = {
-    "1" = {
-      type  = "Milestone"
-      value = "resolved"
-      label = "Resolved"
-    }
-  }
-})
-```
+The JSON encoded strings used in the runbook `attachment rule` and runbook steps `rule` attributes allows for
+configuring when a runbook is attached to an incident or when a runbook step is executed based off of conditions
+met within the incident. The values within the `attachment_rule` and steps `rule` attributes consist of a tuple of
+keys for `logic` and `user_data`.
 
+## Types of Conditions - Attachment Rule
 
-## Single condition
+We derive the types of conditions that can be set in the runbook `attachment_rule` attribute from our API's runbook
+attachment attributes endpoint.
 
-The runbook will attach if a Slack incident channel exists.
-```hcl
-attachment_rule = jsonencode({
-  logic = {
-    exists: [
-      {
-        var = "incident_slack_channel"
-      }
-    ]
-  }
-  user_data = {}
-})
-```
-
-## Multi condition or
-
-The runbook will attach if a Slack incident channel exists or if a Microsoft Teams channel exists.
-```hcl
-attachment_rule = jsonencode({
-  logic = {
-    or = [
-      {
-        exists = [
-          {
-            var = "incident_microsoft_teams_channel"
-          }
-        ]
-      },
-      {
-        exists = [
-          {
-            var = "incident_slack_channel"
-          }
-        ]
-      }
-    ]
-  }
-  user_data = {}
-})
-```
-
-
-## Multi condition and
-
-The runbook will attach if a slack incident channel exists and a microsoft teams channel exists.
-```hcl
-attachment_rule = jsonencode({
-  logic = {
-    and = [
-      {
-        exists = [
-          {
-            var = "incident_microsoft_teams_channel"
-          }
-        ]
-      },
-      {
-        exists = [
-          {
-            var = "incident_slack_channel"
-          }
-        ]
-      }
-    ]
-  }
-  user_data = {}
-})
-```
-
-## Types of conditions
-
-We derive the types of conditions that can be set from our API's runbook attachment attributes endpoint.
 ```
 https://api.firehydrant.io/v1/fh-attributes/data_bags/system-runbook-attachment-attributes
 ```
 
-In the example payload below you can see that we have a list of attributes that can be selected and we can see the `opcode` or operators that can be used for these attributes. 
-Given these operators, we can infer that we can either have a condition where the Slack channel does or does not exist.
+In the example payload below you can see that we have a list of attributes that can be selected and we can see
+the `opcode` or operators that can be used for these attributes. Given these operators, we can infer that we can
+either have a condition where the Slack channel does or does not exist.
 
 ```json
 {
@@ -136,12 +48,62 @@ Given these operators, we can infer that we can either have a condition where th
     }
   }
 }
-
 ```
 
-## Value based conditions
+## Types of Conditions - Steps Rule
 
-Operators of conditions can be assigned values that come from data saved in different parts of our system. For example, the below data we get back from the runbook attachment attributes API shows that we can select multiple operators that take in an array of `IncidentRole` data values. Looking at the `IncidentRole` type, we also see values that specify an `async` url that we can use to get the data necessary to fill in the `type`, `value`, and `label` fields required for the `user_data` attribute.
+We derive the types of conditions that can be set in the runbook steps `rule` attribute from our API's step
+execution attributes endpoint.
+
+```
+https://api.firehydrant.io/v1/fh-attributes/data_bags/step-execution-attributes
+```
+
+In the example payload below you can see that we have a list of attributes that can be selected and we can see
+the `opcode` or operators that can be used for these attributes. Given these operators, we can infer that we can
+either have a condition where the previous runbook step has completed, errored, or started.
+
+```json
+{
+  "name": "step-execution-attributes",
+  "attributes": [
+    {
+      "key": "previous_runbook_step",
+      "type": "RunbookStep",
+      "human_name": "Previous Runbook step"
+    }
+  ],
+  "types": {
+    "RunbookStep": {
+      "operators": [
+        {
+          "human_name": "has completed",
+          "opcode": "runbook_step_completed"
+        },
+        {
+          "human_name": "has errored",
+          "opcode": "runbook_step_errored"
+        },
+        {
+          "human_name": "has started",
+          "opcode": "runbook_step_started"
+        }
+      ],
+      "values": {
+        "async": "/fh-attributes/values/RunbookStep"
+      }
+    }
+  }
+}
+```
+
+## Value Based Conditions
+
+Operators of conditions can be assigned values that come from data saved in different parts of our system.
+For example, the below data we get back from the runbook attachment attributes API shows that we can select
+multiple operators that take in an array of `IncidentRole` data values. Looking at the `IncidentRole` type,
+we also see values that specify an `async` url that we can use to get the data necessary to fill in the `type`,
+`value`, and `label` fields required for the `user_data` attribute.
 
 ```json
 {
@@ -195,10 +157,10 @@ Operators of conditions can be assigned values that come from data saved in diff
     }
   }
 }
-
 ```
 
-Using the above data, we can create something like the rule below which specifies that the runbook should be attached when `incident_assigned_roles` has the role assigned of `Commander` or `Communication`.
+Using the above data, we can create something like the rule below which specifies that the runbook should be attached
+when `incident_assigned_roles` has the role assigned of `Commander` or `Communication`.
 
 ```hcl
 attachment_rule = jsonencode({
@@ -233,9 +195,10 @@ attachment_rule = jsonencode({
 })
 ```
 
-## User data
+## Logic
 
-The `user_data` attribute is used to map directly to variables in the `logic` attribute. In the example below, you can see `var = "usr.1"` in the `logic` attribute, which maps to `user_data["1"]`. The key value in this case is "1" but it can be anything that you would like it to be, it just needs to be a unique value within the `user_data` attribute that maps to a `var` in the `logic` attribute.
+The `logic` object consists of one or more sets conditions and varies based on the types of conditions added.
+
 ```hcl
 attachment_rule = jsonencode({
   logic = {
@@ -258,19 +221,151 @@ attachment_rule = jsonencode({
 })
 ```
 
+### Logic - Argument Reference
+
 The `logic` block supports:
 
-* `and` - runs more than one logical operator check and requires all to return true in order to attach the runbook. Will take in an array of objects of any operator.
-* `or` - runs more than one logical operator check and requires one of them to return true in order to attach the runbook. Will take in an array of objects of any operator.
-* `any of the operators below with current operators`
+* `<OPERATOR>` - (Required) A block that represents the conditions to evaluate.
+  Only one top level operator can be specified.
+  Valid values for `<OPERATOR>` include:
+    - `and` - Runs more than one logical operator check and requires all to return true. 
+      Will take in an array of objects of any operator.
+    - `or` - Runs more than one logical operator check and requires at least one of them to return true. 
+      Will take in an array of objects of any operator.
+    - `eq` - Requires a given argument to equal a given value.
+    - `exists` - Requires a given argument to exist.
+    - `does_not_exist` - Requires a given argument to not exist.
+    - `is_one_of` - Requires a given argument to match at least one of a given set of values.
+    - `includes_any` - Requires a given argument to include at least one of a given set of values.
+    - `includes_all` - Requires a given argument to include all of a given set of values.
+    - `includes_none_of` - Requires a given argument to include none of a given set of values.
+    - `is_empty` - Requires a given argument to be empty.
+    - `>` - Requires a given argument to be greater than a given value.
+    - `<=` - Requires a given argument to be less than or equal to a given value.
+    - `manually` - Requires a given argument to include at least one of a given set of values.
+
+## Logic - Single Condition Example
+
+The runbook will attach if a Slack incident channel exists.
+
+```hcl
+attachment_rule = jsonencode({
+  logic = {
+    exists = [
+      {
+        var = "incident_slack_channel"
+      }
+    ]
+  }
+  user_data = {}
+})
+```
+
+## Logic - Multi Condition Or Example
+
+The runbook step will execute if a Slack incident channel exists or if a Microsoft Teams channel exists.
+
+```hcl
+rule = jsonencode({
+  logic = {
+    or = [
+      {
+        exists = [
+          {
+            var = "incident_microsoft_teams_channel"
+          }
+        ]
+      },
+      {
+        exists = [
+          {
+            var = "incident_slack_channel"
+          }
+        ]
+      }
+    ]
+  }
+  user_data = {}
+})
+```
+
+## Logic - Multi Condition And Example
+
+The runbook will attach if a Slack incident channel exists and a Microsoft Teams channel exists.
+
+```hcl
+attachment_rule = jsonencode({
+  logic = {
+    and = [
+      {
+        exists = [
+          {
+            var = "incident_microsoft_teams_channel"
+          }
+        ]
+      },
+      {
+        exists = [
+          {
+            var = "incident_slack_channel"
+          }
+        ]
+      }
+    ]
+  }
+  user_data = {}
+})
+```
+
+## User Data
+
+The `user_data` attribute is used to map directly to variables in the `logic` attribute. In the example below,
+you can see `var = "usr.1"` in the `logic` attribute, which maps to `user_data["1"]`. The key value in this case is "1"
+but it can be anything that you would like it to be, it just needs to be a unique value within the `user_data` attribute that
+maps to a `var` in the `logic` attribute.
+
+```hcl
+attachment_rule = jsonencode({
+  logic = {
+    eq = [
+      {
+        var = "incident_current_milestone"
+      },
+      {
+        var = "usr.1"
+      }
+    ]
+  }
+  user_data = {
+    "1" = {
+      type  = "Milestone"
+      value = "resolved"
+      label = "Resolved"
+    }
+  }
+})
+```
+
+### User Data - Argument Reference
 
 The `user_data` block supports:
 
-* `usr.key` - Many different keys that are associated with `var` values in the logic block.
+* `<KEY>` - (Required) A block that represents data associated with a `var` value in the `logic` attribute.
+  `<KEY>` can be whatever you want, as long as it is a unique value within the `user_data` attribute. If 
+  your `logic` attribute doesn't use `user_data`, you should set the value to `{}`.
 
+The `<KEY>` block supports:
 
-## Current operators
-Below is the current list of operators as well as arguments that are available to be used within the rule. 
+Unless `user_data` is set to `{}`, all three of these values _must_ be provided. 
+
+* `type` - (Optional) The type of the data represented by this variable block.
+* `label` - (Optional) The label of the data represented by this variable block.
+* `value` - (Optional) The value of the data represented by this variable block.
+
+## Arguments & Operators
+
+Below is the current list of shared arguments and their operators that are available to be 
+used in the runbook `attachment_rule` or the runbook steps `rule` attributes.
 
 ```
 - incident_slack_channel
@@ -390,6 +485,28 @@ Below is the current list of operators as well as arguments that are available t
     - "includes_none_of"
       - arg: Array[Runbook]
     - "is_empty"
+```
+
+## Arguments & Operators - Attachment Rule
+
+In addition to the shared list of arguments and their operators, below is the current list of
+arguments and their operators that are only available to be used in the runbook `attachment_rule` 
+attribute. 
+
+```
 - when_invoked
     - "manually"
+```
+
+## Arguments & Operators - Steps Rule
+
+In addition to the shared list of arguments and their operators, below is the current list of 
+arguments and their operators that are only available to be used in the runbook steps `rule` 
+attribute.
+
+```
+- previous_runbook_step
+    - "runbook_step_completed"
+    - "runbook_step_errored"
+    - "runbook_step_started"
 ```
