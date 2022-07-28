@@ -3,7 +3,11 @@ package provider
 import (
 	"context"
 	"errors"
+	"fmt"
+
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -81,13 +85,19 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 
 	// Get the service
 	serviceID := d.Id()
+	tflog.Debug(ctx, fmt.Sprintf("Read service: %s", serviceID), map[string]interface{}{
+		"id": serviceID,
+	})
 	serviceResponse, err := firehydrantAPIClient.Services().Get(ctx, serviceID)
 	if err != nil {
 		if errors.Is(err, firehydrant.ErrorNotFound) {
+			tflog.Debug(ctx, fmt.Sprintf("Service %s no longer exists", serviceID), map[string]interface{}{
+				"id": serviceID,
+			})
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(err)
+		return diag.Errorf("Error reading service %s: %v", serviceID, err)
 	}
 
 	// Set values in state
@@ -124,7 +134,7 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 	// Update the resource attributes to the values we got from the API
 	for key, value := range attributes {
 		if err := d.Set(key, value); err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf("Error setting %s for service %s: %v", key, serviceID, err)
 		}
 	}
 
@@ -164,9 +174,12 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Create the new service
+	tflog.Debug(ctx, fmt.Sprintf("Create service: %s", createRequest.Name), map[string]interface{}{
+		"name": createRequest.Name,
+	})
 	serviceResponse, err := firehydrantAPIClient.Services().Create(ctx, createRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error creating service %s: %v", createRequest.Name, err)
 	}
 
 	// Set the new service's ID in state
@@ -217,9 +230,12 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	updateRequest.RemoveRemainingTeams = true
 
 	// Update the service
+	tflog.Debug(ctx, fmt.Sprintf("Update service: %s", d.Id()), map[string]interface{}{
+		"id": d.Id(),
+	})
 	_, err := firehydrantAPIClient.Services().Update(ctx, d.Id(), updateRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error updating service %s: %v", d.Id(), err)
 	}
 
 	// Update state with the latest information from the API
@@ -232,13 +248,16 @@ func deleteResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 
 	// Delete the service
 	serviceID := d.Id()
+	tflog.Debug(ctx, fmt.Sprintf("Delete service: %s", serviceID), map[string]interface{}{
+		"id": serviceID,
+	})
 	err := firehydrantAPIClient.Services().Delete(ctx, serviceID)
 	if err != nil {
 		if errors.Is(err, firehydrant.ErrorNotFound) {
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(err)
+		return diag.Errorf("Error deleting service %s: %v", serviceID, err)
 	}
 
 	return diag.Diagnostics{}
