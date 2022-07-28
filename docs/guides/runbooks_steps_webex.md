@@ -63,6 +63,10 @@ resource "firehydrant_runbook" "webex_create_meeting_runbook" {
   function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should automatically execute.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 

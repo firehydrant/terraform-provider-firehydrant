@@ -56,6 +56,10 @@ resource "firehydrant_runbook" "giphy_incident_channel_gif_runbook" {
 * `repeats_duration` - (Optional) How often this step should repeat in ISO8601.
   Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
   This value _must_ be provided if `repeats` is `true`. This value _must not_ be provided if `repeats` is `false`.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 

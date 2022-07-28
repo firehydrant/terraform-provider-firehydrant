@@ -60,6 +60,10 @@ resource "firehydrant_runbook" "slack_add_bookmark_to_incident_channel_runbook" 
   function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should automatically execute.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
@@ -108,6 +112,26 @@ resource "firehydrant_runbook" "slack_archive_channel_runbook" {
     name      = "Archive Slack Incident Channel"
     action_id = data.firehydrant_runbook_action.slack_archive_channel.id
     automatic = false
+
+    rule = jsonencode({
+      logic = {
+        eq = [
+          {
+            var = "incident_current_milestone"
+          },
+          {
+            var = "usr.1"
+          }
+        ]
+      }
+      user_data = {
+        "1" = {
+          type  = "Milestone"
+          value = "postmortem_completed"
+          label = "Retrospective Completed"
+        }
+      }
+    })
   }
 }
 ```
@@ -117,6 +141,10 @@ resource "firehydrant_runbook" "slack_archive_channel_runbook" {
 * `action_id` - (Required) The ID of the runbook action for the step.
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should automatically execute.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 ## Create Incident Channel
 
@@ -160,6 +188,10 @@ resource "firehydrant_runbook" "slack_create_incident_channel_runbook" {
   function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should automatically execute.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
@@ -219,6 +251,10 @@ resource "firehydrant_runbook" "slack_notify_channel_runbook" {
 * `repeats_duration` - (Optional) How often this step should repeat in ISO8601.
   Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
   This value _must_ be provided if `repeats` is `true`. This value _must not_ be provided if `repeats` is `false`.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
@@ -270,6 +306,10 @@ resource "firehydrant_runbook" "slack_notify_channel_custom_runbook" {
 * `repeats_duration` - (Optional) How often this step should repeat in ISO8601.
   Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
   This value _must_ be provided if `repeats` is `true`. This value _must not_ be provided if `repeats` is `false`.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
@@ -346,6 +386,10 @@ resource "firehydrant_runbook" "slack_notify_incident_channel_custom_runbook" {
 * `repeats_duration` - (Optional) How often this step should repeat in ISO8601.
   Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
   This value _must_ be provided if `repeats` is `true`. This value _must not_ be provided if `repeats` is `false`.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 

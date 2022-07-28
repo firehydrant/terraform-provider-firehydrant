@@ -62,6 +62,10 @@ resource "firehydrant_runbook" "firehydrant_add_services_related_to_functionalit
 * `repeats_duration` - (Optional) How often this step should repeat in ISO8601.
   Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
   This value _must_ be provided if `repeats` is `true`. This value _must not_ be provided if `repeats` is `false`.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 ## Add Task List
 
@@ -129,6 +133,10 @@ resource "firehydrant_runbook" "firehydrant_add_task_list_runbook" {
   function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should automatically execute.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
@@ -256,6 +264,10 @@ resource "firehydrant_runbook" "firehydrant_assign_a_role_runbook" {
 * `repeats_duration` - (Optional) How often this step should repeat in ISO8601.
   Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
   This value _must_ be provided if `repeats` is `true`. This value _must not_ be provided if `repeats` is `false`.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
@@ -329,6 +341,10 @@ resource "firehydrant_runbook" "firehydrant_assign_a_team_runbook" {
   function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should automatically execute.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
@@ -397,6 +413,10 @@ resource "firehydrant_runbook" "firehydrant_attach_a_runbook_runbook" {
   function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should automatically execute.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
@@ -453,6 +473,10 @@ resource "firehydrant_runbook" "firehydrant_email_notification_runbook" {
 * `repeats_duration` - (Optional) How often this step should repeat in ISO8601.
   Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
   This value _must_ be provided if `repeats` is `true`. This value _must not_ be provided if `repeats` is `false`.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
@@ -503,6 +527,10 @@ resource "firehydrant_runbook" "firehydrant_freeform_text_runbook" {
 * `repeats_duration` - (Optional) How often this step should repeat in ISO8601.
   Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
   This value _must_ be provided if `repeats` is `true`. This value _must not_ be provided if `repeats` is `false`.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
@@ -569,6 +597,10 @@ resource "firehydrant_runbook" "firehydrant_incident_update_runbook" {
   function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should automatically execute.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
@@ -663,6 +695,10 @@ resource "firehydrant_runbook" "firehydrant_publish_to_status_page_runbook" {
   function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should automatically execute.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
@@ -695,6 +731,26 @@ resource "firehydrant_runbook" "firehydrant_resolve_linked_alerts_runbook" {
     name      = "Resolve Linked Alerts"
     action_id = data.firehydrant_runbook_action.firehydrant_resolve_linked_alerts.id
     automatic = true
+
+    rule = jsonencode({
+      logic = {
+        eq = [
+          {
+            var = "incident_current_milestone"
+          },
+          {
+            var = "usr.1"
+          }
+        ]
+      }
+      user_data = {
+        "1" = {
+          type  = "Milestone"
+          value = "resolved"
+          label = "Resolved"
+        }
+      }
+    })
   }
 }
 ```
@@ -704,6 +760,10 @@ resource "firehydrant_runbook" "firehydrant_resolve_linked_alerts_runbook" {
 * `action_id` - (Required) The ID of the runbook action for the step.
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should automatically execute.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 ## Script
 
@@ -741,6 +801,10 @@ resource "firehydrant_runbook" "firehydrant_script_runbook" {
   Use [Terraform's jsonencode](https://www.terraform.io/language/functions/jsonencode)
   function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
 * `name` - (Required) The name of the step.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
@@ -791,6 +855,10 @@ resource "firehydrant_runbook" "firehydrant_send_webhook_runbook" {
 * `repeats_duration` - (Optional) How often this step should repeat in ISO8601.
   Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
   This value _must_ be provided if `repeats` is `true`. This value _must not_ be provided if `repeats` is `false`.
+* `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
+  The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
 
