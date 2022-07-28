@@ -2,10 +2,17 @@ package provider
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceSeverity() *schema.Resource {
@@ -18,93 +25,156 @@ func resourceSeverity() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			// Required
 			"slug": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
+				DiffSuppressFunc: func(k string, oldValue string, newValue string, d *schema.ResourceData) bool {
+					// Slug is case-insensitive, so don't show a diff if the string are the same when compared
+					// in all lowercase
+					if strings.ToLower(oldValue) == strings.ToLower(newValue) {
+						return true
+					}
+					return false
+				},
+				ValidateDiagFunc: validation.ToDiagFunc(
+					validation.All(
+						validation.StringLenBetween(0, 23),
+						validation.StringMatch(regexp.MustCompile(`\A[[:alnum:]]+\z`), "must only include letters and numbers"),
+					),
+				),
 			},
+
+			// Optional
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  string(firehydrant.SeverityTypeUnexpectedDowntime),
+				ValidateDiagFunc: validation.ToDiagFunc(
+					validation.StringInSlice(
+						[]string{
+							string(firehydrant.SeverityTypeGameday),
+							string(firehydrant.SeverityTypeMaintenance),
+							string(firehydrant.SeverityTypeUnexpectedDowntime),
+						},
+						false,
+					),
+				),
 			},
 		},
 	}
 }
 
 func readResourceFireHydrantSeverity(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	r, err := ac.GetSeverity(ctx, d.Id())
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
+
+	// Get the severity
+	severityID := d.Id()
+	tflog.Debug(ctx, fmt.Sprintf("Read severity: %s", severityID), map[string]interface{}{
+		"id": severityID,
+	})
+	severityResponse, err := firehydrantAPIClient.Severities().Get(ctx, severityID)
 	if err != nil {
-		return diag.FromErr(err)
+		if errors.Is(err, firehydrant.ErrorNotFound) {
+			tflog.Debug(ctx, fmt.Sprintf("Severity %s no longer exists", severityID), map[string]interface{}{
+				"id": severityID,
+			})
+			d.SetId("")
+			return nil
+		}
+		return diag.Errorf("Error reading severity %s: %v", severityID, err)
 	}
 
-	if err != nil {
-		return diag.FromErr(err)
+	// Gather values from API response
+	attributes := map[string]interface{}{
+		"slug":        severityResponse.Slug,
+		"description": severityResponse.Description,
+		"type":        severityResponse.Type,
 	}
 
-	var ds diag.Diagnostics
-	svc := map[string]string{
-		"slug":        r.Slug,
-		"description": r.Description,
-	}
-
-	for key, val := range svc {
-		if err := d.Set(key, val); err != nil {
-			return diag.FromErr(err)
+	// Set the resource attributes to the values we got from the API
+	for key, value := range attributes {
+		if err := d.Set(key, value); err != nil {
+			return diag.Errorf("Error setting %s for severity %s: %v", key, severityID, err)
 		}
 	}
 
-	return ds
+	return diag.Diagnostics{}
 }
 
 func createResourceFireHydrantSeverity(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	slug, description := d.Get("slug").(string), d.Get("description").(string)
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
-	r := firehydrant.CreateSeverityRequest{
-		Slug:        slug,
-		Description: description,
+	// Get attributes from config and construct the create request
+	createRequest := firehydrant.CreateSeverityRequest{
+		Slug:        d.Get("slug").(string),
+		Description: d.Get("description").(string),
+		Type:        d.Get("type").(string),
 	}
 
-	resource, err := ac.CreateSeverity(ctx, r)
+	// Create the new severity
+	tflog.Debug(ctx, fmt.Sprintf("Create severity: %s", createRequest.Slug), map[string]interface{}{
+		"slug": createRequest.Slug,
+	})
+	severityResponse, err := firehydrantAPIClient.Severities().Create(ctx, createRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error creating severity %s: %v", createRequest.Slug, err)
 	}
 
-	d.SetId(resource.Slug)
+	// Set the new severity's ID in state
+	d.SetId(severityResponse.Slug)
 
-	if err := d.Set("description", resource.Description); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return diag.Diagnostics{}
+	// Update state with the latest information from the API
+	return readResourceFireHydrantSeverity(ctx, d, m)
 }
 
 func updateResourceFireHydrantSeverity(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	description := d.Get("description").(string)
-	id := d.Id()
-	r := firehydrant.UpdateSeverityRequest{
-		Slug:        id,
-		Description: description,
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
+
+	// Construct the update request
+	updateRequest := firehydrant.UpdateSeverityRequest{
+		Slug:        d.Get("slug").(string),
+		Description: d.Get("description").(string),
+		Type:        d.Get("type").(string),
 	}
 
-	_, err := ac.UpdateSeverity(ctx, id, r)
+	// Update the severity
+	tflog.Debug(ctx, fmt.Sprintf("Update severity: %s", d.Id()), map[string]interface{}{
+		"id": d.Id(),
+	})
+	_, err := firehydrantAPIClient.Severities().Update(ctx, d.Id(), updateRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error updating severity %s: %v", d.Id(), err)
 	}
 
-	return diag.Diagnostics{}
+	// Update state with the latest information from the API
+	return readResourceFireHydrantSeverity(ctx, d, m)
 }
 
 func deleteResourceFireHydrantSeverity(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	severityID := d.Id()
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
-	err := ac.DeleteSeverity(ctx, severityID)
+	// Delete the severity
+	severityID := d.Id()
+	tflog.Debug(ctx, fmt.Sprintf("Delete severity: %s", severityID), map[string]interface{}{
+		"id": severityID,
+	})
+	err := firehydrantAPIClient.Severities().Delete(ctx, severityID)
 	if err != nil {
-		return diag.FromErr(err)
+		if errors.Is(err, firehydrant.ErrorNotFound) {
+			return nil
+		}
+		return diag.Errorf("Error deleting severity %s: %v", severityID, err)
 	}
 
-	d.SetId("")
 	return diag.Diagnostics{}
 }

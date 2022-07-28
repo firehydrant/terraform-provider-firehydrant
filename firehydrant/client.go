@@ -63,6 +63,7 @@ type Client interface {
 	RunbookActions() RunbookActionsClient
 	ServiceDependencies() ServiceDependenciesClient
 	Services() ServicesClient
+	Severities() SeveritiesClient
 	TaskLists() TaskListsClient
 
 	// Environments
@@ -82,12 +83,6 @@ type Client interface {
 	CreateTeam(ctx context.Context, req CreateTeamRequest) (*TeamResponse, error)
 	UpdateTeam(ctx context.Context, id string, req UpdateTeamRequest) (*TeamResponse, error)
 	DeleteTeam(ctx context.Context, id string) error
-
-	// Severities
-	GetSeverity(ctx context.Context, slug string) (*SeverityResponse, error)
-	CreateSeverity(ctx context.Context, req CreateSeverityRequest) (*SeverityResponse, error)
-	UpdateSeverity(ctx context.Context, slug string, req UpdateSeverityRequest) (*SeverityResponse, error)
-	DeleteSeverity(ctx context.Context, slug string) error
 
 	// Priorities
 	GetPriority(ctx context.Context, slug string) (*PriorityResponse, error)
@@ -176,6 +171,11 @@ func (c *APIClient) ServiceDependencies() ServiceDependenciesClient {
 // Services returns a ServicesClient interface for interacting with services in FireHydrant
 func (c *APIClient) Services() ServicesClient {
 	return &RESTServicesClient{client: c}
+}
+
+// Severities returns a SeveritiesClient interface for interacting with severities in FireHydrant
+func (c *APIClient) Severities() SeveritiesClient {
+	return &RESTSeveritiesClient{client: c}
 }
 
 // TaskLists returns a TaskListsClient interface for interacting with task lists in FireHydrant
@@ -374,73 +374,6 @@ func (c *APIClient) DeleteTeam(ctx context.Context, id string) error {
 	response, err := c.client().Delete("teams/"+id).Receive(nil, apiError)
 	if err != nil {
 		return errors.Wrap(err, "could not delete team")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// GetSeverity retrieves a severity from FireHydrant
-func (c *APIClient) GetSeverity(ctx context.Context, slug string) (*SeverityResponse, error) {
-	sevResponse := &SeverityResponse{}
-	apiError := &APIError{}
-	response, err := c.client().Get("severities/"+slug).Receive(sevResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get severity")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
-	}
-
-	return sevResponse, nil
-}
-
-// CreateSeverity creates a severity
-func (c *APIClient) CreateSeverity(ctx context.Context, req CreateSeverityRequest) (*SeverityResponse, error) {
-	sevResponse := &SeverityResponse{}
-	apiError := &APIError{}
-	response, err := c.client().Post("severities").BodyJSON(&req).Receive(sevResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not create severity")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
-	}
-
-	return sevResponse, nil
-}
-
-// UpdateSeverity updates a severity in FireHydrant
-func (c *APIClient) UpdateSeverity(ctx context.Context, slug string, req UpdateSeverityRequest) (*SeverityResponse, error) {
-	sevResponse := &SeverityResponse{}
-	apiError := &APIError{}
-	response, err := c.client().Patch("severities/"+slug).BodyJSON(&req).Receive(sevResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not update severity")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
-	}
-
-	return sevResponse, nil
-}
-
-// DeleteSeverity deletes a severity from FireHydrant
-func (c *APIClient) DeleteSeverity(ctx context.Context, slug string) error {
-	apiError := &APIError{}
-	response, err := c.client().Delete("severities/"+slug).Receive(nil, apiError)
-	if err != nil {
-		return errors.Wrap(err, "could not delete severity")
 	}
 
 	err = checkResponseStatusCode(response, apiError)

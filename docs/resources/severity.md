@@ -1,6 +1,5 @@
 ---
 page_title: "FireHydrant Resource: firehydrant_severity"
-subcategory: "Beta"
 ---
 
 # firehydrant_severity Resource
@@ -14,6 +13,7 @@ Basic usage:
 resource "firehydrant_severity" "example-severity" {
   slug        = "EXAMPLESEVERITY"
   description = "This is an example severity"
+  type        = "maintenance"
 }
 ```
 
@@ -24,17 +24,19 @@ The following arguments are supported:
 * `slug` - (Required) The slug representing the severity. It must be unique and only contain 
   alphanumeric characters. The slug cannot be longer than 23 characters.
 * `description` - (Optional) A description for the severity.
+* `type` - (Optional) The type of the severity.
+  Valid values are `gameday`, `maintenance`, and `unexpected_downtime`.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - The ID of the severity.
+* `id` - The ID of the severity. This is the same as the slug.
 
 ## Import
 
-Severities can be imported; use `<SEVERITY ID>` as the import ID. For example:
+Severities can be imported; use `<SEVERITY SLUG>` as the import ID. For example:
 
 ```shell
-terraform import firehydrant_severity.test 3638b647-b99c-5051-b715-eda2c912c42e
+terraform import firehydrant_severity.test SEV3
 ```
