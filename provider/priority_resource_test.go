@@ -3,11 +3,12 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"os"
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -157,7 +158,7 @@ func testAccCheckPriorityResourceExistsWithAttributes_basic(resourceSlug string)
 			return err
 		}
 
-		priorityResponse, err := client.GetPriority(context.TODO(), priorityResource.Primary.ID)
+		priorityResponse, err := client.Priorities().Get(context.TODO(), priorityResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -195,7 +196,7 @@ func testAccCheckPriorityResourceExistsWithAttributes_update(resourceSlug string
 			return err
 		}
 
-		priorityResponse, err := client.GetPriority(context.TODO(), priorityResource.Primary.ID)
+		priorityResponse, err := client.Priorities().Get(context.TODO(), priorityResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -235,7 +236,7 @@ func testAccCheckPriorityResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			_, err := client.GetPriority(context.TODO(), stateResource.Primary.ID)
+			_, err := client.Priorities().Get(context.TODO(), stateResource.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("Priority %s still exists", stateResource.Primary.ID)
 			}

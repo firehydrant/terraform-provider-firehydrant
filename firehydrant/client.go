@@ -59,6 +59,7 @@ type Client interface {
 	Ping(ctx context.Context) (*PingResponse, error)
 
 	IncidentRoles() IncidentRolesClient
+	Priorities() PrioritiesClient
 	Runbooks() RunbooksClient
 	RunbookActions() RunbookActionsClient
 	ServiceDependencies() ServiceDependenciesClient
@@ -83,12 +84,6 @@ type Client interface {
 	CreateTeam(ctx context.Context, req CreateTeamRequest) (*TeamResponse, error)
 	UpdateTeam(ctx context.Context, id string, req UpdateTeamRequest) (*TeamResponse, error)
 	DeleteTeam(ctx context.Context, id string) error
-
-	// Priorities
-	GetPriority(ctx context.Context, slug string) (*PriorityResponse, error)
-	CreatePriority(ctx context.Context, req CreatePriorityRequest) (*PriorityResponse, error)
-	UpdatePriority(ctx context.Context, slug string, req UpdatePriorityRequest) (*PriorityResponse, error)
-	DeletePriority(ctx context.Context, slug string) error
 }
 
 // OptFunc is a function that sets a setting on a client
@@ -151,6 +146,11 @@ func (c *APIClient) Ping(ctx context.Context) (*PingResponse, error) {
 // IncidentRoles returns a IncidentRolesClient interface for interacting with incident roles in FireHydrant
 func (c *APIClient) IncidentRoles() IncidentRolesClient {
 	return &RESTIncidentRolesClient{client: c}
+}
+
+// Priorities returns a PrioritiesClient interface for interacting with priorities in FireHydrant
+func (c *APIClient) Priorities() PrioritiesClient {
+	return &RESTPrioritiesClient{client: c}
 }
 
 // Runbooks returns a RunbooksClient interface for interacting with runbooks in FireHydrant
@@ -374,73 +374,6 @@ func (c *APIClient) DeleteTeam(ctx context.Context, id string) error {
 	response, err := c.client().Delete("teams/"+id).Receive(nil, apiError)
 	if err != nil {
 		return errors.Wrap(err, "could not delete team")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// GetPriority retrieves a priority from FireHydrant
-func (c *APIClient) GetPriority(ctx context.Context, slug string) (*PriorityResponse, error) {
-	priorityResponse := &PriorityResponse{}
-	apiError := &APIError{}
-	response, err := c.client().Get("priorities/"+slug).Receive(priorityResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get priority")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
-	}
-
-	return priorityResponse, nil
-}
-
-// CreatePriority creates a priority
-func (c *APIClient) CreatePriority(ctx context.Context, req CreatePriorityRequest) (*PriorityResponse, error) {
-	priorityResponse := &PriorityResponse{}
-	apiError := &APIError{}
-	response, err := c.client().Post("priorities").BodyJSON(&req).Receive(priorityResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not create priority")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
-	}
-
-	return priorityResponse, nil
-}
-
-// UpdatePriority updates a priority in FireHydrant
-func (c *APIClient) UpdatePriority(ctx context.Context, slug string, req UpdatePriorityRequest) (*PriorityResponse, error) {
-	priorityResponse := &PriorityResponse{}
-	apiError := &APIError{}
-	response, err := c.client().Patch("priorities/"+slug).BodyJSON(&req).Receive(priorityResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not update priority")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
-	}
-
-	return priorityResponse, nil
-}
-
-// DeletePriority deletes a priority from FireHydrant
-func (c *APIClient) DeletePriority(ctx context.Context, slug string) error {
-	apiError := &APIError{}
-	response, err := c.client().Delete("priorities/"+slug).Receive(nil, apiError)
-	if err != nil {
-		return errors.Wrap(err, "could not delete priority")
 	}
 
 	err = checkResponseStatusCode(response, apiError)
