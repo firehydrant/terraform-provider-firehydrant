@@ -2,6 +2,7 @@
 
 BREAKING CHANGES:
 
+* resource/functionality: Removed deprecated `services` attribute, preferring `service_ids` instead ([#94](https://github.com/firehydrant/terraform-provider-firehydrant/pull/94))
 * resource/runbook: Changed the type of the `steps` `config` attribute to a JSON string ([#79](https://github.com/firehydrant/terraform-provider-firehydrant/pull/79))
 * resource/runbook: Removed deprecated `type` attribute ([#80](https://github.com/firehydrant/terraform-provider-firehydrant/pull/80))
 * resource/runbook: Removed deprecated `severities` attribute ([#80](https://github.com/firehydrant/terraform-provider-firehydrant/pull/80))
@@ -30,6 +31,7 @@ ENHANCEMENTS:
 * provider: Improved error messages by adding details from the API response ([#75](https://github.com/firehydrant/terraform-provider-firehydrant/pull/75))
 * provider: Improved documentation for configuring the provider ([#95](https://github.com/firehydrant/terraform-provider-firehydrant/pull/95))
 * resource/environment: Added logging ([#93](https://github.com/firehydrant/terraform-provider-firehydrant/pull/93))
+* resource/functionality: Added logging ([#94](https://github.com/firehydrant/terraform-provider-firehydrant/pull/94))
 * resource/runbook: Added logging ([#74](https://github.com/firehydrant/terraform-provider-firehydrant/pull/74))
 * resource/runbook: Added the `owner_id` attribute to runbook ([#76](https://github.com/firehydrant/terraform-provider-firehydrant/pull/76))
 * resource/runbook: Added the `repeats` and `repeat_duration` attribute to runbook step ([#78](https://github.com/firehydrant/terraform-provider-firehydrant/pull/78))
@@ -39,6 +41,7 @@ ENHANCEMENTS:
 * resource/severity: Added logging to the resource and validation to the `slug` attribute ([#88](https://github.com/firehydrant/terraform-provider-firehydrant/pull/88))
 * resource/severity: Added support for the `type` attribute ([#88](https://github.com/firehydrant/terraform-provider-firehydrant/pull/88))
 * data_source/environment: Added logging ([#93](https://github.com/firehydrant/terraform-provider-firehydrant/pull/93))
+* data_source/functionality: Added logging ([#94](https://github.com/firehydrant/terraform-provider-firehydrant/pull/94))
 * data_source/runbook: Added logging ([#74](https://github.com/firehydrant/terraform-provider-firehydrant/pull/74))
 * data_source/runbook: Added the `owner_id` attribute to runbook ([#76](https://github.com/firehydrant/terraform-provider-firehydrant/pull/76))
 * data_source/runbook: Added the `attachment_rule` attribute to runbook ([#82](https://github.com/firehydrant/terraform-provider-firehydrant/pull/82))
