@@ -58,6 +58,7 @@ var _ Client = &APIClient{}
 type Client interface {
 	Ping(ctx context.Context) (*PingResponse, error)
 
+	Environments() EnvironmentsClient
 	IncidentRoles() IncidentRolesClient
 	Priorities() PrioritiesClient
 	Runbooks() RunbooksClient
@@ -66,12 +67,6 @@ type Client interface {
 	Services() ServicesClient
 	Severities() SeveritiesClient
 	TaskLists() TaskListsClient
-
-	// Environments
-	GetEnvironment(ctx context.Context, id string) (*EnvironmentResponse, error)
-	CreateEnvironment(ctx context.Context, req CreateEnvironmentRequest) (*EnvironmentResponse, error)
-	UpdateEnvironment(ctx context.Context, id string, req UpdateEnvironmentRequest) (*EnvironmentResponse, error)
-	DeleteEnvironment(ctx context.Context, id string) error
 
 	// Functionalities
 	GetFunctionality(ctx context.Context, id string) (*FunctionalityResponse, error)
@@ -143,6 +138,11 @@ func (c *APIClient) Ping(ctx context.Context) (*PingResponse, error) {
 	return pingResponse, nil
 }
 
+// Environments returns a EnvironmentsClient interface for interacting with environments in FireHydrant
+func (c *APIClient) Environments() EnvironmentsClient {
+	return &RESTEnvironmentsClient{client: c}
+}
+
 // IncidentRoles returns a IncidentRolesClient interface for interacting with incident roles in FireHydrant
 func (c *APIClient) IncidentRoles() IncidentRolesClient {
 	return &RESTIncidentRolesClient{client: c}
@@ -181,73 +181,6 @@ func (c *APIClient) Severities() SeveritiesClient {
 // TaskLists returns a TaskListsClient interface for interacting with task lists in FireHydrant
 func (c *APIClient) TaskLists() TaskListsClient {
 	return &RESTTaskListsClient{client: c}
-}
-
-// GetEnvironment retrieves an environment from FireHydrant
-func (c *APIClient) GetEnvironment(ctx context.Context, id string) (*EnvironmentResponse, error) {
-	envResponse := &EnvironmentResponse{}
-	apiError := &APIError{}
-	response, err := c.client().Get("environments/"+id).Receive(envResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get environment")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
-	}
-
-	return envResponse, nil
-}
-
-// CreateEnvironment creates an environment in FireHydrant
-func (c *APIClient) CreateEnvironment(ctx context.Context, req CreateEnvironmentRequest) (*EnvironmentResponse, error) {
-	envResponse := &EnvironmentResponse{}
-	apiError := &APIError{}
-	response, err := c.client().Post("environments").BodyJSON(&req).Receive(envResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not create environment")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
-	}
-
-	return envResponse, nil
-}
-
-// UpdateEnvironment updates a environment in FireHydrant
-func (c *APIClient) UpdateEnvironment(ctx context.Context, id string, req UpdateEnvironmentRequest) (*EnvironmentResponse, error) {
-	envResponse := &EnvironmentResponse{}
-	apiError := &APIError{}
-	response, err := c.client().Patch("environments/"+id).BodyJSON(&req).Receive(envResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not update environment")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
-	}
-
-	return envResponse, nil
-}
-
-// DeleteEnvironment deletes a environment from FireHydrant
-func (c *APIClient) DeleteEnvironment(ctx context.Context, id string) error {
-	apiError := &APIError{}
-	response, err := c.client().Delete("environments/"+id).Receive(nil, apiError)
-	if err != nil {
-		return errors.Wrap(err, "could not delete environment")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // GetFunctionality retrieves a functionality from FireHydrant

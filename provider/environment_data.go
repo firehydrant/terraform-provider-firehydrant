@@ -2,9 +2,11 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -13,15 +15,18 @@ func dataSourceEnvironment() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataFireHydrantEnvironment,
 		Schema: map[string]*schema.Schema{
+			// Required
 			"environment_id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"name": {
+
+			// Computed
+			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"description": {
+			"name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -30,27 +35,34 @@ func dataSourceEnvironment() *schema.Resource {
 }
 
 func dataFireHydrantEnvironment(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ac := m.(firehydrant.Client)
-	id := d.Get("environment_id").(string)
+	// Get the API client
+	firehydrantAPIClient := m.(firehydrant.Client)
 
-	r, err := ac.GetEnvironment(ctx, id)
+	// Get the environment
+	environmentID := d.Get("environment_id").(string)
+	tflog.Debug(ctx, fmt.Sprintf("Read environment: %s", environmentID), map[string]interface{}{
+		"id": environmentID,
+	})
+	environmentResponse, err := firehydrantAPIClient.Environments().Get(ctx, environmentID)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error reading environment %s: %v", environmentID, err)
 	}
 
-	var ds diag.Diagnostics
-	env := map[string]string{
-		"name":        r.Name,
-		"description": r.Description,
+	// Gather values from API response
+	attributes := map[string]interface{}{
+		"description": environmentResponse.Description,
+		"name":        environmentResponse.Name,
 	}
 
-	for key, val := range env {
-		if err := d.Set(key, val); err != nil {
-			return diag.FromErr(err)
+	// Set the data source attributes to the values we got from the API
+	for key, value := range attributes {
+		if err := d.Set(key, value); err != nil {
+			return diag.Errorf("Error setting %s for environment %s: %v", key, environmentID, err)
 		}
 	}
 
-	d.SetId(r.ID)
+	// Set the environment's ID in state
+	d.SetId(environmentResponse.ID)
 
-	return ds
+	return diag.Diagnostics{}
 }
