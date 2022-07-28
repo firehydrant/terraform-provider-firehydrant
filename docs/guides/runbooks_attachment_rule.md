@@ -5,71 +5,71 @@ subcategory: "Runbooks"
 
 # Attachment Rule
 
-The format values within the attachment consist of a tuple of keys for `logic` and `user_data`. This json encoded string allows for configuring when a runbook is attached to an incident based off of conditions met within the incident.
+This JSON encoded string allows for configuring when a runbook is attached to an incident based off of conditions met within the incident. The values within the `attachment_rule` attribute consist of a tuple of keys for `logic` and `user_data`. 
+The `logic` object can consists of one or more sets conditions and can very based on the types of conditions added.
 ```hcl
-attachment_attachment_rule = jsonencode({
+attachment_rule = jsonencode({
   logic = {
     eq = [
       {
-        var = "incident_current_milestone",
+        var = "incident_current_milestone"
       },
       {
         var = "usr.1"
       }
     ]
-  },
+  }
   user_data = {
     "1" = {
-      type  = "Milestone",
-      value = "resolved",
+      type  = "Milestone"
+      value = "resolved"
       label = "Resolved"
     }
   }
 })
 ```
 
-## Breaking down logic
-
-The logic object can consists of one or more sets conditions and can very based on the types of conditions added.
 
 ## Single condition
 
-The runbook will attach if a slack incident channel exists.
+The runbook will attach if a Slack incident channel exists.
 ```hcl
 attachment_rule = jsonencode({
   logic = {
     exists: [
       {
-        var: "incident_slack_channel"
+        var = "incident_slack_channel"
       }
     ]
-  },
+  }
+  user_data = {}
 })
 ```
 
 ## Multi condition or
 
-The runbook will attach if a slack incident channel exists or if a microsoft teams channel exists.
+The runbook will attach if a Slack incident channel exists or if a Microsoft Teams channel exists.
 ```hcl
 attachment_rule = jsonencode({
   logic = {
-    or: [
+    or = [
       {
-        exists: [
+        exists = [
           {
-            var: "incident_microsoft_teams_channel"
+            var = "incident_microsoft_teams_channel"
           }
         ]
       },
       {
-        exists: [
+        exists = [
           {
-            var: "incident_slack_channel"
+            var = "incident_slack_channel"
           }
         ]
       }
     ]
-  },
+  }
+  user_data = {}
 })
 ```
 
@@ -80,35 +80,36 @@ The runbook will attach if a slack incident channel exists and a microsoft teams
 ```hcl
 attachment_rule = jsonencode({
   logic = {
-    and: [
+    and = [
       {
-        exists: [
+        exists = [
           {
-            var: "incident_microsoft_teams_channel"
+            var = "incident_microsoft_teams_channel"
           }
         ]
       },
       {
-        exists: [
+        exists = [
           {
-            var: "incident_slack_channel"
+            var = "incident_slack_channel"
           }
         ]
       }
     ]
-  },
+  }
+  user_data = {}
 })
 ```
 
 ## Types of conditions
 
-We derive the types of conditions that can be set based on our API
+We derive the types of conditions that can be set from our API's runbook attachment attributes endpoint.
 ```
 https://api.firehydrant.io/v1/fh-attributes/data_bags/system-runbook-attachment-attributes
 ```
 
-With the example payload below you can see that we have a list of attributes that can be selected and we can see the `opcode` or operators are able to be used for these attributes. 
-Give these operators we can infer that we can either have a condition where the slack channel does or does not exist.
+In the example payload below you can see that we have a list of attributes that can be selected and we can see the `opcode` or operators that can be used for these attributes. 
+Given these operators, we can infer that we can either have a condition where the Slack channel does or does not exist.
 
 ```json
 {
@@ -140,7 +141,7 @@ Give these operators we can infer that we can either have a condition where the 
 
 ## Value based conditions
 
-Operators of conditions can be assigned values that are from data saved within different parts of our system. For example the below data we get back from the `system-runbook-attachment-attributes` api shows that we can select multiple operators that take in an `Array` of `IncidentRole` data values. Looking into the `IncidentRole` type we also see values that specify an `async` url that we can use to check and grab the data necessary to fill in the `type`, `value`, and `label` fields required for the user_data.
+Operators of conditions can be assigned values that come from data saved in different parts of our system. For example, the below data we get back from the runbook attachment attributes API shows that we can select multiple operators that take in an array of `IncidentRole` data values. Looking at the `IncidentRole` type, we also see values that specify an `async` url that we can use to get the data necessary to fill in the `type`, `value`, and `label` fields required for the `user_data` attribute.
 
 ```json
 {
@@ -197,7 +198,7 @@ Operators of conditions can be assigned values that are from data saved within d
 
 ```
 
-When using the above data attributes we can create something like the rule below where given an `incident_assigned_roles` has the role assigned of `Commander` or `Communication` then attach this runbook.
+Using the above data, we can create something like the rule below which specifies that the runbook should be attached when `incident_assigned_roles` has the role assigned of `Commander` or `Communication`.
 
 ```hcl
 attachment_rule = jsonencode({
@@ -210,22 +211,23 @@ attachment_rule = jsonencode({
         var = "usr.1"
       }
     ]
-  },
+  }
   user_data = {
     "1" = {
-      type = "Array[IncidentRole]",
+      type = "Array[IncidentRole]"
       value = [
         {
-          type = "IncidentRole",
-          value = "d0c956c1-b285-40a7-89fc-30bb4e5e3b59",
-          label = "Commander"
+          type = "IncidentRole"
+          value = data.firehydrant_incident_role.commander.id
+          label = data.firehydrant_incident_role.commander.name
         },
         {
-          type = "IncidentRole",
-          value = "44e8b65d-7682-4279-85f0-ed68cba052cc",
-          label = "Communication"
+          type = "IncidentRole"
+          value = data.firehydrant_incident_role.communications.id
+          label = data.firehydrant_incident_role.communications.name
         }
-      ],
+      ]
+      label = null
     }
   }
 })
@@ -233,23 +235,23 @@ attachment_rule = jsonencode({
 
 ## User data
 
-The user_data object is used to map directly to variables that are held within the logic object. In the below example you can see `var = "user.1"` in the logic object which maps to `user_data["1"]`. As for the key value "1" this can be anything that you would like it to be it just needs to be a unique value within the user_data object that maps to a var in the logic object prepended by `usr.`
+The `user_data` attribute is used to map directly to variables in the `logic` attribute. In the example below, you can see `var = "usr.1"` in the `logic` attribute, which maps to `user_data["1"]`. The key value in this case is "1" but it can be anything that you would like it to be, it just needs to be a unique value within the `user_data` attribute that maps to a `var` in the `logic` attribute.
 ```hcl
 attachment_rule = jsonencode({
   logic = {
     eq = [
       {
-        var = "incident_current_milestone",
+        var = "incident_current_milestone"
       },
       {
         var = "usr.1"
       }
     ]
-  },
+  }
   user_data = {
     "1" = {
-      type  = "Milestone",
-      value = "resolved",
+      type  = "Milestone"
+      value = "resolved"
       label = "Resolved"
     }
   }
