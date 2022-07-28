@@ -5,7 +5,7 @@ page_title: "Provider: FireHydrant"
 # FireHydrant Provider
 
 Welcome to the FireHydrant Terraform provider! With this provider you can create
-and manage resources on your [FireHydrant](https://www.firehydrant.io) organization
+and manage resources on your [FireHydrant](https://www.firehydrant.com) organization
 such as incident runbooks, services, teams, and more!
 
 Use the navigation on the left to read about the available resources and data sources.
