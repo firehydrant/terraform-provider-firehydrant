@@ -223,11 +223,15 @@ attachment_rule = jsonencode({
 
 ### Logic - Argument Reference
 
+~> **Note** Not all operators can be used with every argument. See the
+[Arguments & Operators](#arguments--operators) section for more information.
+
 The `logic` block supports:
 
 * `<OPERATOR>` - (Required) A block that represents the conditions to evaluate.
   Only one top level operator can be specified.
-  Valid values for `<OPERATOR>` include:
+  
+  **Valid values for `<OPERATOR>` include:**
     - `and` - Runs more than one logical operator check and requires all to return true. 
       Will take in an array of objects of any operator.
     - `or` - Runs more than one logical operator check and requires at least one of them to return true. 
@@ -242,7 +246,14 @@ The `logic` block supports:
     - `is_empty` - Requires a given argument to be empty.
     - `>` - Requires a given argument to be greater than a given value.
     - `<=` - Requires a given argument to be less than or equal to a given value.
-    - `manually` - Requires a given argument to include at least one of a given set of values.
+  
+  **Valid values specific to the runbook `attachment_rule` attribute include:**
+    - `manually`
+  
+  **Valid values specific to the runbook steps `rule` attribute include:**
+    - `runbook_step_completed`
+    - `runbook_step_errored`
+    - `runbook_step_started`
 
 ## Logic - Single Condition Example
 
