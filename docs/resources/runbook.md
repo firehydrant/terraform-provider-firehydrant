@@ -1,6 +1,5 @@
 ---
 page_title: "FireHydrant Resource: firehydrant_runbook"
-subcategory: "Beta"
 ---
 
 # firehydrant_runbook Resource
@@ -93,6 +92,8 @@ The following arguments are supported:
 * `attachment_rule` - (Optional) JSON string representing the attachment rule configuration for the runbook.
   Use [Terraform's jsonencode](https://www.terraform.io/language/functions/jsonencode)
   function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
+  For more information on the conditional logic used in `attachment_rule`, see the 
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
   Defaults to attaching manually:
   ```hcl
   attachment_rule = jsonencode({
@@ -127,6 +128,8 @@ See [Runbook Steps Configuration documentation](../runbook_steps.md) for more de
   Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
   This value _must_ be provided if `repeats` is `true`. This value _must not_ be provided if `repeats` is `false`.
 * `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
+  For more information on the conditional logic used in `rule`, see the
+  [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.
   The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 ## Attributes Reference
