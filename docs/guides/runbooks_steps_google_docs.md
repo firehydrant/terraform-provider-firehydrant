@@ -41,7 +41,7 @@ resource "firehydrant_runbook" "google_docs_export_retro_runbook" {
       body_template  = "# Retrospective: {{ retro.name }}\n\n**Incident:** [{{ incident.severity }} - {{ incident.name}}]({{ incident.incident_url }}) ({{ retro.incident_active_duration }})\n\n{{ retro.summary }}\n\n{%- if incident.customer_impact_summary != blank or retro.impacts != empty -%}\n### Impact\n{% if incident.customer_impact_summary != blank -%}\n  {{ incident.customer_impact_summary }}\n{% endif %}\n\n\n{% if retro.impacts != empty %}\n| Type | Name | Condition |\n|------|------|-----------|\n{%- for impact in retro.impacts %}\n| {{ impact.type }} | {{ impact.name }} | {{ impact.condition }} |\n{%- endfor %}\n{% endif %}\n{% endif %}\n\n\n### Milestones\n\n| Milestone | Started | Duration |\n|-----------|---------|----------|\n{%- for milestone in retro.milestones %}\n| {{ milestone.type }} | {{ milestone.occurred_at }} | {{ milestone.duration }} |\n{%- endfor %}\n\n\n{% if retro.incident_roles != empty %}\n### Responders\n\n| Role | User |\n|------|------|\n{%- for role in retro.incident_roles %}\n| {{ role.name }} | {{ role.user }} |\n{%- endfor %}\n{% endif %}\n\n\n## Analysis\n\n{% if retro.contributing_factors != empty -%}\n### Contributing Factors\n{% for factor in retro.contributing_factors %}\n- {{ factor.summary }}\n{%- endfor %}\n{%- endif %}\n\n\n{% if retro.questions != empty -%}\n### Questions\n\n{% for question in retro.questions %}\n**{{ question.title }}**\n\n{{ question.body }}\n{% endfor %}\n{% endif %}\n\n\n---\n\n## Important events\n\n{% if retro.starred_events != empty %}\n{% for event in retro.starred_events %}\n_{{ event.occurred_at}}_ ({{event.created_by}})\n\n{{event.body}}\n{% endfor %}\n{% endif %}\n"
     })
 
-    automatic = false
+    automatic = true
     rule = jsonencode({
       logic = {
         eq = [
@@ -75,11 +75,11 @@ You can also execute the step manually by setting the step `automatic` attribute
 `attachment_rule` to execute the runbook manually.
 
 * `action_id` - (Required) The ID of the runbook action for the step.
-* `config` - (Required) JSON string representing the configuration settings for the step.
-  Use [Terraform's jsonencode](https://www.terraform.io/language/functions/jsonencode)
-  function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
 * `name` - (Required) The name of the step.
 * `automatic` - (Optional) Whether this step should automatically execute.
+* `config` - (Optional) JSON string representing the configuration settings for the step.
+  Use [Terraform's jsonencode](https://www.terraform.io/language/functions/jsonencode)
+  function so that [Terraform can guarantee valid JSON syntax](https://www.terraform.io/language/expressions/strings#generating-json-or-yaml).
 * `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
   For more information on the conditional logic used in `rule`, see the
   [Runbooks - Conditional Logic](./runbooks_conditional_logic.md) documentation.

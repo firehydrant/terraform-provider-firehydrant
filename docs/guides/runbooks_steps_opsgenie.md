@@ -40,8 +40,8 @@ resource "firehydrant_runbook" "opsgenie_create_new_incident_runbook" {
       incident_title   = "{{incident.severity}} Incident: {{incident.name}}"
       incident_details = "There is a {{incident.severity}} incident.\n\nTriggered by {{author.name}} from FireHydrant. For more information see {{incident.incident_url}}."
       team_id = {
-        label = ""
-        value = ""
+        label = "Platform Team"
+        value = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
       }
     })
 

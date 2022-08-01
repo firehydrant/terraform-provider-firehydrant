@@ -39,6 +39,8 @@ resource "firehydrant_runbook" "giphy_incident_channel_gif_runbook" {
     config = jsonencode({
       phrases = "untitled goose game\nmagical"
     })
+    
+    automatic = true
   }
 }
 ```
@@ -62,6 +64,8 @@ resource "firehydrant_runbook" "giphy_incident_channel_gif_runbook" {
   The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 The `config` block supports:
+
+At least one of `keywords` or `phrases` must be specified
 
 * `keywords` - (Optional) A list of keywords, separated by newlines
 * `phrases` - (Optional) A list of random phrases, separated by newlines

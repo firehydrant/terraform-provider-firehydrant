@@ -272,7 +272,7 @@ resource "firehydrant_runbook" "firehydrant_assign_a_role_runbook" {
 The `config` block supports:
 
 * `role` - (Required) The incident role to assign.
-* `user` - (Optional) The user to assign the incident role to.
+* `user` - (Required) The user to assign the incident role to.
 
 The `role` block supports:
 
@@ -626,8 +626,8 @@ The `milestone` block supports:
     - `Identified`
     - `Mitigated`
     - `Resolved`
-    - `Postmortem Started`
-    - `Postmortem Completed`
+    - `Retrospective Started`
+    - `Retrospective Completed`
     - `Closed`
 * `value` - (Required) The slug of the milestone.
   Valid values are:
@@ -702,8 +702,8 @@ resource "firehydrant_runbook" "firehydrant_publish_to_status_page_runbook" {
 
 The `config` block supports:
 
+* `connection_id` - (Required) The status page connection to publish to.
 * `title` - (Optional) The title of the incident to be used when publishing the incident to your status page.
-* `connection_id` - (Optional) The status page connection to publish to.
 
 The `connection_id` block supports:
 

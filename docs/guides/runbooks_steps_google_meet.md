@@ -39,6 +39,8 @@ resource "firehydrant_runbook" "runbook17" {
     config = jsonencode({
       topic = "[{{incident.severity}}] {{incident.name}}"
     })
+    
+    automatic = true
   }
 }
 ```
@@ -58,6 +60,6 @@ resource "firehydrant_runbook" "runbook17" {
 
 The `config` block supports:
 
-* `body_template` - (Optional) The topic that will be included in the Google Meet meeting
+* `body_template` - (Required) The topic that will be included in the Google Meet meeting
   This field supports [FireHydrant's template variables](https://support.firehydrant.com/hc/en-us/articles/4409136426004-Using-template-variables-in-Runbooks)
   so you can automatically include details such as when the incident started, the incident summary, severity, roles involved, and much more.
