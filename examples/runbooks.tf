@@ -1,37 +1,26 @@
 data "firehydrant_runbook_action" "slack_channel" {
   integration_slug = "slack"
   slug             = "create_incident_channel"
-  type             = "incident"
 }
 
 data "firehydrant_runbook_action" "notify_channel" {
   integration_slug = "slack"
   slug             = "notify_channel"
-  type             = "incident"
 }
 
 data "firehydrant_runbook_action" "notify_channel_custom" {
   integration_slug = "slack"
   slug             = "notify_incident_channel_custom_message"
-  type             = "incident"
-}
-
-data "firehydrant_runbook_action" "create_incident_ticket" {
-  integration_slug = "patchy"
-  slug             = "create_incident_ticket"
-  type             = "incident"
 }
 
 data "firehydrant_runbook_action" "archive_channel" {
   integration_slug = "slack"
   slug             = "archive_incident_channel"
-  type             = "incident"
 }
 
 data "firehydrant_runbook_action" "email_notification" {
   integration_slug = "patchy"
   slug             = "email_notification"
-  type             = "incident"
 }
 
 resource "firehydrant_runbook" "default" {
@@ -100,19 +89,6 @@ resource "firehydrant_runbook" "default" {
 
     config = jsonencode({
       channels = "#fh-incidents"
-    })
-
-    automatic = true
-    repeats   = false
-  }
-
-  steps {
-    action_id = data.firehydrant_runbook_action.create_incident_ticket.id
-    name      = "Create an incident ticket in Jira"
-
-    config = jsonencode({
-      ticket_description = "{{ incident.description }}"
-      ticket_summary     = "{{ incident.name }}"
     })
 
     automatic = true
