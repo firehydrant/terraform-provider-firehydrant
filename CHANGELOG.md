@@ -1,4 +1,4 @@
-## 0.3.0 (Unreleased)
+## 0.3.0
 
 BREAKING CHANGES:
 
@@ -17,14 +17,14 @@ BUG FIXES:
 
 FEATURES:
 
+* **New Resource:** `firehydrant_incident_role` ([#87](https://github.com/firehydrant/terraform-provider-firehydrant/pull/87))
 * **New Resource:** `firehydrant_priority` ([#65](https://github.com/firehydrant/terraform-provider-firehydrant/pull/65))
 * **New Resource:** `firehydrant_service_dependency` ([#89](https://github.com/firehydrant/terraform-provider-firehydrant/pull/89))
 * **New Resource:** `firehydrant_task_list` ([#85](https://github.com/firehydrant/terraform-provider-firehydrant/pull/85))
-* **New Resource:** `firehydrant_incident_role` ([#87](https://github.com/firehydrant/terraform-provider-firehydrant/pull/87))
-* **New Data Source:** `firehydrant_priority` ([#65](https://github.com/firehydrant/terraform-provider-firehydrant/pull/65))
-* **New Data Source:** `firehydrant_task_list` ([#85](https://github.com/firehydrant/terraform-provider-firehydrant/pull/85))
 * **New Data Source:** `firehydrant_incident_role` ([#87](https://github.com/firehydrant/terraform-provider-firehydrant/pull/87))
+* **New Data Source:** `firehydrant_priority` ([#65](https://github.com/firehydrant/terraform-provider-firehydrant/pull/65))
 * **New Data Source:** `firehydrant_severity` ([#88](https://github.com/firehydrant/terraform-provider-firehydrant/pull/88))
+* **New Data Source:** `firehydrant_task_list` ([#85](https://github.com/firehydrant/terraform-provider-firehydrant/pull/85))
 
 ENHANCEMENTS:
 
@@ -51,6 +51,52 @@ ENHANCEMENTS:
 * data_source/runbook_action: Added logging ([#74](https://github.com/firehydrant/terraform-provider-firehydrant/pull/74))
 * data_source/service: Added logging ([#96](https://github.com/firehydrant/terraform-provider-firehydrant/pull/96))
 * data_source/services: Added logging ([#96](https://github.com/firehydrant/terraform-provider-firehydrant/pull/96))
+
+NOTES:
+
+* resource/functionality: The deprecated `services` attribute has been removed. See the ["Notes" section in 0.2.0](#020) 
+  or the [original deprecation PR](https://github.com/firehydrant/terraform-provider-firehydrant/pull/49) for more information.
+* resource/runbook: There are a number of breaking changes for the runbook resource. The `steps` attribute is now required, 
+  the `steps` `config` attribute is now a JSON string, and the `type` and `severities` attribute have been removed. In order 
+  to upgrade to 0.3.0, you will need to destroy your existing runbooks and recreate them after changing your configuration to 
+  account for the breaking changes. 
+  As an example, the configuration below was valid in 0.2.1
+   ```hcl
+   # An example of a valid 0.2.1 configuration
+   resource "firehydrant_runbook" "example-runbook" {
+     name = "example-runbook"
+     type = "incident"
+
+     steps {
+       name    = "Send me an email"
+       action_id = data.firehydrant_runbook_action.firehydrant_email_notification.id
+    
+       config = {
+         email_address   = "test@example.com"
+         email_subject   = "Incident opened on FireHydrant"
+         default_message = "Message"
+       }
+     }
+   }
+   ```
+  To upgrade to 0.3.0, that configuration would have to change to the following:
+   ```hcl
+   # The same configuration as above, updated to be valid for 0.3.0
+   resource "firehydrant_runbook" "example-runbook" {
+     name = "example-runbook"
+
+     steps {
+       name    = "Send me an email"
+       action_id = data.firehydrant_runbook_action.firehydrant_email_notification.id
+    
+       config = jsonencode({
+         email_address   = "test@example.com"
+         email_subject   = "Incident opened on FireHydrant"
+         default_message = "Message"
+       })
+     }
+   }
+   ```
 
 ## 0.2.1
 
