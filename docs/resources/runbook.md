@@ -113,7 +113,7 @@ The following arguments are supported:
 The `steps` block supports:
 
 Available attributes and whether they are available and required varies depending on the specific runbook step in question.
-See [Runbook Steps Configuration documentation](../guides/runbook_steps.md) for more detailed documentation on each step. 
+See [Runbook Steps Configuration documentation](../guides/runbooks_steps.md) for more detailed documentation on each step. 
 
 * `action_id` - (Required) The ID of the runbook action for the step.
 * `name` - (Required) The name of the step.
@@ -129,7 +129,7 @@ See [Runbook Steps Configuration documentation](../guides/runbook_steps.md) for 
   This value _must_ be provided if `repeats` is `true`. This value _must not_ be provided if `repeats` is `false`.
 * `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
   For more information on the conditional logic used in `rule`, see the
-  [Runbooks - Conditional Logic](../guides/runbooks_conditional_logic.md)) documentation.
+  [Runbooks - Conditional Logic](../guides/runbooks_conditional_logic.md) documentation.
   The step will default to running manually if `rule` is not specified and `automatic` and `repeats` are both `false`.
 
 ## Attributes Reference
