@@ -1,5 +1,5 @@
 ---
-page_title: "Step Configuration Overview"
+page_title: "Step Configuration"
 subcategory: "Runbooks"
 ---
 

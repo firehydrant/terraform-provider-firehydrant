@@ -29,7 +29,7 @@ terraform {
 
 # Configure the FireHydrant Provider
 provider "firehydrant" {
-  api_key              = var.firehydrant_api_key
+  api_key = var.firehydrant_api_key
 }
 
 # Configure a FireHydrant priority
