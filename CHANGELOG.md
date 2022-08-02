@@ -1,5 +1,9 @@
 ## 0.3.1 (Unreleased)
 
+BUG FIXES:
+
+* documentation: Fixed broken links in runbook resource documentation ([#101](https://github.com/firehydrant/terraform-provider-firehydrant/pull/101))
+
 ## 0.3.0
 
 BREAKING CHANGES:
