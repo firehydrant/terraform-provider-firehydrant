@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/dghubble/sling"
 	"github.com/pkg/errors"
@@ -96,8 +97,13 @@ func WithUserAgentSuffix(suffix string) OptFunc {
 
 // NewRestClient initializes a new API client for FireHydrant
 func NewRestClient(token string, opts ...OptFunc) (*APIClient, error) {
+	firehydrantBaseURL := os.Getenv("FIREHYDRANT_BASE_URL")
+	if firehydrantBaseURL == "" {
+		firehydrantBaseURL = DefaultBaseURL
+	}
+
 	c := &APIClient{
-		baseURL: DefaultBaseURL,
+		baseURL: firehydrantBaseURL,
 		token:   token,
 	}
 
