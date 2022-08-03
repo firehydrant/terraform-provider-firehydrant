@@ -110,13 +110,3 @@ func convertStringMap(sm map[string]interface{}) map[string]string {
 
 	return m
 }
-
-func setAttributesFromMap(d *schema.ResourceData, sm map[string]interface{}) error {
-	for k, v := range sm {
-		if err := d.Set(k, v); err != nil {
-			return fmt.Errorf("could not set key %s: %w", k, err)
-		}
-	}
-
-	return nil
-}
