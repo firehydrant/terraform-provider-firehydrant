@@ -13,7 +13,7 @@ import (
 
 func dataSourceUser() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataFireHydrantPriority,
+		ReadContext: dataFireHydrantUser,
 		Schema: map[string]*schema.Schema{
 			// Required
 			"email": {
@@ -37,7 +37,7 @@ func dataFireHydrantUser(ctx context.Context, d *schema.ResourceData, m interfac
 	// Get the user
 	email := d.Get("email").(string)
 	tflog.Debug(ctx, fmt.Sprintf("Fetch user: %s", email), map[string]interface{}{
-		"id": email,
+		"email": email,
 	})
 
 	params := firehydrant.GetUserParams{Query: email}

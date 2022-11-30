@@ -146,7 +146,7 @@ type User struct {
 	ID          string    `json:"id"`
 	Name        string    `json:"name"`
 	Email       string    `json:"email"`
-	SlackLinked string    `json:"slack_linked?"`
+	SlackLinked bool      `json:"slack_linked?"`
 	SlackUserId string    `json:"slack_user_id"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
@@ -166,7 +166,7 @@ type Schedule struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Integration string `json:"integration"`
-	Discarded   string `json:"discarded"`
+	Discarded   bool   `json:"discarded"`
 }
 
 type ScheduleResponse struct {
