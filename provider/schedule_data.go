@@ -43,14 +43,14 @@ func dataFireHydrantSchedule(ctx context.Context, d *schema.ResourceData, m inte
 	params := firehydrant.GetScheduleParams{Query: name}
 	scheduleResponse, err := firehydrantAPIClient.GetSchedules(ctx, params)
 	if err != nil {
-		return diag.Errorf("Error fetching schedule %s: %v", name, err)
+		return diag.Errorf("Error fetching schedule '%s': %v", name, err)
 	}
 
 	if len(scheduleResponse.Schedules) == 0 {
-		return diag.Errorf("Did not find schedule matching %s: %v", name, err)
+		return diag.Errorf("Did not find schedule matching '%s'", name)
 	}
 	if len(scheduleResponse.Schedules) > 1 {
-		return diag.Errorf("Found multiple matching schedules for %s: %v", name, err)
+		return diag.Errorf("Found multiple matching schedules for '%s'", name)
 	}
 
 	// Gather values from API response

@@ -43,14 +43,14 @@ func dataFireHydrantUser(ctx context.Context, d *schema.ResourceData, m interfac
 	params := firehydrant.GetUserParams{Query: email}
 	userResponse, err := firehydrantAPIClient.GetUsers(ctx, params)
 	if err != nil {
-		return diag.Errorf("Error fetching user %s: %v", email, err)
+		return diag.Errorf("Error fetching user '%s': %v", email, err)
 	}
 
 	if len(userResponse.Users) == 0 {
-		return diag.Errorf("Did not find user matching %s: %v", email, err)
+		return diag.Errorf("Did not find user matching '%s'", email)
 	}
 	if len(userResponse.Users) > 1 {
-		return diag.Errorf("Found multiple matching users for %s: %v", email, err)
+		return diag.Errorf("Found multiple matching users for '%s'", email)
 	}
 
 	// Gather values from API response
