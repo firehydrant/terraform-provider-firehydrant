@@ -75,6 +75,12 @@ type Client interface {
 	CreateTeam(ctx context.Context, req CreateTeamRequest) (*TeamResponse, error)
 	UpdateTeam(ctx context.Context, id string, req UpdateTeamRequest) (*TeamResponse, error)
 	DeleteTeam(ctx context.Context, id string) error
+
+	// Users
+	GetUsers(ctx context.Context, params GetUserParams) (*UserResponse, error)
+
+	// Schedules
+	GetSchedules(ctx context.Context, params GetScheduleParams) (*ScheduleResponse, error)
 }
 
 // OptFunc is a function that sets a setting on a client
@@ -204,6 +210,40 @@ func (c *APIClient) GetTeam(ctx context.Context, id string) (*TeamResponse, erro
 	}
 
 	return teamResponse, nil
+}
+
+// GetUsers gets matching users in FireHydrant
+func (c *APIClient) GetUsers(ctx context.Context, params GetUserParams) (*UserResponse, error) {
+	userResponse := &UserResponse{}
+	apiError := &APIError{}
+	response, err := c.client().Get("users").QueryStruct(params).Receive(userResponse, apiError)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get users")
+	}
+
+	err = checkResponseStatusCode(response, apiError)
+	if err != nil {
+		return nil, err
+	}
+
+	return userResponse, nil
+}
+
+// GetSchedules gets matching schedules in FireHydrant
+func (c *APIClient) GetSchedules(ctx context.Context, params GetScheduleParams) (*ScheduleResponse, error) {
+	scheduleResponse := &ScheduleResponse{}
+	apiError := &APIError{}
+	response, err := c.client().Get("schedules").QueryStruct(params).Receive(scheduleResponse, apiError)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get schedules")
+	}
+
+	err = checkResponseStatusCode(response, apiError)
+	if err != nil {
+		return nil, err
+	}
+
+	return scheduleResponse, nil
 }
 
 // CreateTeam creates a team in FireHydrant
