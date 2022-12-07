@@ -83,7 +83,7 @@ func (c *RESTEnvironmentsClient) Create(ctx context.Context, req CreateEnvironme
 // URL: PATCH https://api.firehydrant.io/v1/environments/{id}
 type UpdateEnvironmentRequest struct {
 	Name        string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
+	Description string `json:"description"`
 }
 
 // Update updates a environment in FireHydrant
