@@ -11,7 +11,7 @@ Use this data source to get information on schedules.
 Basic usage:
 ```hcl
 data "firehydrant_schedule" "my-oncall-schedule" {
-  email = "Main Oncall Schedule"
+  name = "Main Oncall Schedule"
 }
 ```
 
