@@ -24,7 +24,7 @@ func TestUserDataSource_OneMatch(t *testing.T) {
 		if r.URL.Path != "/ping" && r.URL.Path != "/users" {
 			t.Errorf("Expected to request '/ping' or '/users', got: %s", r.URL.Path)
 		}
-		if r.URL.Query().Get("query") != "test-user@firehydrant.io" {
+		if r.URL.Path == "/users" && r.URL.Query().Get("query") != "test-user@firehydrant.io" {
 			t.Errorf("Expected query param 'query' to be 'test-user@firehydrant.io', got: %s", r.URL.Query().Get("query"))
 		}
 
@@ -62,12 +62,12 @@ func TestUserDataSource_MultipleMatches(t *testing.T) {
 		if r.URL.Path != "/ping" && r.URL.Path != "/users" {
 			t.Errorf("Expected to request '/ping' or '/users', got: %s", r.URL.Path)
 		}
-		if r.URL.Query().Get("query") != "test-user@firehydrant.io" {
+		if r.URL.Path == "/users" && r.URL.Query().Get("query") != "test-user@firehydrant.io" {
 			t.Errorf("Expected query param 'query' to be 'test-user@firehydrant.io', got: %s", r.URL.Query().Get("query"))
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"data":[{"id": "123", "email":"test-user@firehydrant.io"}, {"data":[{"id": "123", "email":"test-user@example.io"}]}`))
+		w.Write([]byte(`{"data":[{"id": "123", "email":"test-user@firehydrant.io"},{"id": "456", "email":"test-user@example.io"}]}`))
 	}))
 
 	defer server.Close()
@@ -94,7 +94,7 @@ func TestUserDataSource_NoMatches(t *testing.T) {
 		if r.URL.Path != "/ping" && r.URL.Path != "/users" {
 			t.Errorf("Expected to request '/ping' or '/users', got: %s", r.URL.Path)
 		}
-		if r.URL.Query().Get("query") != "test-user@firehydrant.io" {
+		if r.URL.Path == "/users" && r.URL.Query().Get("query") != "test-user@firehydrant.io" {
 			t.Errorf("Expected query param 'query' to be 'test-user@firehydrant.io', got: %s", r.URL.Query().Get("query"))
 		}
 
