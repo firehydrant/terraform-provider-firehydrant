@@ -24,7 +24,8 @@ func TestScheduleDataSource_OneMatch(t *testing.T) {
 		if r.URL.Path != "/ping" && r.URL.Path != "/schedules" {
 			t.Errorf("Expected to request '/ping' or '/schedules', got: %s", r.URL.Path)
 		}
-		if r.URL.Query().Get("query") != "My Rotation" {
+
+		if r.URL.Path == "/schedules" && r.URL.Query().Get("query") != "My Rotation" {
 			t.Errorf("Expected query param 'query' to be 'My Rotation', got: %s", r.URL.Query().Get("query"))
 		}
 
@@ -62,7 +63,7 @@ func TestScheduleDataSource_MultipleMatches(t *testing.T) {
 		if r.URL.Path != "/ping" && r.URL.Path != "/schedules" {
 			t.Errorf("Expected to request '/ping' or '/schedules', got: %s", r.URL.Path)
 		}
-		if r.URL.Query().Get("query") != "My Rotation" {
+		if r.URL.Path == "/schedules" && r.URL.Query().Get("query") != "My Rotation" {
 			t.Errorf("Expected query param 'query' to be 'My Rotation', got: %s", r.URL.Query().Get("query"))
 		}
 
@@ -81,7 +82,7 @@ func TestScheduleDataSource_MultipleMatches(t *testing.T) {
 		ProviderFactories: defaultProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config:      testUserDataSourceConfig_basic(),
+				Config:      testScheduleDataSourceConfig_basic(),
 				ExpectError: regexp.MustCompile(`Found multiple matching schedules for 'My Rotation'`),
 			},
 		},
@@ -94,7 +95,7 @@ func TestScheduleDataSource_NoMatches(t *testing.T) {
 		if r.URL.Path != "/ping" && r.URL.Path != "/schedules" {
 			t.Errorf("Expected to request '/ping' or '/schedules', got: %s", r.URL.Path)
 		}
-		if r.URL.Query().Get("query") != "My Rotation" {
+		if r.URL.Path == "/schedules" && r.URL.Query().Get("query") != "My Rotation" {
 			t.Errorf("Expected query param 'query' to be 'My Rotation', got: %s", r.URL.Query().Get("query"))
 		}
 
@@ -113,7 +114,7 @@ func TestScheduleDataSource_NoMatches(t *testing.T) {
 		ProviderFactories: defaultProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config:      testUserDataSourceConfig_basic(),
+				Config:      testScheduleDataSourceConfig_basic(),
 				ExpectError: regexp.MustCompile(`Did not find schedule matching 'My Rotation'`),
 			},
 		},
