@@ -65,7 +65,7 @@ func dataFireHydrantUser(ctx context.Context, d *schema.ResourceData, m interfac
 		}
 	}
 
-	// Set the priority's ID in state
+	// Set the user's ID in state
 	d.SetId(userResponse.Users[0].ID)
 
 	return diag.Diagnostics{}
