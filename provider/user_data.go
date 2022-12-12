@@ -26,6 +26,10 @@ func dataSourceUser() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -55,7 +59,8 @@ func dataFireHydrantUser(ctx context.Context, d *schema.ResourceData, m interfac
 
 	// Gather values from API response
 	attributes := map[string]interface{}{
-		"id": userResponse.Users[0].ID,
+		"id":   userResponse.Users[0].ID,
+		"name": userResponse.Users[0].Name,
 	}
 
 	// Set the data source attributes to the values we got from the API

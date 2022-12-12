@@ -29,7 +29,7 @@ func TestUserDataSource_OneMatch(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"data":[{"id": "123", "email":"test-user@firehydrant.io"}]}`))
+		w.Write([]byte(`{"data":[{"id": "123", "name": "Test Testerson", "email":"test-user@firehydrant.io"}]}`))
 	}))
 
 	defer server.Close()
@@ -50,6 +50,8 @@ func TestUserDataSource_OneMatch(t *testing.T) {
 						"data.firehydrant_user.test_user", "email", "test-user@firehydrant.io"),
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_user.test_user", "id", "123"),
+					resource.TestCheckResourceAttr(
+						"data.firehydrant_user.test_user", "name", "Test Testerson"),
 				),
 			},
 		},
@@ -67,7 +69,7 @@ func TestUserDataSource_MultipleMatches(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"data":[{"id": "123", "email":"test-user@firehydrant.io"},{"id": "456", "email":"test-user@example.io"}]}`))
+		w.Write([]byte(`{"data":[{"id": "123", "email":"test-user@firehydrant.io", "name": "Test Testerson"},{"id": "456", "email":"test-user@example.io", "name": "Bob Testerson"}]}`))
 	}))
 
 	defer server.Close()
