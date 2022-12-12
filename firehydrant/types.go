@@ -136,6 +136,43 @@ type ServicesResponse struct {
 	Services []ServiceResponse `json:"data"`
 }
 
+// UserResponse is the payload for a user
+// URL: GET https://api.firehydrant.io/v1/users
+type GetUserParams struct {
+	Query string `url:"query,omitempty"`
+}
+
+type User struct {
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Email       string    `json:"email"`
+	SlackLinked bool      `json:"slack_linked?"`
+	SlackUserId string    `json:"slack_user_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type UserResponse struct {
+	Users []User `json:"data"`
+}
+
+// ScheduleResponse is the payload for a schedule
+// URL: GET https://api.firehydrant.io/v1/schedules
+type GetScheduleParams struct {
+	Query string `url:"query,omitempty"`
+}
+
+type Schedule struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Integration string `json:"integration"`
+	Discarded   bool   `json:"discarded"`
+}
+
+type ScheduleResponse struct {
+	Schedules []Schedule `json:"data"`
+}
+
 // TeamResponse is the payload for a single environment
 // URL: GET https://api.firehydrant.io/v1/teams/{id}
 type TeamResponse struct {
