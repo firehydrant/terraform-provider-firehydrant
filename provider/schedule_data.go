@@ -65,7 +65,7 @@ func dataFireHydrantSchedule(ctx context.Context, d *schema.ResourceData, m inte
 		}
 	}
 
-	// Set the priority's ID in state
+	// Set the schedule's ID in state
 	d.SetId(scheduleResponse.Schedules[0].ID)
 
 	return diag.Diagnostics{}
