@@ -151,7 +151,7 @@ func updateResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 		Description: d.Get("description").(string),
 	}
 
-	// Process any optional attributes and add to the create request if necessary
+	// Process any optional attributes and add to the update request if necessary
 	memberships := d.Get("memberships")
 	for _, currentMembership := range memberships.(*schema.Set).List() {
 		membership := currentMembership.(map[string]interface{})
