@@ -25,3 +25,4 @@ jobs:
         env:
           TF_ACC: 'true'
           FIREHYDRANT_API_KEY: ${{ secrets.FIREHYDRANT_API_KEY }}
+          EXISTING_USER_EMAIL: 'ops+terraform-ci@firehydrant.io'
