@@ -38,7 +38,7 @@ func resourceTeam() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"incident_role_id": {
+						"default_incident_role_id": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -88,9 +88,9 @@ func readResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, m 
 	memberships := make([]map[string]interface{}, len(teamResponse.Memberships))
 	for index, currentMembership := range teamResponse.Memberships {
 		memberships[index] = map[string]interface{}{
-			"incident_role_id": currentMembership.DefaultIncidentRole.ID,
-			"schedule_id":      currentMembership.Schedule.ID,
-			"user_id":          currentMembership.User.ID,
+			"default_incident_role_id": currentMembership.DefaultIncidentRole.ID,
+			"schedule_id":              currentMembership.Schedule.ID,
+			"user_id":                  currentMembership.User.ID,
 		}
 	}
 	attributes["memberships"] = memberships
@@ -119,7 +119,7 @@ func createResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 	for _, currentMembership := range memberships.(*schema.Set).List() {
 		membership := currentMembership.(map[string]interface{})
 		createRequest.Memberships = append(createRequest.Memberships, firehydrant.Membership{
-			IncidentRoleId: membership["incident_role_id"].(string),
+			IncidentRoleId: membership["default_incident_role_id"].(string),
 			ScheduleId:     membership["schedule_id"].(string),
 			UserId:         membership["user_id"].(string),
 		})
@@ -156,7 +156,7 @@ func updateResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 	for _, currentMembership := range memberships.(*schema.Set).List() {
 		membership := currentMembership.(map[string]interface{})
 		updateRequest.Memberships = append(updateRequest.Memberships, firehydrant.Membership{
-			IncidentRoleId: membership["incident_role_id"].(string),
+			IncidentRoleId: membership["default_incident_role_id"].(string),
 			ScheduleId:     membership["schedule_id"].(string),
 			UserId:         membership["user_id"].(string),
 		})

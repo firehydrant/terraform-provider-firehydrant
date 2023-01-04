@@ -39,6 +39,14 @@ The following arguments are supported:
 * `description` - (Optional) A description for the team.
 * `memberships` - (Optional) A resource to tie a schedule or user to a team via a incident role.
 
+The `memberships` block supports:
+
+Either the user_id or schedule_id is required for this block.
+
+* `user_id` - (Required) Id of the user.
+* `schedule_id` - (Required) Id of the schedule.
+* `default_incident_role_id` - (Optional) Incident role to assign the user or schedule.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
