@@ -26,7 +26,7 @@ resource "firehydrant_team" "example-team" {
 
   memberships {
     user_id          = data.firehydrant_user.my-user.id
-    incident_role_id = data.firehydrant_incident_role.ops-lead.id
+    default_incident_role_id = data.firehydrant_incident_role.ops-lead.id
   }
 }
 ```
