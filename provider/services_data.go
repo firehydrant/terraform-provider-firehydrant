@@ -62,12 +62,13 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 	services := make([]interface{}, 0)
 	for _, service := range servicesResponse.Services {
 		attributes := map[string]interface{}{
-			"id":           service.ID,
-			"alert_on_add": service.AlertOnAdd,
-			"description":  service.Description,
-			"labels":       service.Labels,
-			"name":         service.Name,
-			"service_tier": service.ServiceTier,
+			"id":                       service.ID,
+			"alert_on_add":             service.AlertOnAdd,
+			"auto_add_responding_team": service.AutoAddRespondingTeam,
+			"description":              service.Description,
+			"labels":                   service.Labels,
+			"name":                     service.Name,
+			"service_tier":             service.ServiceTier,
 		}
 
 		// Process any attributes that could be nil

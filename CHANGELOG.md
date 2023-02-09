@@ -1,5 +1,11 @@
 ## 0.3.2 (Unreleased)
 
+ENHANCEMENTS: 
+
+* resource/service: Added `auto_add_responding_team` attribute to service
+* data_source/service: Added `auto_add_responding_team` attribute to service
+* data_source/services: Added `auto_add_responding_team` attribute to service
+
 ## 0.3.1
 
 BUG FIXES:

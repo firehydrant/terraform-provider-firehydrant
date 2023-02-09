@@ -53,6 +53,8 @@ The `services` block contains:
 * `alert_on_add` - Indicates if FireHydrant should automatically create an alert
   based on the integrations set up for this service, if this service is added to
   an active incident.
+* `auto_add_responding_team` - Indicates if FireHydrant should automatically add
+  the responding team if this service is added to an active incident.
 * `description` - A description of the service.
 * `labels` - Key-value pairs associated with the service. Useful for supporting
   searching and filtering of the service catalog.

@@ -34,6 +34,11 @@ func resourceService() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"auto_add_responding_team": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -102,11 +107,12 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 
 	// Set values in state
 	attributes := map[string]interface{}{
-		"name":         serviceResponse.Name,
-		"alert_on_add": serviceResponse.AlertOnAdd,
-		"description":  serviceResponse.Description,
-		"labels":       serviceResponse.Labels,
-		"service_tier": serviceResponse.ServiceTier,
+		"name":                     serviceResponse.Name,
+		"alert_on_add":             serviceResponse.AlertOnAdd,
+		"auto_add_responding_team": serviceResponse.AutoAddRespondingTeam,
+		"description":              serviceResponse.Description,
+		"labels":                   serviceResponse.Labels,
+		"service_tier":             serviceResponse.ServiceTier,
 	}
 
 	// Process any attributes that could be nil
@@ -147,11 +153,12 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 
 	// Get attributes from config and construct the create request
 	createRequest := firehydrant.CreateServiceRequest{
-		Name:        d.Get("name").(string),
-		AlertOnAdd:  d.Get("alert_on_add").(bool),
-		Description: d.Get("description").(string),
-		Labels:      convertStringMap(d.Get("labels").(map[string]interface{})),
-		ServiceTier: d.Get("service_tier").(int),
+		Name:                  d.Get("name").(string),
+		AlertOnAdd:            d.Get("alert_on_add").(bool),
+		AutoAddRespondingTeam: d.Get("auto_add_responding_team").(bool),
+		Description:           d.Get("description").(string),
+		Labels:                convertStringMap(d.Get("labels").(map[string]interface{})),
+		ServiceTier:           d.Get("service_tier").(int),
 	}
 
 	// Process any optional attributes and add to the create request if necessary
@@ -195,11 +202,12 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 
 	// Construct the update request
 	updateRequest := firehydrant.UpdateServiceRequest{
-		Name:        d.Get("name").(string),
-		AlertOnAdd:  d.Get("alert_on_add").(bool),
-		Description: d.Get("description").(string),
-		Labels:      convertStringMap(d.Get("labels").(map[string]interface{})),
-		ServiceTier: d.Get("service_tier").(int),
+		Name:                  d.Get("name").(string),
+		AlertOnAdd:            d.Get("alert_on_add").(bool),
+		AutoAddRespondingTeam: d.Get("auto_add_responding_team").(bool),
+		Description:           d.Get("description").(string),
+		Labels:                convertStringMap(d.Get("labels").(map[string]interface{})),
+		ServiceTier:           d.Get("service_tier").(int),
 	}
 
 	// Process any optional attributes and add to the update request if necessary
