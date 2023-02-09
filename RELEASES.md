@@ -19,7 +19,7 @@ on registry.terraform.io.
    ```
    Make sure any major customer-facing changes have an entry in the changelog.
 2. Review the changelog to check for the following:
-   - The changelog follows [the changelog format](./README.md#updating-the-changelog)
+   - The changelog follows [the changelog format](./CONTRIBUTING.md#updating-the-changelog)
    - Information is accurate and free of typos 
    - All links work 
    - If there are any breaking changes, a "Notes" section has been added with 
