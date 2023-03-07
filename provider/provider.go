@@ -22,9 +22,6 @@ const (
 	MinorVersion = 1
 	// PatchVersion is the patch version
 	PatchVersion = 0
-
-	// UserAgentPrefix is the prefix of the User-Agent header that all terraform REST calls perform
-	UserAgentPrefix = "firehydrant-terraform-provider"
 )
 
 // Version is the semver of this provider
