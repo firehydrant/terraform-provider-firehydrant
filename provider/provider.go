@@ -15,17 +15,15 @@ const (
 	firehydrantBaseURLName = "firehydrant_base_url"
 )
 
-const (
-	// MajorVersion is the major version
-	MajorVersion = 0
-	// MinorVersion is the minor version
-	MinorVersion = 1
-	// PatchVersion is the patch version
-	PatchVersion = 0
-)
+// Commit SHA for the commit of this provider's release.
+//
+// note: injected by goreleaser using ldflags.
+var Commit = ""
 
-// Version is the semver of this provider
-var Version = fmt.Sprintf("%d.%d.%d", MajorVersion, MinorVersion, PatchVersion)
+// Version semver of this provider.
+//
+// note: injected by goreleaser using ldflags.
+var Version = ""
 
 // Provider returns a terraform provider for the FireHydrant API
 func Provider() *schema.Provider {
