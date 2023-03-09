@@ -96,6 +96,35 @@ func TestAccTeamResourceImport_basic(t *testing.T) {
 	})
 }
 
+func TestAccTeamResource_withMembership(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	existingUser := os.Getenv("EXISTING_USER_EMAIL")
+
+	if existingUser == "" {
+		existingUser = "local@firehydrant.io"
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		CheckDestroy:      testAccCheckTeamResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccTeamResourceConfig_withMembership(rName, existingUser),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTeamResourceExistsWithAttributes_basic("firehydrant_team.test_team"),
+					resource.TestCheckResourceAttrSet("firehydrant_team.test_team", "id"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_team.test_team", "name", fmt.Sprintf("test-team-%s", rName)),
+					resource.TestCheckResourceAttrSet("firehydrant_team.test_team", "memberships.0.user_id"),
+					resource.TestCheckResourceAttrSet("firehydrant_team.test_team", "memberships.0.default_incident_role_id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckTeamResourceExistsWithAttributes_basic(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		teamResource, ok := s.RootModule().Resources[resourceName]
@@ -202,4 +231,25 @@ resource "firehydrant_team" "test_team" {
   name        = "test-team-%s"
   description = "test-description-%s"
 }`, rName, rName)
+}
+
+func testAccTeamResourceConfig_withMembership(rName string, existingUser string) string {
+	return fmt.Sprintf(`
+data "firehydrant_user" "test_user" {
+	email = "%s"
+}
+
+resource "firehydrant_incident_role" "test_incident_role" {
+	name    = "test-incident-role-%s"
+	summary = "test-summary-%s"
+}
+
+resource "firehydrant_team" "test_team" {
+	name = "test-team-%s"
+
+	memberships {
+		user_id                  = data.firehydrant_user.test_user.id
+		default_incident_role_id = resource.firehydrant_incident_role.test_incident_role.id
+	}
+}`, existingUser, rName, rName, rName)
 }

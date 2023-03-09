@@ -33,6 +33,26 @@ func resourceTeam() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"memberships": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"default_incident_role_id": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"user_id": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"schedule_id": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -64,6 +84,17 @@ func readResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, m 
 		"description": teamResponse.Description,
 	}
 
+	// Process any attributes that could be nil
+	memberships := make([]map[string]interface{}, len(teamResponse.Memberships))
+	for index, currentMembership := range teamResponse.Memberships {
+		memberships[index] = map[string]interface{}{
+			"default_incident_role_id": currentMembership.DefaultIncidentRole.ID,
+			"schedule_id":              currentMembership.Schedule.ID,
+			"user_id":                  currentMembership.User.ID,
+		}
+	}
+	attributes["memberships"] = memberships
+
 	for key, value := range attributes {
 		if err := d.Set(key, value); err != nil {
 			return diag.Errorf("Error setting %s for team %s: %v", key, teamID, err)
@@ -81,6 +112,17 @@ func createResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 	createRequest := firehydrant.CreateTeamRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
+	}
+
+	// Process any optional attributes and add to the create request if necessary
+	memberships := d.Get("memberships")
+	for _, currentMembership := range memberships.(*schema.Set).List() {
+		membership := currentMembership.(map[string]interface{})
+		createRequest.Memberships = append(createRequest.Memberships, firehydrant.Membership{
+			IncidentRoleId: membership["default_incident_role_id"].(string),
+			ScheduleId:     membership["schedule_id"].(string),
+			UserId:         membership["user_id"].(string),
+		})
 	}
 
 	// Create the new team
@@ -107,6 +149,17 @@ func updateResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 	updateRequest := firehydrant.UpdateTeamRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
+	}
+
+	// Process any optional attributes and add to the update request if necessary
+	memberships := d.Get("memberships")
+	for _, currentMembership := range memberships.(*schema.Set).List() {
+		membership := currentMembership.(map[string]interface{})
+		updateRequest.Memberships = append(updateRequest.Memberships, firehydrant.Membership{
+			IncidentRoleId: membership["default_incident_role_id"].(string),
+			ScheduleId:     membership["schedule_id"].(string),
+			UserId:         membership["user_id"].(string),
+		})
 	}
 
 	// Update the team

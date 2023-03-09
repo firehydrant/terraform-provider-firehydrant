@@ -15,11 +15,6 @@ const (
 	firehydrantBaseURLName = "firehydrant_base_url"
 )
 
-const (
-	// UserAgentPrefix is the prefix of the User-Agent header that all terraform REST calls perform
-	UserAgentPrefix = "firehydrant-terraform-provider"
-)
-
 // Commit SHA for the commit of this provider's release.
 //
 // note: injected by goreleaser using ldflags.
@@ -69,6 +64,8 @@ func Provider() *schema.Provider {
 			"firehydrant_services":       dataSourceServices(),
 			"firehydrant_severity":       dataSourceSeverity(),
 			"firehydrant_task_list":      dataSourceTaskList(),
+			"firehydrant_schedule":       dataSourceSchedule(),
+			"firehydrant_user":           dataSourceUser(),
 		},
 	}
 

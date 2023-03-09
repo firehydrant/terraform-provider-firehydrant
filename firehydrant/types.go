@@ -136,24 +136,79 @@ type ServicesResponse struct {
 	Services []ServiceResponse `json:"data"`
 }
 
+// UserResponse is the payload for a user
+// URL: GET https://api.firehydrant.io/v1/users
+type GetUserParams struct {
+	Query string `url:"query,omitempty"`
+}
+
+type User struct {
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Email       string    `json:"email"`
+	SlackLinked bool      `json:"slack_linked?"`
+	SlackUserId string    `json:"slack_user_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type UserResponse struct {
+	Users []User `json:"data"`
+}
+
+// ScheduleResponse is the payload for a schedule
+// URL: GET https://api.firehydrant.io/v1/schedules
+type GetScheduleParams struct {
+	Query string `url:"query,omitempty"`
+}
+
+type Schedule struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Integration string `json:"integration"`
+	Discarded   bool   `json:"discarded"`
+}
+
+type ScheduleResponse struct {
+	Schedules []Schedule `json:"data"`
+}
+
 // TeamResponse is the payload for a single environment
 // URL: GET https://api.firehydrant.io/v1/teams/{id}
 type TeamResponse struct {
-	ID            string            `json:"id"`
-	Name          string            `json:"name"`
-	Description   string            `json:"description"`
-	Slug          string            `json:"slug"`
-	OwnedServices []ServiceResponse `json:"owned_services"`
-	Services      []ServiceResponse `json:"services"`
-	CreatedAt     time.Time         `json:"created_at"`
-	UpdatedAt     time.Time         `json:"updated_at"`
+	ID            string               `json:"id"`
+	Name          string               `json:"name"`
+	Description   string               `json:"description"`
+	Slug          string               `json:"slug"`
+	OwnedServices []ServiceResponse    `json:"owned_services"`
+	Services      []ServiceResponse    `json:"services"`
+	Memberships   []MembershipResponse `json:"memberships"`
+	CreatedAt     time.Time            `json:"created_at"`
+	UpdatedAt     time.Time            `json:"updated_at"`
+}
+
+// MembershipResponse represents the response coming back from teams
+// for membership
+type MembershipResponse struct {
+	DefaultIncidentRole IncidentRoleResponse `json:"default_incident_role,omitempty"`
+	Schedule            Schedule             `json:"schedule,omitempty"`
+	User                User                 `json:"user,omitempty"`
+}
+
+// Membership represents a user_id or schedule_id along with a
+// incident_role_id for a team membership resource
+type Membership struct {
+	IncidentRoleId string `json:"incident_role_id,omitempty"`
+	ScheduleId     string `json:"schedule_id,omitempty"`
+	UserId         string `json:"user_id,omitempty"`
 }
 
 // CreateTeamRequest is the payload for creating a service
 // URL: POST https://api.firehydrant.io/v1/services
 type CreateTeamRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	Memberships []Membership `json:"memberships,omitempty"`
 }
 
 // TeamService represents a service when creating a functionality
@@ -164,6 +219,7 @@ type TeamService struct {
 // UpdateTeamRequest is the payload for updating a environment
 // URL: PATCH https://api.firehydrant.io/v1/environments/{id}
 type UpdateTeamRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	Memberships []Membership `json:"memberships,omitempty"`
 }
