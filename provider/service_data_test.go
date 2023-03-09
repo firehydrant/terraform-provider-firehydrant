@@ -24,6 +24,8 @@ func TestAccServiceDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_service.test_service", "alert_on_add", "false"),
 					resource.TestCheckResourceAttr(
+						"data.firehydrant_service.test_service", "auto_add_responding_team", "false"),
+					resource.TestCheckResourceAttr(
 						"data.firehydrant_service.test_service", "service_tier", "5"),
 				),
 			},
@@ -46,6 +48,8 @@ func TestAccServiceDataSource_allAttributes(t *testing.T) {
 						"data.firehydrant_service.test_service", "name", fmt.Sprintf("test-service-%s", rName)),
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_service.test_service", "alert_on_add", "true"),
+					resource.TestCheckResourceAttr(
+						"data.firehydrant_service.test_service", "auto_add_responding_team", "true"),
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rName)),
 					resource.TestCheckResourceAttr(
@@ -92,9 +96,10 @@ resource "firehydrant_team" "test_team3" {
 }
 
 resource "firehydrant_service" "test_service" {
-  name         = "test-service-%s"
-  alert_on_add = true
-  description  = "test-description-%s"
+  name                     = "test-service-%s"
+  alert_on_add             = true
+  auto_add_responding_team = true
+  description              = "test-description-%s"
   
   labels = {
     test = "test-label-%s"

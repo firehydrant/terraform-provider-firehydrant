@@ -26,6 +26,10 @@ func dataSourceService() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
+			"auto_add_responding_team": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -90,11 +94,12 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 
 	// Set values in state
 	attributes := map[string]interface{}{
-		"alert_on_add": serviceResponse.AlertOnAdd,
-		"description":  serviceResponse.Description,
-		"labels":       serviceResponse.Labels,
-		"name":         serviceResponse.Name,
-		"service_tier": serviceResponse.ServiceTier,
+		"alert_on_add":             serviceResponse.AlertOnAdd,
+		"auto_add_responding_team": serviceResponse.AutoAddRespondingTeam,
+		"description":              serviceResponse.Description,
+		"labels":                   serviceResponse.Labels,
+		"name":                     serviceResponse.Name,
+		"service_tier":             serviceResponse.ServiceTier,
 	}
 
 	// Process any attributes that could be nil

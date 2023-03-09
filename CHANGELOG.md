@@ -1,5 +1,11 @@
 ## 0.3.2 (Unreleased)
 
+ENHANCEMENTS: 
+
+* resource/service: Added `auto_add_responding_team` attribute to service ([#117](https://github.com/firehydrant/terraform-provider-firehydrant/pull/117))
+* data_source/service: Added `auto_add_responding_team` attribute to service ([#117](https://github.com/firehydrant/terraform-provider-firehydrant/pull/117))
+* data_source/services: Added `auto_add_responding_team` attribute to service ([#117](https://github.com/firehydrant/terraform-provider-firehydrant/pull/117))
+
 ## 0.3.1
 
 BUG FIXES:

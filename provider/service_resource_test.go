@@ -31,6 +31,8 @@ func TestAccServiceResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "alert_on_add", "false"),
 					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "auto_add_responding_team", "false"),
+					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "5"),
 					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "0"),
 				),
@@ -58,6 +60,8 @@ func TestAccServiceResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "alert_on_add", "false"),
 					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "auto_add_responding_team", "false"),
+					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "5"),
 					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "0"),
 				),
@@ -71,6 +75,8 @@ func TestAccServiceResource_update(t *testing.T) {
 						"firehydrant_service.test_service", "name", fmt.Sprintf("test-service-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "alert_on_add", "true"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "auto_add_responding_team", "true"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
@@ -92,6 +98,8 @@ func TestAccServiceResource_update(t *testing.T) {
 						"firehydrant_service.test_service", "name", fmt.Sprintf("test-service-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "alert_on_add", "false"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "auto_add_responding_team", "false"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "service_tier", "5"),
 					resource.TestCheckResourceAttr("firehydrant_service.test_service", "team_ids.#", "0"),
@@ -120,6 +128,8 @@ func TestAccServiceResource_updateLabels(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "alert_on_add", "true"),
 					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "auto_add_responding_team", "true"),
+					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rName)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "labels.test1", fmt.Sprintf("test-label1-%s", rName)),
@@ -140,6 +150,8 @@ func TestAccServiceResource_updateLabels(t *testing.T) {
 						"firehydrant_service.test_service", "name", fmt.Sprintf("test-service-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "alert_on_add", "true"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "auto_add_responding_team", "true"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
@@ -163,6 +175,8 @@ func TestAccServiceResource_updateLabels(t *testing.T) {
 						"firehydrant_service.test_service", "name", fmt.Sprintf("test-service-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "alert_on_add", "false"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "auto_add_responding_team", "false"),
 					// Make sure the labels are not set
 					resource.TestCheckNoResourceAttr(
 						"firehydrant_service.test_service", "labels.test1"),
@@ -196,6 +210,8 @@ func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "alert_on_add", "true"),
 					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "auto_add_responding_team", "true"),
+					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rName)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "labels.test1", fmt.Sprintf("test-label1-%s", rName)),
@@ -216,6 +232,8 @@ func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
 						"firehydrant_service.test_service", "name", fmt.Sprintf("test-service-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "alert_on_add", "true"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "auto_add_responding_team", "true"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
@@ -238,6 +256,8 @@ func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "alert_on_add", "true"),
 					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "auto_add_responding_team", "true"),
+					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "labels.test1", fmt.Sprintf("test-label1-%s", rNameUpdated)),
@@ -258,6 +278,8 @@ func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
 						"firehydrant_service.test_service", "name", fmt.Sprintf("test-service-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "alert_on_add", "false"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_service.test_service", "auto_add_responding_team", "false"),
 					// Make sure owner_id is not set
 					resource.TestCheckResourceAttr(
 						"firehydrant_service.test_service", "owner_id", ""),
@@ -338,6 +360,11 @@ func testAccCheckServiceResourceExistsWithAttributes_basic(resourceName string) 
 			return fmt.Errorf("Unexpected alert_on_add. Expected: %s, got: %s", expected, got)
 		}
 
+		expected, got = serviceResource.Primary.Attributes["auto_add_responding_team"], fmt.Sprintf("%t", serviceResponse.AutoAddRespondingTeam)
+		if expected != got {
+			return fmt.Errorf("Unexpected auto_add_responding_team. Expected: %s, got: %s", expected, got)
+		}
+
 		if serviceResponse.Description != "" {
 			return fmt.Errorf("Unexpected description. Expected no description, got: %s", serviceResponse.Description)
 		}
@@ -396,6 +423,11 @@ func testAccCheckServiceResourceExistsWithAttributes_update(resourceName string)
 		expected, got = serviceResource.Primary.Attributes["alert_on_add"], fmt.Sprintf("%t", serviceResponse.AlertOnAdd)
 		if expected != got {
 			return fmt.Errorf("Unexpected alert_on_add. Expected: %s, got: %s", expected, got)
+		}
+
+		expected, got = serviceResource.Primary.Attributes["auto_add_responding_team"], fmt.Sprintf("%t", serviceResponse.AutoAddRespondingTeam)
+		if expected != got {
+			return fmt.Errorf("Unexpected auto_add_responding_team. Expected: %s, got: %s", expected, got)
 		}
 
 		expected, got = serviceResource.Primary.Attributes["description"], serviceResponse.Description
@@ -489,9 +521,10 @@ resource "firehydrant_team" "test_team3" {
 }
 
 resource "firehydrant_service" "test_service" {
-  name         = "test-service-%s"
-  alert_on_add = true
-  description  = "test-description-%s"
+  name                     = "test-service-%s"
+  alert_on_add             = true
+  auto_add_responding_team = true
+  description              = "test-description-%s"
   labels = {
     test1 = "test-label1-%s",
   }
@@ -527,9 +560,10 @@ resource "firehydrant_team" "test_team3" {
 }
 
 resource "firehydrant_service" "test_service" {
-  name         = "test-service-%s"
-  alert_on_add = true
-  description  = "test-description-%s"
+  name                     = "test-service-%s"
+  alert_on_add             = true
+  auto_add_responding_team = true
+  description              = "test-description-%s"
   labels = {
     test1 = "test-label1-%s",
     test2 = "test-label2-%s"
@@ -566,9 +600,10 @@ resource "firehydrant_team" "test_team3" {
 }
 
 resource "firehydrant_service" "test_service" {
-  name         = "test-service-%s"
-  alert_on_add = true
-  description  = "test-description-%s"
+  name                     = "test-service-%s"
+  alert_on_add             = true
+  auto_add_responding_team = true
+  description              = "test-description-%s"
   labels = {
     test1 = "test-label1-%s"
   }
