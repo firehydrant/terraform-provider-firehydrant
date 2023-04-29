@@ -62,6 +62,7 @@ The following arguments are supported:
   active incident. Defaults to `false`.
 * `auto_add_responding_team` - (Optional) Indicates if FireHydrant should automatically add
   the responding team if this service is added to an active incident. Defaults to `false`.
+* `external_resources` - (Optional) External resources associated with the service
 * `description` - (Optional) A description for the service.
 * `labels` - (Optional) Key-value pairs associated with the service. Useful for
   supporting searching and filtering of the service catalog.
@@ -76,6 +77,11 @@ The `links` block supports:
 
 * `href_url` - (Required) The URL to use for the link.
 * `name` - (Required) The name of the link.
+
+The `exteral_resources` block supports:
+
+* `remote_id` - (Required) The ID of the resource in the remote provider
+* `connection_type` - (Required) The connection type configured in FireHydrant (`pager_duty` for example)
 
 ## Attributes Reference
 
