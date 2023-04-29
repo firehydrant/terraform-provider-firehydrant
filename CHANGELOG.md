@@ -1,10 +1,11 @@
 ## 0.3.2 (Unreleased)
 
-ENHANCEMENTS: 
+ENHANCEMENTS:
 
 * resource/service: Added `auto_add_responding_team` attribute to service ([#117](https://github.com/firehydrant/terraform-provider-firehydrant/pull/117))
 * data_source/service: Added `auto_add_responding_team` attribute to service ([#117](https://github.com/firehydrant/terraform-provider-firehydrant/pull/117))
 * data_source/services: Added `auto_add_responding_team` attribute to service ([#117](https://github.com/firehydrant/terraform-provider-firehydrant/pull/117))
+* resource/service: Added `external_resources` attribute to service ([#123](https://github.com/firehydrant/terraform-provider-firehydrant/pull/123))
 
 ## 0.3.1
 
@@ -68,12 +69,12 @@ ENHANCEMENTS:
 
 NOTES:
 
-* resource/functionality: The deprecated `services` attribute has been removed. See the ["Notes" section in 0.2.0](#020) 
+* resource/functionality: The deprecated `services` attribute has been removed. See the ["Notes" section in 0.2.0](#020)
   or the [original deprecation PR](https://github.com/firehydrant/terraform-provider-firehydrant/pull/49) for more information.
-* resource/runbook: There are a number of breaking changes for the runbook resource. The `steps` attribute is now required, 
-  the `steps` `config` attribute is now a JSON string, and the `type` and `severities` attribute have been removed. In order 
-  to upgrade to 0.3.0, you will need to destroy your existing runbooks and recreate them after changing your configuration to 
-  account for the breaking changes. 
+* resource/runbook: There are a number of breaking changes for the runbook resource. The `steps` attribute is now required,
+  the `steps` `config` attribute is now a JSON string, and the `type` and `severities` attribute have been removed. In order
+  to upgrade to 0.3.0, you will need to destroy your existing runbooks and recreate them after changing your configuration to
+  account for the breaking changes.
   As an example, the configuration below was valid in 0.2.1
    ```hcl
    # An example of a valid 0.2.1 configuration
@@ -84,7 +85,7 @@ NOTES:
      steps {
        name    = "Send me an email"
        action_id = data.firehydrant_runbook_action.firehydrant_email_notification.id
-    
+
        config = {
          email_address   = "test@example.com"
          email_subject   = "Incident opened on FireHydrant"
@@ -102,7 +103,7 @@ NOTES:
      steps {
        name    = "Send me an email"
        action_id = data.firehydrant_runbook_action.firehydrant_email_notification.id
-    
+
        config = jsonencode({
          email_address   = "test@example.com"
          email_subject   = "Incident opened on FireHydrant"
@@ -120,7 +121,7 @@ ENHANCEMENTS:
 
 ## 0.2.0
 
-BREAKING CHANGES: 
+BREAKING CHANGES:
 
 * resource/team: Removed `services` attribute. Use resource/service to associate teams with a service. See "Notes" for more information ([#54](https://github.com/firehydrant/terraform-provider-firehydrant/pull/54))
 
