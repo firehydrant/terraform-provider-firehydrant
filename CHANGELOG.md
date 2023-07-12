@@ -2,6 +2,7 @@
 
 ENHANCEMENTS: 
 
+* Bump golang from 1.16 to 1.18
 * resource/service: Added `auto_add_responding_team` attribute to service ([#117](https://github.com/firehydrant/terraform-provider-firehydrant/pull/117))
 * data_source/service: Added `auto_add_responding_team` attribute to service ([#117](https://github.com/firehydrant/terraform-provider-firehydrant/pull/117))
 * data_source/services: Added `auto_add_responding_team` attribute to service ([#117](https://github.com/firehydrant/terraform-provider-firehydrant/pull/117))
