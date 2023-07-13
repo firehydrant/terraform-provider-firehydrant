@@ -60,7 +60,7 @@ resource "firehydrant_runbook" "firehydrant_add_services_related_to_functionalit
 * `repeats` - (Optional) Whether this step should repeat. Defaults to `false`.
   When this value is `true`, `repeats_duration` _must_ be provided.
 * `repeats_duration` - (Optional) How often this step should repeat in ISO8601.
-  Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001437-13/reference/r_iso_8601_duration_format.htm)
+  Example: PT10M [Format Spec](https://www.digi.com/resources/documentation/digidocs/90001488-13/reference/r_iso_8601_duration_format.htm)
   This value _must_ be provided if `repeats` is `true`. This value _must not_ be provided if `repeats` is `false`.
 * `rule` - (Optional) JSON string representing the rule configuration for the runbook step.
   For more information on the conditional logic used in `rule`, see the
