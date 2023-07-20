@@ -1,11 +1,13 @@
-## 0.3.2 (Unreleased)
+## 0.3.2 
 
 ENHANCEMENTS:
 
+* Bump golang from 1.16 to 1.18
 * resource/service: Added `auto_add_responding_team` attribute to service ([#117](https://github.com/firehydrant/terraform-provider-firehydrant/pull/117))
 * data_source/service: Added `auto_add_responding_team` attribute to service ([#117](https://github.com/firehydrant/terraform-provider-firehydrant/pull/117))
 * data_source/services: Added `auto_add_responding_team` attribute to service ([#117](https://github.com/firehydrant/terraform-provider-firehydrant/pull/117))
 * resource/service: Added `external_resources` attribute to service ([#123](https://github.com/firehydrant/terraform-provider-firehydrant/pull/123))
+* resource/team: Add the ability to attach memberships to teams ([#116](https://github.com/firehydrant/terraform-provider-firehydrant/pull/116))
 
 ## 0.3.1
 
