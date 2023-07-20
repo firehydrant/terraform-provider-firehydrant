@@ -80,6 +80,23 @@ func resourceService() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"external_resources": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						// Required
+						"remote_id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"connection_type": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -124,6 +141,16 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 	attributes["links"] = links
+
+	// Process any attributes that could be nil
+	ers := make([]map[string]interface{}, len(serviceResponse.ExternalResources))
+	for index, currentER := range serviceResponse.ExternalResources {
+		ers[index] = map[string]interface{}{
+			"remote_id":       currentER.RemoteID,
+			"connection_type": currentER.ConnectionType,
+		}
+	}
+	attributes["external_resources"] = ers
 
 	var ownerID string
 	if serviceResponse.Owner != nil {
@@ -178,6 +205,16 @@ func createResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	teamIDs := d.Get("team_ids").(*schema.Set).List()
 	for _, teamID := range teamIDs {
 		createRequest.Teams = append(createRequest.Teams, firehydrant.ServiceTeam{ID: teamID.(string)})
+	}
+
+	externalResources := d.Get("external_resources").(*schema.Set).List()
+	for _, currentER := range externalResources {
+		er := currentER.(map[string]interface{})
+
+		createRequest.ExternalResources = append(createRequest.ExternalResources, firehydrant.ExternalResource{
+			RemoteID:       er["remote_id"].(string),
+			ConnectionType: er["connection_type"].(string),
+		})
 	}
 
 	// Create the new service
@@ -236,6 +273,17 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	}
 	// This will force the update request to replace the teams with the ones we send
 	updateRequest.RemoveRemainingTeams = true
+
+	externalResources := d.Get("external_resources").(*schema.Set).List()
+	for _, currentER := range externalResources {
+		er := currentER.(map[string]interface{})
+
+		updateRequest.ExternalResources = append(updateRequest.ExternalResources, firehydrant.ExternalResource{
+			RemoteID:       er["remote_id"].(string),
+			ConnectionType: er["connection_type"].(string),
+		})
+	}
+	updateRequest.RemoveRemainingExternalResources = true
 
 	// Update the service
 	tflog.Debug(ctx, fmt.Sprintf("Update service: %s", d.Id()), map[string]interface{}{

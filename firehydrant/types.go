@@ -27,15 +27,22 @@ type PingResponse struct {
 // CreateServiceRequest is the payload for creating a service
 // URL: POST https://api.firehydrant.io/v1/services
 type CreateServiceRequest struct {
-	AlertOnAdd            bool              `json:"alert_on_add,omitempty"`
-	AutoAddRespondingTeam bool              `json:"auto_add_responding_team,omitempty"`
-	Description           string            `json:"description"`
-	Labels                map[string]string `json:"labels,omitempty"`
-	Links                 []ServiceLink     `json:"links,omitempty"`
-	Name                  string            `json:"name"`
-	Owner                 *ServiceTeam      `json:"owner,omitempty"`
-	ServiceTier           int               `json:"service_tier,int,omitempty"`
-	Teams                 []ServiceTeam     `json:"teams,omitempty"`
+	AlertOnAdd            bool               `json:"alert_on_add,omitempty"`
+	AutoAddRespondingTeam bool               `json:"auto_add_responding_team,omitempty"`
+	Description           string             `json:"description"`
+	Labels                map[string]string  `json:"labels,omitempty"`
+	Links                 []ServiceLink      `json:"links,omitempty"`
+	Name                  string             `json:"name"`
+	Owner                 *ServiceTeam       `json:"owner,omitempty"`
+	ServiceTier           int                `json:"service_tier,int,omitempty"`
+	Teams                 []ServiceTeam      `json:"teams,omitempty"`
+	ExternalResources     []ExternalResource `json:"external_resources,omitempty"`
+}
+
+// ExternalResource is a nested object to link services to things like PagerDuty services
+type ExternalResource struct {
+	RemoteID       string `json:"remote_id"`
+	ConnectionType string `json:"connection_type,omitempty"`
 }
 
 // RunbookTeam represents a team when creating a runbook
@@ -70,33 +77,36 @@ type ServiceLink struct {
 // UpdateServiceRequest is the payload for updating a service
 // URL: PATCH https://api.firehydrant.io/v1/services/{id}
 type UpdateServiceRequest struct {
-	AlertOnAdd            bool              `json:"alert_on_add"`
-	AutoAddRespondingTeam bool              `json:"auto_add_responding_team"`
-	Description           string            `json:"description"`
-	Labels                map[string]string `json:"labels"`
-	Links                 []ServiceLink     `json:"links"`
-	Name                  string            `json:"name,omitempty"`
-	Owner                 *ServiceTeam      `json:"owner"`
-	RemoveOwner           bool              `json:"remove_owner,omitempty"`
-	RemoveRemainingTeams  bool              `json:"remove_remaining_teams,omitempty"`
-	ServiceTier           int               `json:"service_tier,int"`
-	Teams                 []ServiceTeam     `json:"teams"`
+	AlertOnAdd                       bool               `json:"alert_on_add"`
+	AutoAddRespondingTeam            bool               `json:"auto_add_responding_team"`
+	Description                      string             `json:"description"`
+	Labels                           map[string]string  `json:"labels"`
+	Links                            []ServiceLink      `json:"links"`
+	Name                             string             `json:"name,omitempty"`
+	Owner                            *ServiceTeam       `json:"owner"`
+	RemoveOwner                      bool               `json:"remove_owner,omitempty"`
+	RemoveRemainingTeams             bool               `json:"remove_remaining_teams,omitempty"`
+	RemoveRemainingExternalResources bool               `json:"remove_remaining_external_resources,omitempty"`
+	ServiceTier                      int                `json:"service_tier,int"`
+	Teams                            []ServiceTeam      `json:"teams"`
+	ExternalResources                []ExternalResource `json:"external_resources,omitempty"`
 }
 
 // ServiceResponse is the payload for retrieving a service
 // URL: GET https://api.firehydrant.io/v1/services/{id}
 type ServiceResponse struct {
-	ID                    string            `json:"id"`
-	AlertOnAdd            bool              `json:"alert_on_add"`
-	AutoAddRespondingTeam bool              `json:"auto_add_responding_team"`
-	Description           string            `json:"description"`
-	Labels                map[string]string `json:"labels"`
-	Links                 []ServiceLink     `json:"links"`
-	Name                  string            `json:"name"`
-	Owner                 *ServiceTeam      `json:"owner"`
-	ServiceTier           int               `json:"service_tier"`
-	Slug                  string            `json:"slug"`
-	Teams                 []ServiceTeam     `json:"teams"`
+	ID                    string             `json:"id"`
+	AlertOnAdd            bool               `json:"alert_on_add"`
+	AutoAddRespondingTeam bool               `json:"auto_add_responding_team"`
+	Description           string             `json:"description"`
+	Labels                map[string]string  `json:"labels"`
+	Links                 []ServiceLink      `json:"links"`
+	Name                  string             `json:"name"`
+	Owner                 *ServiceTeam       `json:"owner"`
+	ServiceTier           int                `json:"service_tier"`
+	Slug                  string             `json:"slug"`
+	Teams                 []ServiceTeam      `json:"teams"`
+	ExternalResources     []ExternalResource `json:"external_resources"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
