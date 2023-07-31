@@ -69,7 +69,12 @@ type Client interface {
 	Services() ServicesClient
 	Severities() SeveritiesClient
 	TaskLists() TaskListsClient
-	Teams() TeamsClient
+
+	// Teams
+	GetTeam(ctx context.Context, id string) (*TeamResponse, error)
+	CreateTeam(ctx context.Context, req CreateTeamRequest) (*TeamResponse, error)
+	UpdateTeam(ctx context.Context, id string, req UpdateTeamRequest) (*TeamResponse, error)
+	DeleteTeam(ctx context.Context, id string) error
 
 	// Users
 	GetUsers(ctx context.Context, params GetUserParams) (*UserResponse, error)
@@ -190,9 +195,21 @@ func (c *APIClient) TaskLists() TaskListsClient {
 	return &RESTTaskListsClient{client: c}
 }
 
-// Teams returns a TeamsClient interface for interacting with teams in FireHydrant
-func (c *APIClient) Teams() TeamsClient {
-	return &RESTTeamsClient{client: c}
+// GetTeam retrieves a team from FireHydrant
+func (c *APIClient) GetTeam(ctx context.Context, id string) (*TeamResponse, error) {
+	teamResponse := &TeamResponse{}
+	apiError := &APIError{}
+	response, err := c.client().Get("teams/"+id).Receive(teamResponse, apiError)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get team")
+	}
+
+	err = checkResponseStatusCode(response, apiError)
+	if err != nil {
+		return nil, err
+	}
+
+	return teamResponse, nil
 }
 
 // GetUsers gets matching users in FireHydrant
@@ -227,4 +244,54 @@ func (c *APIClient) GetSchedules(ctx context.Context, params GetScheduleParams) 
 	}
 
 	return scheduleResponse, nil
+}
+
+// CreateTeam creates a team in FireHydrant
+func (c *APIClient) CreateTeam(ctx context.Context, req CreateTeamRequest) (*TeamResponse, error) {
+	teamResponse := &TeamResponse{}
+	apiError := &APIError{}
+	response, err := c.client().Post("teams").BodyJSON(&req).Receive(teamResponse, apiError)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not create team")
+	}
+
+	err = checkResponseStatusCode(response, apiError)
+	if err != nil {
+		return nil, err
+	}
+
+	return teamResponse, nil
+}
+
+// UpdateTeam updates a team in FireHydrant
+func (c *APIClient) UpdateTeam(ctx context.Context, id string, req UpdateTeamRequest) (*TeamResponse, error) {
+	teamResponse := &TeamResponse{}
+	apiError := &APIError{}
+	response, err := c.client().Patch("teams/"+id).BodyJSON(&req).Receive(teamResponse, apiError)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not update team")
+	}
+
+	err = checkResponseStatusCode(response, apiError)
+	if err != nil {
+		return nil, err
+	}
+
+	return teamResponse, nil
+}
+
+// DeleteTeam deletes a team from FireHydrant
+func (c *APIClient) DeleteTeam(ctx context.Context, id string) error {
+	apiError := &APIError{}
+	response, err := c.client().Delete("teams/"+id).Receive(nil, apiError)
+	if err != nil {
+		return errors.Wrap(err, "could not delete team")
+	}
+
+	err = checkResponseStatusCode(response, apiError)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
