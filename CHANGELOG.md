@@ -1,10 +1,11 @@
 ## 0.3.4 (Unreleased)
 
+* New Data Source: `firehydrant_team` ([#121](https://github.com/firehydrant/terraform-provider-firehydrant/pull/121))
+* New Data Source: `firehydrant_teams` ([#121](https://github.com/firehydrant/terraform-provider-firehydrant/pull/121))
+
 ## 0.3.3
 
 * Bump golang from 1.16 to 1.18
-* New Data Source: `firehydrant_team` ([#121](https://github.com/firehydrant/terraform-provider-firehydrant/pull/121))
-* New Data Source: `firehydrant_teams` ([#121](https://github.com/firehydrant/terraform-provider-firehydrant/pull/121))
 * resource/service: Added `external_resources` attribute to service ([#123](https://github.com/firehydrant/terraform-provider-firehydrant/pull/123))
 
 ## 0.3.2

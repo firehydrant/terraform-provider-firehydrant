@@ -2,13 +2,51 @@ package provider
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
+
+func TestAccTeamsDataSource_QueryMatch(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.HasPrefix(r.URL.Path, "/ping") && !strings.HasPrefix(r.URL.Path, "/teams") {
+			t.Errorf("Expected to request '/ping' or '/teams', got: %s", r.URL.Path)
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"data":[{"id":"123","name":"Test team 1", "description": "a description", "slug": "test-team-1"},{"id":"234","name":"Test team 2", "description": "a description", "slug": "test-team-2"}],"pagination":{"count":2,"page":1,"items":20,"pages":1,"last":2,"prev":null,"next":null}}`))
+	}))
+
+	defer server.Close()
+
+	orig := os.Getenv("FIREHYDRANT_BASE_URL")
+	os.Setenv("FIREHYDRANT_BASE_URL", server.URL)
+	t.Cleanup(func() { os.Setenv("FIREHYDRANT_BASE_URL", orig) })
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccTeamsDataSourceConfig_Query(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.firehydrant_teams.test_teams", "teams.#"),
+					resource.TestCheckResourceAttr("data.firehydrant_teams.test_teams", "teams.0.id", "123"),
+					resource.TestCheckResourceAttr("data.firehydrant_teams.test_teams", "teams.0.name", "Test team 1"),
+					resource.TestCheckResourceAttr("data.firehydrant_teams.test_teams", "teams.1.id", "234"),
+					resource.TestCheckResourceAttr("data.firehydrant_teams.test_teams", "teams.1.name", "Test team 2"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccTeamsDataSource_basic(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -56,6 +94,13 @@ func testAccCheckTeamsSet(name string) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func testAccTeamsDataSourceConfig_Query() string {
+	return `
+data "firehydrant_teams" "test_teams" {
+	query = "Test team"
+}`
 }
 
 func testAccTeamsDataSourceConfig_basic(rName string) string {
