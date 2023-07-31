@@ -140,7 +140,7 @@ func testAccCheckTeamResourceExistsWithAttributes_basic(resourceName string) res
 			return err
 		}
 
-		teamResponse, err := client.GetTeam(context.TODO(), teamResource.Primary.ID)
+		teamResponse, err := client.Teams().Get(context.TODO(), teamResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -173,7 +173,7 @@ func testAccCheckTeamResourceExistsWithAttributes_update(resourceName string) re
 			return err
 		}
 
-		teamResponse, err := client.GetTeam(context.TODO(), teamResource.Primary.ID)
+		teamResponse, err := client.Teams().Get(context.TODO(), teamResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -208,7 +208,7 @@ func testAccCheckTeamResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			_, err := client.GetTeam(context.TODO(), teamResource.Primary.ID)
+			_, err := client.Teams().Get(context.TODO(), teamResource.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("Team %s still exists", teamResource.Primary.ID)
 			}
