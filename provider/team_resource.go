@@ -66,7 +66,7 @@ func readResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, m 
 	tflog.Debug(ctx, fmt.Sprintf("Read team: %s", teamID), map[string]interface{}{
 		"id": teamID,
 	})
-	teamResponse, err := firehydrantAPIClient.Teams().Get(ctx, teamID)
+	teamResponse, err := firehydrantAPIClient.GetTeam(ctx, teamID)
 	if err != nil {
 		if errors.Is(err, firehydrant.ErrorNotFound) {
 			tflog.Debug(ctx, fmt.Sprintf("Team %s no longer exists", teamID), map[string]interface{}{
@@ -129,7 +129,7 @@ func createResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 	tflog.Debug(ctx, fmt.Sprintf("Create team: %s", createRequest.Name), map[string]interface{}{
 		"name": createRequest.Name,
 	})
-	teamResponse, err := firehydrantAPIClient.Teams().Create(ctx, createRequest)
+	teamResponse, err := firehydrantAPIClient.CreateTeam(ctx, createRequest)
 	if err != nil {
 		return diag.Errorf("Error creating team %s: %v", createRequest.Name, err)
 	}
@@ -166,7 +166,7 @@ func updateResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 	tflog.Debug(ctx, fmt.Sprintf("Update team: %s", d.Id()), map[string]interface{}{
 		"id": d.Id(),
 	})
-	_, err := firehydrantAPIClient.Teams().Update(ctx, d.Id(), updateRequest)
+	_, err := firehydrantAPIClient.UpdateTeam(ctx, d.Id(), updateRequest)
 	if err != nil {
 		return diag.Errorf("Error updating team %s: %v", d.Id(), err)
 	}
@@ -184,7 +184,7 @@ func deleteResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 	tflog.Debug(ctx, fmt.Sprintf("Delete team: %s", teamID), map[string]interface{}{
 		"id": teamID,
 	})
-	err := firehydrantAPIClient.Teams().Archive(ctx, teamID)
+	err := firehydrantAPIClient.DeleteTeam(ctx, teamID)
 	if err != nil {
 		if errors.Is(err, firehydrant.ErrorNotFound) {
 			return nil
