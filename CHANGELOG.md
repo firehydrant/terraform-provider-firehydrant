@@ -8,7 +8,7 @@
 * Bump golang from 1.16 to 1.18
 * resource/service: Added `external_resources` attribute to service ([#123](https://github.com/firehydrant/terraform-provider-firehydrant/pull/123))
 
-## 0.3.2 
+## 0.3.2
 
 ENHANCEMENTS:
 
