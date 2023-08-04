@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
@@ -77,7 +79,7 @@ func dataFireHydrantTeams(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.Errorf("Error setting teams: %v", err)
 	}
 
-	d.SetId("does-not-matter")
+	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 
 	return diag.Diagnostics{}
 }
