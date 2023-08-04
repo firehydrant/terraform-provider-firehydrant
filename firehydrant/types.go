@@ -200,6 +200,12 @@ type TeamResponse struct {
 	UpdatedAt     time.Time            `json:"updated_at"`
 }
 
+// TeamsResponse is the payload for retrieving a list of teams
+type TeamsResponse struct {
+	Teams      []TeamResponse `json:"data"`
+	Pagination *Pagination    `json:"pagination,omitempty"`
+}
+
 // MembershipResponse represents the response coming back from teams
 // for membership
 type MembershipResponse struct {
@@ -214,6 +220,12 @@ type Membership struct {
 	IncidentRoleId string `json:"incident_role_id,omitempty"`
 	ScheduleId     string `json:"schedule_id,omitempty"`
 	UserId         string `json:"user_id,omitempty"`
+}
+
+// TeamQuery is the query used to search for teams
+type TeamQuery struct {
+	Query string `url:"query,omitempty"`
+	Page  int    `url:"page,omitempty"`
 }
 
 // CreateTeamRequest is the payload for creating a service
@@ -235,4 +247,14 @@ type UpdateTeamRequest struct {
 	Name        string       `json:"name"`
 	Description string       `json:"description"`
 	Memberships []Membership `json:"memberships,omitempty"`
+}
+
+type Pagination struct {
+	Count int `json:"count"`
+	Page  int `json:"page"`
+	Items int `json:"items"`
+	Pages int `json:"pages"`
+	Last  int `json:"last"`
+	Prev  int `json:"prev,omitempty"`
+	Next  int `json:"next,omitempty"`
 }
