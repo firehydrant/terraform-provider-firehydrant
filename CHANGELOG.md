@@ -1,4 +1,6 @@
-## 0.3.4 (Unreleased)
+## 0.3.5 (Unreleased)
+
+## 0.3.4
 
 * New Data Source: `firehydrant_team` ([#121](https://github.com/firehydrant/terraform-provider-firehydrant/pull/121))
 * New Data Source: `firehydrant_teams` ([#121](https://github.com/firehydrant/terraform-provider-firehydrant/pull/121))
