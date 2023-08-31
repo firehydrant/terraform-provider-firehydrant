@@ -8,9 +8,19 @@ subcategory: "Runbooks"
 FireHydrant runbooks allow you to configure and automate your incident response process by defining a workflow
 to be followed when an incident occurs. Runbooks actually initiate actions that are fundamental steps to
 resolving an incident. Such actions might be creating a Slack channel, starting a Zoom meeting, or opening
-a Jira ticket. These actions are defined as steps in runbooks and each type of step requires different 
-configuration. FireHydrant has a number of integrations, each with different possible steps you can add 
-to your runbook. 
+a Jira ticket. These actions are defined as steps in runbooks and each type of step requires different
+configuration. FireHydrant has a number of integrations, each with different possible steps you can add
+to your runbook.
+
+## Attachment Rule
+
+To have a runbook automatically attach, set `attachment_rule` to an empty JSON chunk.
+
+```
+attachment_rule = jsonencode({})
+```
+
+Explicitly null values will assume the provider default, which is manual attachment.
 
 ## Step Configuration by Integration
 
