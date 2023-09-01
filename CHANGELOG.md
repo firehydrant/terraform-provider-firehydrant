@@ -1,5 +1,7 @@
 ## 0.3.5 (Unreleased)
 
+* Use timestamps for data source IDs
+
 ## 0.3.4
 
 * New Data Source: `firehydrant_team` ([#121](https://github.com/firehydrant/terraform-provider-firehydrant/pull/121))
