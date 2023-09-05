@@ -19,6 +19,14 @@ attachment attributes endpoint.
 https://api.firehydrant.io/v1/fh-attributes/data_bags/system-runbook-attachment-attributes
 ```
 
+To have a runbook automatically attach, set `attachment_rule` to an empty JSON chunk.
+
+```
+attachment_rule = jsonencode({})
+```
+
+Explicitly null values will assume the provider default, which is manual attachment.
+
 In the example payload below you can see that we have a list of attributes that can be selected and we can see
 the `opcode` or operators that can be used for these attributes. Given these operators, we can infer that we can
 either have a condition where the Slack channel does or does not exist.

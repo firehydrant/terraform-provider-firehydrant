@@ -12,16 +12,6 @@ a Jira ticket. These actions are defined as steps in runbooks and each type of s
 configuration. FireHydrant has a number of integrations, each with different possible steps you can add
 to your runbook.
 
-## Attachment Rule
-
-To have a runbook automatically attach, set `attachment_rule` to an empty JSON chunk.
-
-```
-attachment_rule = jsonencode({})
-```
-
-Explicitly null values will assume the provider default, which is manual attachment.
-
 ## Step Configuration by Integration
 
 * [Confluence Cloud](./runbooks_steps_confluence_cloud.md)

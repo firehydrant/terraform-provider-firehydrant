@@ -1,6 +1,9 @@
-## 0.3.5 (Unreleased)
+## 0.3.6 (Unreleased)
+
+## 0.3.5
 
 * Use timestamps for data source IDs
+* Better document how to have runbooks automatically attach
 
 ## 0.3.4
 
