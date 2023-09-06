@@ -11,12 +11,8 @@ import (
 )
 
 const (
-	// MajorVersion is the major version
-	MajorVersion = 0
-	// MinorVersion is the minor version
-	MinorVersion = 3
-	// PatchVersion is the patch version
-	PatchVersion = 6
+	// Version is the semver of this provider
+	Version = "0.3.6"
 
 	// UserAgentPrefix is the prefix of the User-Agent header that all terraform REST calls perform
 	UserAgentPrefix = "firehydrant-terraform-provider"
@@ -37,9 +33,6 @@ func checkResponseStatusCode(response *http.Response, apiError *APIError) error 
 		return fmt.Errorf("%d request failed with error\n%s", code, apiError)
 	}
 }
-
-// Version is the semver of this provider
-var Version = fmt.Sprintf("%d.%d.%d", MajorVersion, MinorVersion, PatchVersion)
 
 // APIClient is the client that accesses all of the api.firehydrant.io resources
 type APIClient struct {
