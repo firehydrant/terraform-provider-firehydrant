@@ -229,6 +229,9 @@ func testAccFunctionalityResourceConfig_basic(rName string) string {
 	return fmt.Sprintf(`
 resource "firehydrant_functionality" "test_functionality" {
   name = "test-functionality-%s"
+  labels = {
+    test1 = "test-label1-foo",
+  }
 }`, rName)
 }
 
@@ -245,6 +248,9 @@ resource "firehydrant_service" "test_service2" {
 resource "firehydrant_functionality" "test_functionality" {
   name        = "test-functionality-%s"
   description = "test-description-%s"
+  labels = {
+    test1 = "test-label1-foo",
+  }
 
   service_ids = [
     firehydrant_service.test_service1.id,
