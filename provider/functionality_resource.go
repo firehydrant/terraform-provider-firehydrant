@@ -40,6 +40,10 @@ func resourceFunctionality() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"labels": {
+				Type:     schema.TypeMap,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -69,6 +73,7 @@ func readResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resourc
 	attributes := map[string]interface{}{
 		"name":        functionalityResponse.Name,
 		"description": functionalityResponse.Description,
+		"labels":      functionalityResponse.Labels,
 	}
 
 	serviceIDs := make([]string, 0)
@@ -95,6 +100,7 @@ func createResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 	createRequest := firehydrant.CreateFunctionalityRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
+		Labels:      convertStringMap(d.Get("labels").(map[string]interface{})),
 	}
 
 	// Process any optional attributes and add to the create request if necessary
@@ -129,6 +135,7 @@ func updateResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 	updateRequest := firehydrant.UpdateFunctionalityRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
+		Labels:      convertStringMap(d.Get("labels").(map[string]interface{})),
 	}
 
 	// Process any optional attributes and add to the update request if necessary

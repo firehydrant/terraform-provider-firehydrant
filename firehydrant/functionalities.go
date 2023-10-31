@@ -2,7 +2,6 @@ package firehydrant
 
 import (
 	"context"
-	"time"
 
 	"github.com/dghubble/sling"
 	"github.com/pkg/errors"
@@ -27,23 +26,6 @@ func (c *RESTFunctionalitiesClient) restClient() *sling.Sling {
 	return c.client.client()
 }
 
-// FunctionalityResponse is the payload for a single environment
-// URL: GET https://api.firehydrant.io/v1/functionalities/{id}
-type FunctionalityResponse struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	Slug        string                 `json:"slug"`
-	Services    []FunctionalityService `json:"services"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt   time.Time              `json:"updated_at"`
-}
-
-// FunctionalityService represents a service when creating a functionality
-type FunctionalityService struct {
-	ID string `json:"id"`
-}
-
 // Get retrieves a functionality from FireHydrant
 func (c *RESTFunctionalitiesClient) Get(ctx context.Context, id string) (*FunctionalityResponse, error) {
 	funcResponse := &FunctionalityResponse{}
@@ -61,14 +43,6 @@ func (c *RESTFunctionalitiesClient) Get(ctx context.Context, id string) (*Functi
 	return funcResponse, nil
 }
 
-// CreateFunctionalityRequest is the payload for creating a service
-// URL: POST https://api.firehydrant.io/v1/services
-type CreateFunctionalityRequest struct {
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	Services    []FunctionalityService `json:"services,omitempty"`
-}
-
 // Create creates a functionality in FireHydrant
 func (c *RESTFunctionalitiesClient) Create(ctx context.Context, req CreateFunctionalityRequest) (*FunctionalityResponse, error) {
 	funcResponse := &FunctionalityResponse{}
@@ -84,15 +58,6 @@ func (c *RESTFunctionalitiesClient) Create(ctx context.Context, req CreateFuncti
 	}
 
 	return funcResponse, nil
-}
-
-// UpdateFunctionalityRequest is the payload for updating a environment
-// URL: PATCH https://api.firehydrant.io/v1/environments/{id}
-type UpdateFunctionalityRequest struct {
-	Name                    string                 `json:"name,omitempty"`
-	Description             string                 `json:"description"`
-	RemoveRemainingServices bool                   `json:"remove_remaining_services"`
-	Services                []FunctionalityService `json:"services"`
 }
 
 // Update updates a functionality in FireHydrant
