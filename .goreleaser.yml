@@ -14,7 +14,7 @@ builds:
   flags:
     - -trimpath
   ldflags:
-    - '-s -w -X provider.Version={{.Version}} -X provider.Commit={{.Commit}}'
+    - '-s -w -X github.com/firehydrant/terraform-provider-firehydrant/firehydrant.Version={{.Version}}'
   goos:
     - freebsd
     - windows

@@ -1,4 +1,8 @@
-## 0.3.6 (Unreleased)
+## 0.3.7 (Unreleased)
+
+## 0.3.6
+
+* Fix client versioning
 
 ## 0.3.5
 
