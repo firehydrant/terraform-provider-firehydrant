@@ -21,7 +21,7 @@ func TestAccPriorityDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_priority.test_priority", "description", "test-description"),
 					resource.TestCheckResourceAttr(
-						"data.firehydrant_priority.test_priority", "default", "true"),
+						"data.firehydrant_priority.test_priority", "default", "false"),
 				),
 			},
 		},
@@ -33,7 +33,7 @@ func testAccPriorityDataSourceConfig_basic() string {
 resource "firehydrant_priority" "test_priority" {
   slug        = "TESTPRIORITY"
   description = "test-description"
-  default     = true
+  default     = false
 }
 
 data "firehydrant_priority" "test_priority" {
