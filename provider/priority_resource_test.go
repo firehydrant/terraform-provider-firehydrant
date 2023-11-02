@@ -68,7 +68,7 @@ func TestAccPriorityResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_priority.test_priority", "description", fmt.Sprintf("test-description-%s", rSlugUpdated)),
 					resource.TestCheckResourceAttr(
-						"firehydrant_priority.test_priority", "default", "true"),
+						"firehydrant_priority.test_priority", "default", "false"),
 				),
 			},
 			{
@@ -258,7 +258,7 @@ func testAccPriorityResourceConfig_update(rSlug string) string {
 resource "firehydrant_priority" "test_priority" {
   slug        = "TESTPRIORITY%s"
   description = "test-description-%s"
-  default     = true
+  default     = false
 }`, rSlug, rSlug)
 }
 

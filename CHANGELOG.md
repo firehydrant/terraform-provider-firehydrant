@@ -1,5 +1,7 @@
 ## 0.3.7 (Unreleased)
 
+* Add labels to functionalities
+
 ## 0.3.6
 
 * Fix client versioning

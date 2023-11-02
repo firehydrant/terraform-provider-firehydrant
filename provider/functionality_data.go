@@ -30,6 +30,10 @@ func dataSourceFunctionality() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"labels": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
 			"service_ids": {
 				Type:     schema.TypeSet,
 				Computed: true,
@@ -59,6 +63,7 @@ func dataFireHydrantFunctionality(ctx context.Context, d *schema.ResourceData, m
 	attributes := map[string]interface{}{
 		"name":        functionalityResponse.Name,
 		"description": functionalityResponse.Description,
+		"labels":      functionalityResponse.Labels,
 	}
 
 	serviceIDs := make([]string, 0)

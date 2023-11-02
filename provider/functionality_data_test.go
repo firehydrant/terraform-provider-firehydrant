@@ -70,6 +70,9 @@ resource "firehydrant_functionality" "test_functionality" {
   name = "test-functionality-%s"
   description = "test-description-%s"
   service_ids = [firehydrant_service.test_service.id]
+  labels = {
+    test1 = "test-label1-foo",
+  }
 }
 
 data "firehydrant_functionality" "test_functionality" {
