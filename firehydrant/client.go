@@ -69,6 +69,11 @@ type Client interface {
 
 	// Schedules
 	GetSchedules(ctx context.Context, params GetScheduleParams) (*ScheduleResponse, error)
+
+	// Signals
+	SignalsRules() SignalsRules
+	OnCallSchedules() OnCallSchedules
+	EscalationPolicies() EscalationPolicies
 }
 
 // OptFunc is a function that sets a setting on a client
@@ -186,6 +191,19 @@ func (c *APIClient) TaskLists() TaskListsClient {
 // Teams returns a TeamsClient interface for interacting with teams in FireHydrant
 func (c *APIClient) Teams() TeamsClient {
 	return &RESTTeamsClient{client: c}
+}
+
+// SignalsRules returns a SignalsRules interface for interacting with signals rules in FireHydrant
+func (c *APIClient) SignalsRules() SignalsRules {
+	return &RESTSignalsRulesClient{client: c}
+}
+
+func (c *APIClient) OnCallSchedules() OnCallSchedules {
+	return &RESTOnCallSchedulesClient{client: c}
+}
+
+func (c *APIClient) EscalationPolicies() EscalationPolicies {
+	return &RESTEscalationPoliciesClient{client: c}
 }
 
 // GetUsers gets matching users in FireHydrant
