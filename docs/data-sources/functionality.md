@@ -32,4 +32,5 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - The ID of the functionality.
 * `description` - A description of the functionality.
 * `name` - The name of the functionality.
+* `owner_id` - (String, Read-only) The ID of the team that owns this functionality.
 * `service_ids` - A set of IDs of the services this functionality is associated with.

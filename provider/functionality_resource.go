@@ -40,6 +40,10 @@ func resourceFunctionality() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"owner_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
@@ -74,7 +78,15 @@ func readResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resourc
 		"name":        functionalityResponse.Name,
 		"description": functionalityResponse.Description,
 		"labels":      functionalityResponse.Labels,
+		"Owner": functionalityResponse.Owner,
 	}
+	var ownerID string
+
+    if functionalityResponse.Owner != nil {
+        ownerID = functionalityResponse.Owner.ID
+    }
+
+    attributes["owner_id"] = ownerID
 
 	serviceIDs := make([]string, 0)
 	for _, service := range functionalityResponse.Services {
@@ -111,6 +123,9 @@ func createResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 		})
 	}
 
+	if ownerID, ok := d.GetOk("owner_id"); ok && ownerID.(string) != "" {
+        createRequest.Owner = &firehydrant.FunctionalityTeam{ID: ownerID.(string)}
+    }
 	// Create the new functionality
 	tflog.Debug(ctx, fmt.Sprintf("Create functionality: %s", createRequest.Name), map[string]interface{}{
 		"name": createRequest.Name,
@@ -145,13 +160,21 @@ func updateResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 			ID: serviceID.(string),
 		})
 	}
+
 	// Otherwise, neither attribute is set, so updatedServiceIDs remains empty,
 	// which will allow us to remove services from a functionality if either attribute
 	// has been removed from the config
 
 	// This will force the update request to replace the services with the ones we send
 	updateRequest.RemoveRemainingServices = true
+	
+	ownerID, ownerIDSet := d.GetOk("owner_id")
 
+    if ownerIDSet {
+        updateRequest.Owner = &firehydrant.FunctionalityTeam{ID: ownerID.(string)}
+    } else {
+        updateRequest.RemoveOwner = true
+    }
 	// Update the functionality
 	tflog.Debug(ctx, fmt.Sprintf("Update functionality: %s", d.Id()), map[string]interface{}{
 		"id": d.Id(),

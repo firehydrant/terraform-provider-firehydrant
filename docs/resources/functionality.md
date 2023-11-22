@@ -37,6 +37,7 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the functionality.
 * `description` - (Optional) A description of the functionality.
+* `owner_id` - (String, Read-only) The ID of the team that owns this functionality.
 * `service_ids` - (Optional) A set of IDs of the services this functionality is associated with.
 
 **Deprecated** The `services` block supports:
