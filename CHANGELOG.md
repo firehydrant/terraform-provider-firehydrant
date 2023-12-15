@@ -1,6 +1,9 @@
-## 0.3.7 (Unreleased)
+## 0.4.0
 
 * Add labels to functionalities
+* New Resource: `firehydrant_on_call_schedule` ([140](https://github.com/firehydrant/terraform-provider-firehydrant/pull/140)
+* New Resource: `firehydrant_escalation_policy` ([140](https://github.com/firehydrant/terraform-provider-firehydrant/pull/140)
+* New Resource: `firehydrant_signal_rule` ([140](https://github.com/firehydrant/terraform-provider-firehydrant/pull/140)
 
 ## 0.3.6
 
