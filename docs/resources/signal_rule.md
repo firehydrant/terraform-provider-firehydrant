@@ -1,0 +1,50 @@
+---
+page_title: "FireHydrant Resource: firehydrant_signal_rule"
+subcategory: "Signals"
+---
+
+# firehydrant_signal_rule Resource
+
+FireHydrant signal rules are used to convert incoming events into outbound alerts sent to a specified destination.
+
+## Example Usage
+
+Basic usage:
+```hcl
+data "firehydrant_user" "my-user" {
+  email = "example@firehydrant.io"
+}
+
+resource "firehydrant_team" "example-team" {
+  name        = "example-team"
+  description = "This is an example team"
+
+  memberships {
+    user_id          = data.firehydrant_user.my-user.id
+  }
+}
+
+resource "firehydrant_signal_rule" "datadog_source" {
+  team_id = firehydrant_team.example-team.id
+  name = "Datadog Source"
+  expression = "signal.summary.contains(\"[Triggered]\")"
+  target_type = "EscalationPolicy"
+  target_id = firehydrant_escalation_policy.default_policy.id
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+* `team_id` - (Required) The ID of the team to associate the signal rule with.
+* `name` - (Required) The name of the signal rule.
+* `expression` - (Required) The expression to evaluate incoming events against.
+* `target_type` - (Required) The type of resource to send alerts to. Valid values are `EscalationPolicy`, `OnCallSchedule`, and `User`.
+* `target_id` - (Required) The ID of the resource to send alerts to.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - The ID of the signal rule.

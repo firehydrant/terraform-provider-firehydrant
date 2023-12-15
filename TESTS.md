@@ -7,13 +7,13 @@ may require access to the Enterprise tier of FireHydrant to run successfully.
 
 1. `FIREHYDRANT_API_KEY` - (Required) A [bot token](https://support.firehydrant.com/hc/en-us/articles/360057722832-Creating-a-Bot-User)
    to use for testing in FireHydrant.
-2. `FIREHYDRANT_BASE_URL` - (Optional) The FireHydrant API URL to connect to for testing. 
+2. `FIREHYDRANT_BASE_URL` - (Optional) The FireHydrant API URL to connect to for testing.
    Defaults to `https://api.firehydrant.io/v1/`
 
-You can set your environment variables using whatever method you'd like. 
+You can set your environment variables using whatever method you'd like.
 The following are instructions for setting up environment variables using [envchain](https://github.com/sorah/envchain).
 
-1. Make sure you have envchain installed. 
+1. Make sure you have envchain installed.
    [Instructions for this can be found in the envchain README](https://github.com/sorah/envchain#installation).
 2. Pick a namespace for storing your environment variables. I suggest `terraform-provider-firehydrant`.
 3. For each environment variable you need to set, run the following command:
