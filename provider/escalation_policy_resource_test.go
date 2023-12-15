@@ -38,12 +38,12 @@ func TestAccEscalationPolicyResource_basic(t *testing.T) {
 
 func testAccEscalationPolicyConfig_basic(rName string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "team_team" {
+	resource "firehydrant_team" "test-team" {
 		name = "test-team-%s"
 	}
 
 	resource "firehydrant_on_call_schedule" "test_on_call_schedule" {
-		team_id = firehydrant_team.team_team.id
+		team_id = firehydrant_team.test-team.id
 		name = "test-on-call-schedule-restrictions-%s"
 		time_zone = "America/New_York"
 
@@ -55,7 +55,7 @@ func testAccEscalationPolicyConfig_basic(rName string) string {
 	}
 
 	resource "firehydrant_escalation_policy" "test_escalation_policy" {
-		team_id = firehydrant_team.team_team.id
+		team_id = firehydrant_team.test-team.id
 		name = "test-escalation-policy-%s"
 		description = "test-description-%s"
 		repetitions = 1
