@@ -1,6 +1,17 @@
-## 0.3.7 (Unreleased)
+## 4.0.2 (Unreleased)
+
+N/A
+
+## 4.0.1
+
+BUG FIXES:
+
+* Fixes a bug where handoff steps in escalation policies were assigning to the incorrect schema and causing a panic.
+
+## 4.0.0
 
 * Add labels to functionalities
+* Add initial Signals resources for beta period
 
 ## 0.3.6
 
