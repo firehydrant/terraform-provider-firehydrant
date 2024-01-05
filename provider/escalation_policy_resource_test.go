@@ -68,6 +68,11 @@ func testAccEscalationPolicyConfig_basic(rName string) string {
 				id   = firehydrant_on_call_schedule.test_on_call_schedule.id
 			}
 		}
+
+		handoff_step {
+			target_type = "Team"
+			target_id   = firehydrant_team.test-team.id
+		}
 	}
 	`, rName, rName, rName, rName)
 }

@@ -43,8 +43,12 @@ type EscalationPolicyStepTarget struct {
 }
 
 type EscalationPolicyHandoffStep struct {
-	ID   string `json:"target_id"`
+	Target EscalationPolicyTarget `json:"target"`
+}
+
+type CreateEscalationPolicyHandoffStep struct {
 	Type string `json:"target_type"`
+	ID   string `json:"target_id"`
 }
 
 type EscalationPolicyStepWithTarget struct {
@@ -68,21 +72,21 @@ type EscalationPolicyStep struct {
 }
 
 type CreateEscalationPolicyRequest struct {
-	Name        string                       `json:"name"`
-	Description string                       `json:"description"`
-	Default     bool                         `json:"default"`
-	Repetitions int                          `json:"repetitions"`
-	Steps       []EscalationPolicyStep       `json:"steps"`
-	HandoffStep *EscalationPolicyHandoffStep `json:"handoff_step,omitempty"`
+	Name        string                             `json:"name"`
+	Description string                             `json:"description"`
+	Default     bool                               `json:"default"`
+	Repetitions int                                `json:"repetitions"`
+	Steps       []EscalationPolicyStep             `json:"steps"`
+	HandoffStep *CreateEscalationPolicyHandoffStep `json:"handoff_step,omitempty"`
 }
 
 type UpdateEscalationPolicyRequest struct {
-	Name        string                       `json:"name"`
-	Description string                       `json:"description"`
-	Default     bool                         `json:"default"`
-	Repetitions int                          `json:"repetitions"`
-	Steps       []EscalationPolicyStep       `json:"steps"`
-	HandoffStep *EscalationPolicyHandoffStep `json:"handoff_step"`
+	Name        string                             `json:"name"`
+	Description string                             `json:"description"`
+	Default     bool                               `json:"default"`
+	Repetitions int                                `json:"repetitions"`
+	Steps       []EscalationPolicyStep             `json:"steps"`
+	HandoffStep *CreateEscalationPolicyHandoffStep `json:"handoff_step"`
 }
 
 func (c *RESTEscalationPoliciesClient) restClient() *sling.Sling {

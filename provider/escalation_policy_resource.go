@@ -141,8 +141,8 @@ func readResourceFireHydrantEscalationPolicy(ctx context.Context, d *schema.Reso
 	// Set the handoff step
 	if escalationPolicy.HandoffStep != nil {
 		handoffStepMap := map[string]interface{}{
-			"target_type": escalationPolicy.HandoffStep.Type,
-			"target_id":   escalationPolicy.HandoffStep.ID,
+			"target_type": escalationPolicy.HandoffStep.Target.Type,
+			"target_id":   escalationPolicy.HandoffStep.Target.ID,
 		}
 
 		d.Set("handoff_step", []map[string]interface{}{handoffStepMap})
@@ -226,16 +226,16 @@ func deleteResourceFireHydrantEscalationPolicy(ctx context.Context, d *schema.Re
 	return nil
 }
 
-func getHandoffStepFromResourceData(d *schema.ResourceData) *firehydrant.EscalationPolicyHandoffStep {
+func getHandoffStepFromResourceData(d *schema.ResourceData) *firehydrant.CreateEscalationPolicyHandoffStep {
 	if v, ok := d.GetOk("handoff_step"); ok {
 		handoffStepList := v.([]interface{})
 
 		if len(handoffStepList) > 0 {
 			handoffStepMap := handoffStepList[0].(map[string]interface{})
 
-			handoffStep := &firehydrant.EscalationPolicyHandoffStep{
-				Type: handoffStepMap["type"].(string),
-				ID:   handoffStepMap["id"].(string),
+			handoffStep := &firehydrant.CreateEscalationPolicyHandoffStep{
+				Type: handoffStepMap["target_type"].(string),
+				ID:   handoffStepMap["target_id"].(string),
 			}
 
 			return handoffStep
