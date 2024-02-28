@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -144,6 +145,7 @@ func readResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceData,
 	attributes := map[string]interface{}{
 		"name":        runbookResponse.Name,
 		"description": runbookResponse.Description,
+		"restricted":  runbookResponse.Restricted,
 	}
 
 	if len(runbookResponse.AttachmentRule) > 0 {
@@ -211,6 +213,7 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	createRequest := firehydrant.CreateRunbookRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
+		Restricted:  d.Get("restricted").(bool),
 	}
 
 	// Process any optional attributes and add to the create request if necessary
@@ -292,6 +295,7 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	updateRequest := firehydrant.UpdateRunbookRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
+		Restricted:  d.Get("restricted").(bool),
 	}
 
 	// Process any optional attributes and add to the update request if necessary
