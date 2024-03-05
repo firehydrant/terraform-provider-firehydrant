@@ -112,6 +112,10 @@ func resourceRunbook() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"restricted": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"owner_id": {
 				Type:     schema.TypeString,
 				Optional: true,
