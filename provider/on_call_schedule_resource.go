@@ -35,10 +35,21 @@ func resourceOnCallSchedule() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"member_ids": {
+				Type:          schema.TypeList,
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Optional:      true, // will be required in the future once `members` has been removed.
+				ConflictsWith: []string{"members"},
+			},
 			"members": {
 				Type:     schema.TypeList,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
+				// Technically, I (wilsonehusin) don't think this ever worked because it would produce HTTP 400s.
+				// Documentation also always mentioned `member_ids` as the correct attribute to use.
+				// Leaving this here for now to prevent potential breaking changes.
+				Deprecated:    "Use member_ids to configure membership; members attribute will be removed in a future release.",
+				ConflictsWith: []string{"member_ids"},
 			},
 			"time_zone": {
 				Type:     schema.TypeString,
@@ -112,9 +123,15 @@ func createResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 		"team_id": teamID,
 	})
 
-	memberIds := make([]string, len(d.Get("members").([]interface{})))
-	for i, member := range d.Get("members").([]interface{}) {
-		memberIds[i] = member.(string)
+	inputMemberIDs := d.Get("member_ids").([]interface{})
+	if len(inputMemberIDs) == 0 {
+		inputMemberIDs = d.Get("members").([]interface{})
+	}
+	memberIDs := []string{}
+	for _, memberID := range inputMemberIDs {
+		if v, ok := memberID.(string); ok && v != "" {
+			memberIDs = append(memberIDs, v)
+		}
 	}
 
 	// Gather values from API response
@@ -127,7 +144,7 @@ func createResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 			HandoffTime: d.Get("strategy.0.handoff_time").(string),
 			HandoffDay:  d.Get("strategy.0.handoff_day").(string),
 		},
-		MemberIDs:    memberIds,
+		MemberIDs:    memberIDs,
 		Restrictions: oncallRestrictionsFromData(d),
 	}
 
@@ -169,9 +186,9 @@ func readResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Resour
 	}
 
 	// Gather values from API response
-	memberIds := make([]string, len(onCallSchedule.Members))
+	memberIDs := make([]string, len(onCallSchedule.Members))
 	for i, member := range onCallSchedule.Members {
-		memberIds[i] = member.ID
+		memberIDs[i] = member.ID
 	}
 
 	attributes := map[string]interface{}{
@@ -179,7 +196,7 @@ func readResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Resour
 		"description":  onCallSchedule.Description,
 		"time_zone":    onCallSchedule.TimeZone,
 		"strategy":     strategyToMap(onCallSchedule.Strategy),
-		"members":      memberIds,
+		"member_ids":   memberIDs,
 		"restrictions": restrictionsToData(onCallSchedule.Restrictions),
 	}
 
@@ -211,6 +228,23 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 	}
+
+	inputMemberIDs := d.Get("member_ids").([]interface{})
+	if len(inputMemberIDs) == 0 {
+		inputMemberIDs = d.Get("members").([]interface{})
+	}
+	memberIDs := []string{}
+	for _, memberID := range inputMemberIDs {
+		if v, ok := memberID.(string); ok && v != "" {
+			memberIDs = append(memberIDs, v)
+		}
+	}
+	onCallSchedule.MemberIDs = memberIDs
+
+	tflog.Debug(ctx, "Updating on-call schedule properties", map[string]interface{}{
+		"id":         id,
+		"properties": fmt.Sprintf("%+v", onCallSchedule),
+	})
 
 	// Update the on-call schedule
 	_, err := firehydrantAPIClient.OnCallSchedules().Update(ctx, teamID, id, onCallSchedule)

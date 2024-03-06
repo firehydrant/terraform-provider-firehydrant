@@ -57,8 +57,9 @@ type CreateOnCallScheduleRequest struct {
 }
 
 type UpdateOnCallScheduleRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	MemberIDs   []string `json:"member_ids,omitempty"`
 }
 
 type OnCallScheduleRestriction struct {
