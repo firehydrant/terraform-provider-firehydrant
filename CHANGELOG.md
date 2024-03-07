@@ -1,14 +1,20 @@
-## 4.0.2 (Unreleased)
+## Next (Unreleased)
 
 N/A
 
-## 4.0.1
+## 4.0.2
+
+BUG FIXES:
+
+* Resource `firehydrant_on_call_schedule` now handles `member_ids` correctly. Field `members` has been deprecated. ([#143](https://github.com/firehydrant/terraform-provider-firehydrant/pull/143))
+
+## 0.4.1
 
 BUG FIXES:
 
 * Fixes a bug where handoff steps in escalation policies were assigning to the incorrect schema and causing a panic.
 
-## 4.0.0
+## 0.4.0
 
 * Add labels to functionalities
 * Add initial Signals resources for beta period

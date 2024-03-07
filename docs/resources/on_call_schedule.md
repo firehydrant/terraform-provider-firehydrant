@@ -65,6 +65,7 @@ The following arguments are supported:
 * `description` - (Optional) A description for the on-call schedule.
 * `team_id` - (Required) The ID of the team that the on-call schedule belongs to.
 * `member_ids` - (Required) A list of user IDs that are on-call for the on-call schedule.
+* `members` - (Deprecated) use `member_ids` instead.
 * `time_zone` - (Required) The time zone that the on-call schedule is in.
 * `strategy` - (Required) A block to define the strategy for the on-call schedule.
 * `restrictions` - (Optional) A block to define a restriction for the on-call schedule.
