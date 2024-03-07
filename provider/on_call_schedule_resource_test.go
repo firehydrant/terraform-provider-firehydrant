@@ -4,12 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
@@ -136,5 +139,135 @@ func testAccCheckOnCallScheduleResourceDestroy() resource.TestCheckFunc {
 		}
 
 		return nil
+	}
+}
+
+func offlineOnCallScheduleMockServer() *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Write([]byte(`{
+  "id": "schedule-id",
+  "name": "A pleasant on-call schedule",
+  "description": "Managed by Terraform. Contact @platform-eng for changes.",
+  "members": [
+    {
+      "id": "member-1",
+      "name": "Frederick Graff"
+    }
+  ],
+  "team": {
+    "id": "team-1",
+    "name": "Philadelphia"
+  },
+  "time_zone": "America/New_York"
+}`))
+	}))
+}
+
+func TestOfflineOnCallScheduleReadMemberID(t *testing.T) {
+	ts := offlineOnCallScheduleMockServer()
+	defer ts.Close()
+
+	c, err := firehydrant.NewRestClient("test-token-very-authorized", firehydrant.WithBaseURL(ts.URL))
+	if err != nil {
+		t.Fatalf("Received error initializing API client: %s", err.Error())
+		return
+	}
+	r := schema.TestResourceDataRaw(t, resourceOnCallSchedule().Schema, map[string]interface{}{
+		"team_id":     "team-1",
+		"name":        "test-on-call-schedule",
+		"description": "test-description",
+		"time_zone":   "America/New_York",
+		"member_ids":  []interface{}{"member-1"},
+	})
+
+	d := readResourceFireHydrantOnCallSchedule(context.Background(), r, c)
+	if d.HasError() {
+		t.Fatalf("error reading on-call schedule: %v", d)
+	}
+
+	memberIDs := r.Get("member_ids").([]interface{})
+	if len(memberIDs) != 1 {
+		t.Fatalf("expected 1 member ID, got %d", len(memberIDs))
+	}
+
+	memberID, ok := memberIDs[0].(string)
+	if !ok {
+		t.Fatalf("expected member ID to be a string, got %T: %v", memberIDs[0], memberIDs[0])
+	}
+	if memberID != "member-1" {
+		t.Fatalf("expected member ID to be member-1, got %s", memberIDs[0].(string))
+	}
+}
+
+func TestOfflineOnCallScheduleCreate(t *testing.T) {
+	ts := offlineOnCallScheduleMockServer()
+	defer ts.Close()
+
+	c, err := firehydrant.NewRestClient("test-token-very-authorized", firehydrant.WithBaseURL(ts.URL))
+	if err != nil {
+		t.Fatalf("Received error initializing API client: %s", err.Error())
+		return
+	}
+	r := schema.TestResourceDataRaw(t, resourceOnCallSchedule().Schema, map[string]interface{}{
+		"team_id":     "team-1",
+		"name":        "test-on-call-schedule",
+		"description": "test-description",
+		"time_zone":   "America/New_York",
+		"member_ids":  []interface{}{"member-1"},
+	})
+
+	d := createResourceFireHydrantOnCallSchedule(context.Background(), r, c)
+	if d.HasError() {
+		t.Fatalf("error creating on-call schedule: %v", d)
+	}
+
+	memberIDs := r.Get("member_ids").([]interface{})
+	if len(memberIDs) != 1 {
+		t.Fatalf("expected 1 member ID, got %d", len(memberIDs))
+	}
+
+	memberID, ok := memberIDs[0].(string)
+	if !ok {
+		t.Fatalf("expected member ID to be a string, got %T: %v", memberIDs[0], memberIDs[0])
+	}
+	if memberID != "member-1" {
+		t.Fatalf("expected member ID to be member-1, got %s", memberIDs[0].(string))
+	}
+}
+
+// Deprecated, but ensure it still works until we officially remove support.
+func TestOfflineOnCallScheduleCreateDeprecated(t *testing.T) {
+	ts := offlineOnCallScheduleMockServer()
+	defer ts.Close()
+
+	c, err := firehydrant.NewRestClient("test-token-very-authorized", firehydrant.WithBaseURL(ts.URL))
+	if err != nil {
+		t.Fatalf("Received error initializing API client: %s", err.Error())
+		return
+	}
+	r := schema.TestResourceDataRaw(t, resourceOnCallSchedule().Schema, map[string]interface{}{
+		"team_id":     "team-1",
+		"name":        "test-on-call-schedule",
+		"description": "test-description",
+		"time_zone":   "America/New_York",
+		"members":     []interface{}{"member-1"},
+	})
+
+	d := createResourceFireHydrantOnCallSchedule(context.Background(), r, c)
+	if d.HasError() {
+		t.Fatalf("error creating on-call schedule: %v", d)
+	}
+
+	memberIDs := r.Get("member_ids").([]interface{})
+	if len(memberIDs) != 1 {
+		t.Fatalf("expected 1 member ID, got %d", len(memberIDs))
+	}
+
+	memberID, ok := memberIDs[0].(string)
+	if !ok {
+		t.Fatalf("expected member ID to be a string, got %T: %v", memberIDs[0], memberIDs[0])
+	}
+	if memberID != "member-1" {
+		t.Fatalf("expected member ID to be member-1, got %s", memberIDs[0].(string))
 	}
 }
