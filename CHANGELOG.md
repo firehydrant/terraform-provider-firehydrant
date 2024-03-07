@@ -2,7 +2,11 @@
 
 N/A
 
-## 4.0.2
+## 0.4.2
+
+ENHANCEMENTS:
+
+* Bump Go version to 1.22 ([#144](https://github.com/firehydrant/terraform-provider-firehydrant/pull/144))
 
 BUG FIXES:
 
