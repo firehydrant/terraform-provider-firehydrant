@@ -241,11 +241,6 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 	}
 	onCallSchedule.MemberIDs = memberIDs
 
-	tflog.Debug(ctx, "Updating on-call schedule properties", map[string]interface{}{
-		"id":         id,
-		"properties": fmt.Sprintf("%+v", onCallSchedule),
-	})
-
 	// Update the on-call schedule
 	_, err := firehydrantAPIClient.OnCallSchedules().Update(ctx, teamID, id, onCallSchedule)
 	if err != nil {
