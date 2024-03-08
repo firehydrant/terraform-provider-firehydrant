@@ -53,6 +53,11 @@ func resourceTeam() *schema.Resource {
 					},
 				},
 			},
+			"slug": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -82,6 +87,7 @@ func readResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, m 
 	attributes := map[string]interface{}{
 		"name":        teamResponse.Name,
 		"description": teamResponse.Description,
+		"slug":        teamResponse.Slug,
 	}
 
 	// Process any attributes that could be nil
@@ -112,6 +118,9 @@ func createResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 	createRequest := firehydrant.CreateTeamRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
+	}
+	if slug, ok := d.GetOk("slug"); ok {
+		createRequest.Slug = slug.(string)
 	}
 
 	// Process any optional attributes and add to the create request if necessary
@@ -149,6 +158,9 @@ func updateResourceFireHydrantTeam(ctx context.Context, d *schema.ResourceData, 
 	updateRequest := firehydrant.UpdateTeamRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
+	}
+	if slug, ok := d.GetOk("slug"); ok {
+		updateRequest.Slug = slug.(string)
 	}
 
 	// Process any optional attributes and add to the update request if necessary

@@ -233,6 +233,7 @@ type TeamQuery struct {
 type CreateTeamRequest struct {
 	Name        string       `json:"name"`
 	Description string       `json:"description"`
+	Slug        string       `json:"slug,omitempty"`
 	Memberships []Membership `json:"memberships,omitempty"`
 }
 
@@ -246,6 +247,7 @@ type TeamService struct {
 type UpdateTeamRequest struct {
 	Name        string       `json:"name"`
 	Description string       `json:"description"`
+	Slug        string       `json:"slug,omitempty"`
 	Memberships []Membership `json:"memberships,omitempty"`
 }
 
