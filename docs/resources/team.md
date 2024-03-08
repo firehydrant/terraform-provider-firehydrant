@@ -37,14 +37,15 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the team.
 * `description` - (Optional) A description for the team.
+* `slug` - (Optional) Team slug identifier. If not provided, it will be generated from the name.
 * `memberships` - (Optional) A resource to tie a schedule or user to a team via a incident role.
 
 The `memberships` block supports:
 
-Either the user_id or schedule_id is required for this block.
+Either the `user_id` or `schedule_id` is required for this block.
 
-* `user_id` - (Required) Id of the user.
-* `schedule_id` - (Required) Id of the schedule.
+* `user_id` - (Required) ID of the user.
+* `schedule_id` - (Required) ID of the schedule.
 * `default_incident_role_id` - (Optional) Incident role to assign the user or schedule.
 
 ## Attributes Reference
