@@ -1,4 +1,4 @@
-## 0.5.0 (Unreleased)
+## 0.5.0
 
 * `firehydrant_team` now supports `slug` attribute ([#145](https://github.com/firehydrant/terraform-provider-firehydrant/pull/145)).
 
