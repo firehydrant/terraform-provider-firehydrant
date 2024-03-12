@@ -26,7 +26,8 @@ func checkResponseStatusCode(response *http.Response, apiError *APIError) error 
 	case code >= 200 && code <= 299:
 		return nil
 	case code == 404:
-		return ErrorNotFound
+		req := response.Request
+		return fmt.Errorf("%w: %s '%s'", ErrorNotFound, req.Method, req.URL.String())
 	case code == 401:
 		return fmt.Errorf("%s\n%s", ErrorUnauthorized, apiError)
 	default:
