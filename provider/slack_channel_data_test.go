@@ -28,7 +28,7 @@ func TestOfflineSlackChannelsReadMemberID(t *testing.T) {
 		t.Fatalf("Received error initializing API client: %s", err.Error())
 		return
 	}
-	r := schema.TestResourceDataRaw(t, dataSourceSlackChannels().Schema, map[string]interface{}{
+	r := schema.TestResourceDataRaw(t, dataSourceSlackChannel().Schema, map[string]interface{}{
 		"slack_channel_id": "C01010101Z",
 	})
 
