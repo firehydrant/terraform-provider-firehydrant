@@ -63,6 +63,7 @@ type Client interface {
 	Severities() SeveritiesClient
 	TaskLists() TaskListsClient
 	Teams() TeamsClient
+	SlackChannels() SlackChannelsClient
 
 	// Users
 	GetUsers(ctx context.Context, params GetUserParams) (*UserResponse, error)
@@ -204,6 +205,11 @@ func (c *APIClient) OnCallSchedules() OnCallSchedules {
 
 func (c *APIClient) EscalationPolicies() EscalationPolicies {
 	return &RESTEscalationPoliciesClient{client: c}
+}
+
+// SlackChannels returns a SlackChannelsClient interface for interacting with slack channels in FireHydrant
+func (c *APIClient) SlackChannels() SlackChannelsClient {
+	return &RESTSlackChannelsClient{client: c}
 }
 
 // GetUsers gets matching users in FireHydrant
