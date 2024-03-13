@@ -297,3 +297,16 @@ type UpdateFunctionalityRequest struct {
 	Labels                  map[string]string      `json:"labels"`
 	Services                []FunctionalityService `json:"services"`
 }
+
+// SlackChannelResponse is the response for retrieving Slack channel information, including FireHydrant ID.
+// URL: GET https://api.firehydrant.io/v1/integrations/slack/channels?slack_channel_id={id}
+type SlackChannelResponse struct {
+	ID             string `json:"id"`
+	SlackChannelID string `json:"slack_channel_id"`
+	Name           string `json:"name"`
+}
+
+type SlackChannelsResponse struct {
+	Channels   []*SlackChannelResponse `json:"data"`
+	Pagination *Pagination             `json:"pagination,omitempty"`
+}

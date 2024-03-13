@@ -26,7 +26,8 @@ func checkResponseStatusCode(response *http.Response, apiError *APIError) error 
 	case code >= 200 && code <= 299:
 		return nil
 	case code == 404:
-		return ErrorNotFound
+		req := response.Request
+		return fmt.Errorf("%w: %s '%s'", ErrorNotFound, req.Method, req.URL.String())
 	case code == 401:
 		return fmt.Errorf("%s\n%s", ErrorUnauthorized, apiError)
 	default:
@@ -63,6 +64,7 @@ type Client interface {
 	Severities() SeveritiesClient
 	TaskLists() TaskListsClient
 	Teams() TeamsClient
+	SlackChannels() SlackChannelsClient
 
 	// Users
 	GetUsers(ctx context.Context, params GetUserParams) (*UserResponse, error)
@@ -204,6 +206,11 @@ func (c *APIClient) OnCallSchedules() OnCallSchedules {
 
 func (c *APIClient) EscalationPolicies() EscalationPolicies {
 	return &RESTEscalationPoliciesClient{client: c}
+}
+
+// SlackChannels returns a SlackChannelsClient interface for interacting with slack channels in FireHydrant
+func (c *APIClient) SlackChannels() SlackChannelsClient {
+	return &RESTSlackChannelsClient{client: c}
 }
 
 // GetUsers gets matching users in FireHydrant
