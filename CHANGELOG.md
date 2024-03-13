@@ -1,3 +1,10 @@
+## 0.6.0
+
+ENHANCEMENTS:
+
+* **New Data Source**: `firehydrant_slack_channel` ([#147](https://github.com/firehydrant/terraform-provider-firehydrant/pull/147)).
+* Improved "resource not found error" with more details of URL.
+
 ## 0.5.0
 
 * `firehydrant_team` now supports `slug` attribute ([#145](https://github.com/firehydrant/terraform-provider-firehydrant/pull/145)).
