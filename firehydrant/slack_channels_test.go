@@ -28,11 +28,15 @@ func slackChannelMockServer(path, query *string) *httptest.Server {
 	h := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		*path = req.URL.Path
 		*query = req.URL.Query().Get("slack_channel_id")
-
 		if *query == "C01010101Z" {
 			w.Write([]byte(expectedSlackChannelsResponseJSON()))
 		} else {
-			w.WriteHeader(http.StatusNotFound)
+			*query = req.URL.Query().Get("name")
+			if *query == "team-rocket" {
+				w.Write([]byte(expectedSlackChannelsResponseJSON()))
+			} else {
+				w.WriteHeader(http.StatusNotFound)
+			}
 		}
 	})
 
@@ -40,7 +44,7 @@ func slackChannelMockServer(path, query *string) *httptest.Server {
 	return ts
 }
 
-func TestSlackChannelGet(t *testing.T) {
+func TestSlackChannelGet_ID(t *testing.T) {
 	var requestPath, requestQuery string
 	ts := slackChannelMockServer(&requestPath, &requestQuery)
 	defer ts.Close()
@@ -50,7 +54,8 @@ func TestSlackChannelGet(t *testing.T) {
 		t.Fatalf("Received error initializing API client: %s", err.Error())
 		return
 	}
-	res, err := c.SlackChannels().Get(context.Background(), "C01010101Z")
+	params := SlackChannelParams{ID: "C01010101Z"}
+	res, err := c.SlackChannels().Get(context.Background(), params)
 	if err != nil {
 		t.Fatalf("error retrieving slack channel: %s", err.Error())
 	}
@@ -59,6 +64,35 @@ func TestSlackChannelGet(t *testing.T) {
 		t.Fatalf("request path mismatch: expected '%s', got: '%s'", expected, requestPath)
 	}
 	if expected := "C01010101Z"; expected != requestQuery {
+		t.Fatalf("request query params mismatch: expected '%s', got: '%s'", expected, requestQuery)
+	}
+
+	expectedResponse := expectedSlackChannelResponse()
+	if !reflect.DeepEqual(expectedResponse, res) {
+		t.Fatalf("response mismatch: expected '%+v', got: '%+v'", expectedResponse, res)
+	}
+}
+
+func TestSlackChannelGet_Name(t *testing.T) {
+	var requestPath, requestQuery string
+	ts := slackChannelMockServer(&requestPath, &requestQuery)
+	defer ts.Close()
+
+	c, err := NewRestClient("test-token-very-authorized", WithBaseURL(ts.URL))
+	if err != nil {
+		t.Fatalf("Received error initializing API client: %s", err.Error())
+		return
+	}
+	params := SlackChannelParams{Name: "#team-rocket"}
+	res, err := c.SlackChannels().Get(context.Background(), params)
+	if err != nil {
+		t.Fatalf("error retrieving slack channel: %s", err.Error())
+	}
+
+	if expected := "/integrations/slack/channels"; expected != requestPath {
+		t.Fatalf("request path mismatch: expected '%s', got: '%s'", expected, requestPath)
+	}
+	if expected := "team-rocket"; expected != requestQuery {
 		t.Fatalf("request query params mismatch: expected '%s', got: '%s'", expected, requestQuery)
 	}
 
@@ -78,11 +112,29 @@ func TestSlackChannelGetNotFound(t *testing.T) {
 		t.Fatalf("Received error initializing API client: %s", err.Error())
 		return
 	}
-	_, err = c.SlackChannels().Get(context.Background(), "C111111111")
+	params := SlackChannelParams{ID: "C11111111"}
+	_, err = c.SlackChannels().Get(context.Background(), params)
 	if err == nil {
 		t.Fatalf("expected ErrorNotFound in retrieving slack channel, got nil")
 	}
 	if !errors.Is(err, ErrorNotFound) {
 		t.Fatalf("expected ErrorNotFound in retrieving slack channel, got: %s", err)
+	}
+}
+
+func TestSlackChannelGetNotFound_noParams(t *testing.T) {
+	var requestPath, requestQuery string
+	ts := slackChannelMockServer(&requestPath, &requestQuery)
+	defer ts.Close()
+
+	c, err := NewRestClient("test-token-very-authorized", WithBaseURL(ts.URL))
+	if err != nil {
+		t.Fatalf("Received error initializing API client: %s", err.Error())
+		return
+	}
+	params := SlackChannelParams{ID: "", Name: ""}
+	_, err = c.SlackChannels().Get(context.Background(), params)
+	if err == nil {
+		t.Fatalf("expected ErrorNotFound in retrieving slack channel, got nil")
 	}
 }
