@@ -28,7 +28,7 @@ const RunbookAttachmentRuleDefaultJSON = `
   "user_data": {}
 }`
 
-// CreateRunbookRequest is the payload for creating a runbook
+// CreateRunbookRequest is the payload for creating a service
 // URL: POST https://api.firehydrant.io/v1/runbooks
 type CreateRunbookRequest struct {
 	Name        string       `json:"name"`
@@ -40,8 +40,7 @@ type CreateRunbookRequest struct {
 
 	Severities []RunbookRelation `json:"severities"`
 
-	Steps      []RunbookStep `json:"steps,omitempty"`
-	Restricted bool          `json:"auto_attach_to_restricted_incidents,omitempty"`
+	Steps []RunbookStep `json:"steps,omitempty"`
 }
 
 // RunbookRelation associates a runbook to a type in FireHydrant (such as a severity)
@@ -87,9 +86,8 @@ type RunbookResponse struct {
 
 	AttachmentRule map[string]interface{} `json:"attachment_rule"`
 
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
-	Restricted bool      `json:"auto_attach_to_restricted_incidents,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // RunbooksClient is an interface for interacting with runbooks on FireHydrant
