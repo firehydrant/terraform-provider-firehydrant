@@ -43,6 +43,10 @@ func dataFireHydrantSlackChannelRead(ctx context.Context, d *schema.ResourceData
 		ID:   slack_channel_id,
 		Name: slack_channel_name,
 	}
+
+	if slack_channel_id == "" && slack_channel_name == "" {
+		return diag.Errorf("either `slack_channel_id` or `slack_channel_name` must be set")
+	}
 	slackChannel, err := firehydrantAPIClient.SlackChannels().Get(ctx, params)
 	if err != nil {
 		return diag.FromErr(err)
