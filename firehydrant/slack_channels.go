@@ -58,8 +58,8 @@ func (c *RESTSlackChannelsClient) Get(ctx context.Context, params SlackChannelPa
 	if channelCount := len(channels.Channels); channelCount > 1 {
 		// "at least" because it may paginate.
 		tflog.Error(ctx, "found more than one Slack channel", map[string]interface{}{
-			"query_id":   params.ID,
-			"query_name": params.Name,
+			"id":   params.ID,
+			"name": params.Name,
 			"found":      channelCount,
 		})
 		for _, channel := range channels.Channels {
