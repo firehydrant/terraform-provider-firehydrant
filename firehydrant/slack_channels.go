@@ -64,20 +64,20 @@ func (c *RESTSlackChannelsClient) Get(ctx context.Context, params SlackChannelPa
 		})
 		for _, channel := range channels.Channels {
 			tflog.Error(ctx, "found Slack channel", map[string]interface{}{
-				"id":         params.ID,
-				"name":       params.Name,
-				"slack_channel_id": channel.SlackChannelID,
-				"name":             channel.Name,
+				"id":                 params.ID,
+				"name":               params.Name,
+				"slack_channel_id":   channel.SlackChannelID,
+				"slack_channel_name": channel.Name,
 			})
 		}
 		return nil, fmt.Errorf("more than one Slack channel found: see Terraform logs for more information.")
 	}
 
 	tflog.Info(ctx, "found Slack channel", map[string]interface{}{
-		"id":         channels.Channels[0].ID,
-		"name":       channels.Channels[0].Name,
-		"slack_channel_id": channels.Channels[0].SlackChannelID,
-		"name":             channels.Channels[0].Name,
+		"id":                 channels.Channels[0].ID,
+		"name":               channels.Channels[0].Name,
+		"slack_channel_id":   channels.Channels[0].SlackChannelID,
+		"slack_channel_name": channels.Channels[0].Name,
 	})
 
 	return channels.Channels[0], nil
