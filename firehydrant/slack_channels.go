@@ -64,8 +64,8 @@ func (c *RESTSlackChannelsClient) Get(ctx context.Context, params SlackChannelPa
 		})
 		for _, channel := range channels.Channels {
 			tflog.Error(ctx, "found Slack channel", map[string]interface{}{
-				"query_id":         params.ID,
-				"query_name":       params.Name,
+				"id":         params.ID,
+				"name":       params.Name,
 				"slack_channel_id": channel.SlackChannelID,
 				"name":             channel.Name,
 			})
@@ -74,8 +74,8 @@ func (c *RESTSlackChannelsClient) Get(ctx context.Context, params SlackChannelPa
 	}
 
 	tflog.Info(ctx, "found Slack channel", map[string]interface{}{
-		"query_id":         channels.Channels[0].ID,
-		"query_name":       channels.Channels[0].Name,
+		"id":         channels.Channels[0].ID,
+		"name":       channels.Channels[0].Name,
 		"slack_channel_id": channels.Channels[0].SlackChannelID,
 		"name":             channels.Channels[0].Name,
 	})
