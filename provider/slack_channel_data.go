@@ -17,11 +17,13 @@ func dataSourceSlackChannel() *schema.Resource {
 				Description: "ID of the channel, provided by Slack.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ConflictsWith: "slack_channel_name",
 			},
 			"slack_channel_name": {
 				Description: "Name of this Slack channel.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ConflictsWith: "slack_channel_id",
 			},
 			"id": {
 				Description: "FireHydrant internal ID for the Slack channel.",

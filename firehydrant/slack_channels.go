@@ -53,7 +53,7 @@ func (c *RESTSlackChannelsClient) Get(ctx context.Context, params SlackChannelPa
 	}
 
 	if channels.Channels == nil || len(channels.Channels) == 0 {
-		return nil, fmt.Errorf("no slack channel found with options: name: %s, id: %s", params.Name, params.ID)
+		return nil, fmt.Errorf("no slack channel found with options name '%s' and / or id '%s'", params.Name, params.ID)
 	}
 	if channelCount := len(channels.Channels); channelCount > 1 {
 		// "at least" because it may paginate.
