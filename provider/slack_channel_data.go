@@ -14,9 +14,16 @@ func dataSourceSlackChannel() *schema.Resource {
 		ReadContext: dataFireHydrantSlackChannelRead,
 		Schema: map[string]*schema.Schema{
 			"slack_channel_id": {
-				Description: "ID of the channel, provided by Slack.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:   "ID of the channel, provided by Slack.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"slack_channel_name"},
+			},
+			"slack_channel_name": {
+				Description:   "Name of this Slack channel.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"slack_channel_id"},
 			},
 			"id": {
 				Description: "FireHydrant internal ID for the Slack channel.",
@@ -32,8 +39,17 @@ func dataFireHydrantSlackChannelRead(ctx context.Context, d *schema.ResourceData
 	firehydrantAPIClient := m.(firehydrant.Client)
 
 	// Get the Slack channel
-	channelID := d.Get("slack_channel_id").(string)
-	slackChannel, err := firehydrantAPIClient.SlackChannels().Get(ctx, channelID)
+	slack_channel_id := d.Get("slack_channel_id").(string)
+	slack_channel_name := d.Get("slack_channel_name").(string)
+	params := firehydrant.SlackChannelParams{
+		ID:   slack_channel_id,
+		Name: slack_channel_name,
+	}
+
+	if slack_channel_id == "" && slack_channel_name == "" {
+		return diag.Errorf("either `slack_channel_id` or `slack_channel_name` must be set")
+	}
+	slackChannel, err := firehydrantAPIClient.SlackChannels().Get(ctx, params)
 	if err != nil {
 		return diag.FromErr(err)
 	}

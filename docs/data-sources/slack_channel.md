@@ -11,7 +11,8 @@ Use this data source to pass Slack channel information to other resources.
 Basic usage:
 ```hcl
 data "firehydrant_slack_channel" "team_rocket" {
-  slack_channel_id = "C1234567890"
+  slack_channel_id   = "C1234567890"
+  slack_channel_name = "#team-rocket"
 }
 
 resource "firehydrant_escalation_policy" "team_rocket" {
@@ -30,7 +31,10 @@ resource "firehydrant_escalation_policy" "team_rocket" {
 
 The following arguments are supported:
 
-* `slack_channel_id` - (Required) Slack's channel ID.
+> You must provide one of these options.
+
+* `slack_channel_id` - (Optional) Slack's channel ID.
+* `slack_channel_name` - (Optional) Slack's channel name. We recommend using `slack_channel_id` where possible as Slack channel name may be changed and thus cause surprise state inconsistencies.
 
 ## Attributes Reference
 
