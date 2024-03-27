@@ -1,8 +1,11 @@
+## 0.7.1
+
+* `firehydrant_runbook` now supports `restricted` field for private incidents runbook ([#149](https://github.com/firehydrant/terraform-provider-firehydrant/pull/149))
+
 ## 0.7.0
 
 ENHANCEMENTS:
 * **Added to Data Source**: `firehydrant_slack_channel`. Now you can pass either the channel id or the channel name to the data source. 
-* `firehydrant_runbook` now supports `restricted` field for private incidents runbook ([#149](https://github.com/firehydrant/terraform-provider-firehydrant/pull/149))
 
 ## 0.6.0
 
