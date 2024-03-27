@@ -33,6 +33,7 @@ const RunbookAttachmentRuleDefaultJSON = `
 type CreateRunbookRequest struct {
 	Name        string       `json:"name"`
 	Type        string       `json:"type"`
+	Restricted  bool         `json:"auto_attach_to_restricted_incidents,omitempty"`
 	Description string       `json:"description"`
 	Owner       *RunbookTeam `json:"owner,omitempty"`
 
@@ -69,6 +70,7 @@ type RunbookStep struct {
 // URL: PATCH https://api.firehydrant.io/v1/runbooks/{id}
 type UpdateRunbookRequest struct {
 	Name           string                 `json:"name,omitempty"`
+	Restricted     bool                   `json:"auto_attach_to_restricted_incidents"`
 	Description    string                 `json:"description"`
 	Owner          *RunbookTeam           `json:"owner,omitempty"`
 	Steps          []RunbookStep          `json:"steps,omitempty"`
@@ -80,6 +82,7 @@ type UpdateRunbookRequest struct {
 type RunbookResponse struct {
 	ID          string        `json:"id"`
 	Name        string        `json:"name"`
+	Restricted  bool          `json:"auto_attach_to_restricted_incidents"`
 	Description string        `json:"description"`
 	Owner       *RunbookTeam  `json:"owner"`
 	Steps       []RunbookStep `json:"steps"`
