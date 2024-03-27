@@ -109,6 +109,7 @@ The following arguments are supported:
   ```
 * `description` - (Optional) A description of the runbook.
 * `owner_id` - (Optional) The ID of the team that owns this runbook.
+* `restricted` - (Optional) Only apply this runbook to private incidents.
 
 The `steps` block supports:
 
