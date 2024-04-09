@@ -78,6 +78,11 @@ func resourceOnCallSchedule() *schema.Resource {
 							Optional: true,
 							ForceNew: true,
 						},
+						"shift_duration": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
 					},
 				},
 			},
@@ -146,6 +151,18 @@ func createResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 		},
 		MemberIDs:    memberIDs,
 		Restrictions: oncallRestrictionsFromData(d),
+	}
+
+	isCustomStrategy := onCallSchedule.Strategy.Type == "custom"
+
+	if v, ok := d.Get("strategy.0.shift_duration").(string); ok && v != "" {
+		if !isCustomStrategy {
+			return diag.Errorf("shift_duration can only be set when strategy type is 'custom', got '%s'", onCallSchedule.Strategy.Type)
+		}
+		onCallSchedule.Strategy.ShiftDuration = v
+	}
+	if isCustomStrategy && onCallSchedule.Strategy.ShiftDuration == "" {
+		return diag.Errorf("shift_duration is required when strategy type is 'custom'")
 	}
 
 	// Create the on-call schedule
@@ -276,9 +293,10 @@ func deleteResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 func strategyToMap(strategy firehydrant.OnCallScheduleStrategy) []map[string]interface{} {
 	return []map[string]interface{}{
 		{
-			"type":         strategy.Type,
-			"handoff_time": strategy.HandoffTime,
-			"handoff_day":  strategy.HandoffDay,
+			"type":           strategy.Type,
+			"handoff_time":   strategy.HandoffTime,
+			"handoff_day":    strategy.HandoffDay,
+			"shift_duration": strategy.ShiftDuration,
 		},
 	}
 }
