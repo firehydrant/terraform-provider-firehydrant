@@ -157,29 +157,31 @@ func createResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 		Restrictions: oncallRestrictionsFromData(d),
 	}
 
-	isCustomStrategy := onCallSchedule.Strategy.Type == "custom"
-	if isCustomStrategy {
-		if onCallSchedule.Strategy.ShiftDuration == "" {
-			return diag.Errorf("firehydrant_on_call_schedule.strategy.shift_duration is required when strategy type is 'custom'")
-		}
-		if onCallSchedule.StartTime == "" {
-			return diag.Errorf("firehydrant_on_call_schedule.start_time is required when strategy type is 'custom'")
-		}
+	if onCallSchedule.Strategy.Type != "" {
+		isCustomStrategy := onCallSchedule.Strategy.Type == "custom"
+		if isCustomStrategy {
+			if onCallSchedule.Strategy.ShiftDuration == "" {
+				return diag.Errorf("firehydrant_on_call_schedule.strategy.shift_duration is required when strategy type is 'custom'")
+			}
+			if onCallSchedule.StartTime == "" {
+				return diag.Errorf("firehydrant_on_call_schedule.start_time is required when strategy type is 'custom'")
+			}
 
-		// Discard unused values to avoid ambiguity.
-		onCallSchedule.Strategy.HandoffTime = ""
-		onCallSchedule.Strategy.HandoffDay = ""
-	} else {
-		if onCallSchedule.Strategy.HandoffTime == "" {
-			return diag.Errorf("firehydrant_on_call_schedule.strategy.handoff_time is required when strategy type is '%s'", onCallSchedule.Strategy.Type)
-		}
-		if onCallSchedule.Strategy.Type == "weekly" && onCallSchedule.Strategy.HandoffDay == "" {
-			return diag.Errorf("firehydrant_on_call_schedule.strategy.handoff_day is required when strategy type is '%s'", onCallSchedule.Strategy.Type)
-		}
+			// Discard unused values to avoid ambiguity.
+			onCallSchedule.Strategy.HandoffTime = ""
+			onCallSchedule.Strategy.HandoffDay = ""
+		} else {
+			if onCallSchedule.Strategy.HandoffTime == "" {
+				return diag.Errorf("firehydrant_on_call_schedule.strategy.handoff_time is required when strategy type is '%s'", onCallSchedule.Strategy.Type)
+			}
+			if onCallSchedule.Strategy.Type == "weekly" && onCallSchedule.Strategy.HandoffDay == "" {
+				return diag.Errorf("firehydrant_on_call_schedule.strategy.handoff_day is required when strategy type is '%s'", onCallSchedule.Strategy.Type)
+			}
 
-		// Discard unused values to avoid ambiguity.
-		onCallSchedule.Strategy.ShiftDuration = ""
-		onCallSchedule.StartTime = ""
+			// Discard unused values to avoid ambiguity.
+			onCallSchedule.Strategy.ShiftDuration = ""
+			onCallSchedule.StartTime = ""
+		}
 	}
 
 	// Create the on-call schedule
