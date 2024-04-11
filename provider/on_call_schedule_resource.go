@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -72,20 +71,22 @@ func resourceOnCallSchedule() *schema.Resource {
 						"handoff_time": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: true,
 						},
 						"handoff_day": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: true,
 						},
 						"shift_duration": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: true,
 						},
 					},
 				},
+			},
+			"start_time": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
 			},
 			"color": {
 				Type:     schema.TypeString,
@@ -146,43 +147,39 @@ func createResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 		Description: d.Get("description").(string),
 		TimeZone:    d.Get("time_zone").(string),
 		Strategy: firehydrant.OnCallScheduleStrategy{
-			Type:        d.Get("strategy.0.type").(string),
-			HandoffTime: d.Get("strategy.0.handoff_time").(string),
-			HandoffDay:  d.Get("strategy.0.handoff_day").(string),
+			Type:          d.Get("strategy.0.type").(string),
+			HandoffTime:   d.Get("strategy.0.handoff_time").(string),
+			HandoffDay:    d.Get("strategy.0.handoff_day").(string),
+			ShiftDuration: d.Get("strategy.0.shift_duration").(string),
 		},
+		StartTime:    d.Get("start_time").(string),
 		MemberIDs:    memberIDs,
 		Restrictions: oncallRestrictionsFromData(d),
 	}
 
 	isCustomStrategy := onCallSchedule.Strategy.Type == "custom"
-	if v, ok := d.Get("strategy.0.shift_duration").(string); ok && v != "" {
-		if !isCustomStrategy {
-			return diag.Errorf("shift_duration can only be set when strategy type is 'custom', got '%s'", onCallSchedule.Strategy.Type)
+	if isCustomStrategy {
+		if onCallSchedule.Strategy.ShiftDuration == "" {
+			return diag.Errorf("firehydrant_on_call_schedule.strategy.shift_duration is required when strategy type is 'custom'")
 		}
-		onCallSchedule.Strategy.ShiftDuration = v
-		loc, err := time.LoadLocation(onCallSchedule.TimeZone)
-		if err != nil {
-			return diag.Errorf("Error loading time zone '%s': %v", onCallSchedule.TimeZone, err)
+		if onCallSchedule.StartTime == "" {
+			return diag.Errorf("firehydrant_on_call_schedule.start_time is required when strategy type is 'custom'")
 		}
-		onCallSchedule.StartTime = time.Now().In(loc).Format(time.RFC3339)
-	}
-	if isCustomStrategy && onCallSchedule.Strategy.ShiftDuration == "" {
-		return diag.Errorf("shift_duration is required when strategy type is 'custom'")
-	}
 
-	if !isCustomStrategy {
-		if v, ok := d.Get("strategy.0.handoff_time").(string); ok && v != "" {
-			return diag.Errorf("handoff_time is required for strategy '%s'", onCallSchedule.Strategy.Type)
-		} else {
-			onCallSchedule.Strategy.HandoffTime = v
+		// Discard unused values to avoid ambiguity.
+		onCallSchedule.Strategy.HandoffTime = ""
+		onCallSchedule.Strategy.HandoffDay = ""
+	} else {
+		if onCallSchedule.Strategy.HandoffTime == "" {
+			return diag.Errorf("firehydrant_on_call_schedule.strategy.handoff_time is required when strategy type is '%s'", onCallSchedule.Strategy.Type)
 		}
-		if onCallSchedule.Strategy.Type == "weekly" {
-			if v, ok := d.Get("strategy.0.handoff_day").(string); ok && v != "" {
-				return diag.Errorf("handoff_day is required for strategy '%s'", onCallSchedule.Strategy.Type)
-			} else {
-				onCallSchedule.Strategy.HandoffDay = v
-			}
+		if onCallSchedule.Strategy.Type == "weekly" && onCallSchedule.Strategy.HandoffDay == "" {
+			return diag.Errorf("firehydrant_on_call_schedule.strategy.handoff_day is required when strategy type is '%s'", onCallSchedule.Strategy.Type)
 		}
+
+		// Discard unused values to avoid ambiguity.
+		onCallSchedule.Strategy.ShiftDuration = ""
+		onCallSchedule.StartTime = ""
 	}
 
 	// Create the on-call schedule
