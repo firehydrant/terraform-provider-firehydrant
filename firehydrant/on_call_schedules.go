@@ -24,9 +24,9 @@ var _ OnCallSchedules = &RESTOnCallSchedulesClient{}
 
 type OnCallScheduleStrategy struct {
 	Type          string `json:"type"`
-	HandoffTime   string `json:"handoff_time"`
-	HandoffDay    string `json:"handoff_day"`
-	ShiftDuration string `json:"shift_duration"`
+	HandoffTime   string `json:"handoff_time,omitempty"`
+	HandoffDay    string `json:"handoff_day,omitempty"`
+	ShiftDuration string `json:"shift_duration,omitempty"`
 }
 
 type OnCallScheduleMember struct {
@@ -54,6 +54,10 @@ type CreateOnCallScheduleRequest struct {
 	Strategy     OnCallScheduleStrategy      `json:"strategy"`
 	Restrictions []OnCallScheduleRestriction `json:"restrictions"`
 	MemberIDs    []string                    `json:"member_ids"`
+
+	// StartTime is only required for `custom` strategy.
+	// ISO8601 / Go RFC3339 format.
+	StartTime string `json:"start_time,omitempty"`
 }
 
 type UpdateOnCallScheduleRequest struct {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -70,7 +71,7 @@ func resourceOnCallSchedule() *schema.Resource {
 						},
 						"handoff_time": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
 							ForceNew: true,
 						},
 						"handoff_day": {
@@ -154,15 +155,34 @@ func createResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 	}
 
 	isCustomStrategy := onCallSchedule.Strategy.Type == "custom"
-
 	if v, ok := d.Get("strategy.0.shift_duration").(string); ok && v != "" {
 		if !isCustomStrategy {
 			return diag.Errorf("shift_duration can only be set when strategy type is 'custom', got '%s'", onCallSchedule.Strategy.Type)
 		}
 		onCallSchedule.Strategy.ShiftDuration = v
+		loc, err := time.LoadLocation(onCallSchedule.TimeZone)
+		if err != nil {
+			return diag.Errorf("Error loading time zone '%s': %v", onCallSchedule.TimeZone, err)
+		}
+		onCallSchedule.StartTime = time.Now().In(loc).Format(time.RFC3339)
 	}
 	if isCustomStrategy && onCallSchedule.Strategy.ShiftDuration == "" {
 		return diag.Errorf("shift_duration is required when strategy type is 'custom'")
+	}
+
+	if !isCustomStrategy {
+		if v, ok := d.Get("strategy.0.handoff_time").(string); ok && v != "" {
+			return diag.Errorf("handoff_time is required for strategy '%s'", onCallSchedule.Strategy.Type)
+		} else {
+			onCallSchedule.Strategy.HandoffTime = v
+		}
+		if onCallSchedule.Strategy.Type == "weekly" {
+			if v, ok := d.Get("strategy.0.handoff_day").(string); ok && v != "" {
+				return diag.Errorf("handoff_day is required for strategy '%s'", onCallSchedule.Strategy.Type)
+			} else {
+				onCallSchedule.Strategy.HandoffDay = v
+			}
+		}
 	}
 
 	// Create the on-call schedule
@@ -291,14 +311,16 @@ func deleteResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 }
 
 func strategyToMap(strategy firehydrant.OnCallScheduleStrategy) []map[string]interface{} {
-	return []map[string]interface{}{
-		{
-			"type":           strategy.Type,
-			"handoff_time":   strategy.HandoffTime,
-			"handoff_day":    strategy.HandoffDay,
-			"shift_duration": strategy.ShiftDuration,
-		},
+	m := map[string]interface{}{"type": strategy.Type}
+	if strategy.Type == "custom" {
+		m["shift_duration"] = strategy.ShiftDuration
+	} else {
+		m["handoff_time"] = strategy.HandoffTime
 	}
+	if strategy.Type == "weekly" {
+		m["handoff_day"] = strategy.HandoffDay
+	}
+	return []map[string]interface{}{m}
 }
 
 func oncallRestrictionsFromData(d *schema.ResourceData) []firehydrant.OnCallScheduleRestriction {
