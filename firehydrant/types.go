@@ -153,6 +153,7 @@ type ServicesResponse struct {
 // URL: GET https://api.firehydrant.io/v1/users
 type GetUserParams struct {
 	Query string `url:"query,omitempty"`
+	Page  int    `url:"page,omitempty"`
 }
 
 type User struct {
@@ -166,7 +167,8 @@ type User struct {
 }
 
 type UserResponse struct {
-	Users []User `json:"data"`
+	Users      []User      `json:"data"`
+	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
 // ScheduleResponse is the payload for a schedule
