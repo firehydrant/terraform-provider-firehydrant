@@ -1,3 +1,8 @@
+## 0.8.0
+
+* `firehydrant_on_call_schedule` scheduling strategy now supports `custom` shift durations ([#151](https://github.com/firehydrant/terraform-provider-firehydrant/pull/151)).
+
+
 ## 0.7.1
 
 * `firehydrant_runbook` now supports `restricted` field for private incidents runbook ([#149](https://github.com/firehydrant/terraform-provider-firehydrant/pull/149))
