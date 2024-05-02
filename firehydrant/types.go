@@ -312,3 +312,10 @@ type SlackChannelsResponse struct {
 	Channels   []*SlackChannelResponse `json:"data"`
 	Pagination *Pagination             `json:"pagination,omitempty"`
 }
+
+// IngestURLResponse is the response for retrieving the signals ingest URL for an org, or the specific URLs that
+// route to an escalation policy, schedule. team, or user.
+// URL: GET https://api.firehydrant.io/v1/signals/ingest_url
+type IngestURLResponse struct {
+	URL string `json:"url"`
+}
