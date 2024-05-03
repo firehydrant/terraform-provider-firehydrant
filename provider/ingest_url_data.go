@@ -72,8 +72,9 @@ func dataFireHydrantIngestURL(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	// TODO: Validate transposer name against list of slugs from
-	// curl https://api.firehydrant.io/v1/signals/transposers | jq -r '.data | .[] | .slug'
+	// Not a huge fan of the URL hacking here, but we can't get this directly from the API.  If we want, we can validate transposer
+	// name against list of slugs from `curl https://api.firehydrant.io/v1/signals/transposers | jq -r '.data | .[] | .slug'`
+	// but even then the composition here bothers me.
 
 	finalURL := url.URL
 	if transposer != "" {
