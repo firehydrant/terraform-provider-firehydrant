@@ -314,8 +314,28 @@ type SlackChannelsResponse struct {
 }
 
 // IngestURLResponse is the response for retrieving the signals ingest URL for an org, or the specific URLs that
-// route to an escalation policy, schedule. team, or user.
+// route to a user, team, escalation policy, or schedule.
 // URL: GET https://api.firehydrant.io/v1/signals/ingest_url
 type IngestURLResponse struct {
 	URL string `json:"url"`
+}
+
+// TransposerResponse is the response for retrieving the collection of transposers for an org, which may include the
+// specific ingest URL that routes to a user, team, escalation policy, or schedule based on the query parameters provided.
+// URL: GET https://api.firehydrant.io/v1/signals/transposers
+type TransposersResponse struct {
+	Transposers []Transposer `json:"data"`
+	Pagination  *Pagination  `json:"pagination,omitempty"`
+}
+
+type Transposer struct {
+	Name           string   `json:"name"`
+	Slug           string   `json:"slug"`
+	ExamplePayload string   `json:"example_payload"`
+	Expression     string   `json:"expression"`
+	Expected       string   `json:"expected"`
+	Website        string   `json:"website"`
+	Description    string   `json:"description"`
+	Tags           []string `json:"tags"`
+	IngestURL      string   `json:"ingest_url"`
 }

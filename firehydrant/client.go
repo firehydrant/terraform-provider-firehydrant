@@ -77,6 +77,7 @@ type Client interface {
 	OnCallSchedules() OnCallSchedules
 	EscalationPolicies() EscalationPolicies
 	IngestURL() IngestURLClient
+	Transposers() TransposersClient
 }
 
 // OptFunc is a function that sets a setting on a client
@@ -217,6 +218,11 @@ func (c *APIClient) SlackChannels() SlackChannelsClient {
 // IngestURL returns a IngestURLClient interface for retrieving ingest URLs in FireHydrant
 func (c *APIClient) IngestURL() IngestURLClient {
 	return &RESTIngestURLClient{client: c}
+}
+
+// Transposers returns a TransposersClient interface for retrieving transposers from FireHydrant
+func (c *APIClient) Transposers() TransposersClient {
+	return &RESTTransposersClient{client: c}
 }
 
 // GetUsers gets matching users in FireHydrant

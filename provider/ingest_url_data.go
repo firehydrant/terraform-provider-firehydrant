@@ -2,8 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
@@ -57,32 +55,49 @@ func dataFireHydrantIngestURL(ctx context.Context, d *schema.ResourceData, m int
 	schedule_id := d.Get("on_call_schedule_id").(string)
 	transposer := d.Get("transposer").(string)
 
-	params := firehydrant.IngestURLParams{
-		TeamID:             team_id,
-		UserID:             user_id,
-		EscalationPolicyID: escalation_policy_id,
-		OnCallScheduleID:   schedule_id,
-	}
-
 	if team_id == "" && (escalation_policy_id != "" || schedule_id != "") {
 		return diag.Errorf("`team_id` must be set if either `escalation_policy_id` or `on_call_schedule_id` is set")
 	}
-	url, err := firehydrantAPIClient.IngestURL().Get(ctx, params)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
-	// Not a huge fan of the URL hacking here, but we can't get this directly from the API.  If we want, we can validate transposer
-	// name against list of slugs from `curl https://api.firehydrant.io/v1/signals/transposers | jq -r '.data | .[] | .slug'`
-	// but even then the composition here bothers me.
+	ingestURL := ""
+	if transposer == "" {
+		// If no transposer is requested, we use the ingest URL API endpoint.  Otherwise, we use the transposers endpoint.
+		params := firehydrant.IngestURLParams{
+			TeamID:             team_id,
+			UserID:             user_id,
+			EscalationPolicyID: escalation_policy_id,
+			OnCallScheduleID:   schedule_id,
+		}
 
-	finalURL := url.URL
-	if transposer != "" {
-		finalURL = strings.Replace(url.URL, "/process", fmt.Sprintf("/transpose/%s", transposer), 1)
+		url, err := firehydrantAPIClient.IngestURL().Get(ctx, params)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		ingestURL = url.URL
+	} else {
+		params := firehydrant.TransposersParams{
+			TeamID:             team_id,
+			UserID:             user_id,
+			EscalationPolicyID: escalation_policy_id,
+			OnCallScheduleID:   schedule_id,
+		}
+
+		ts, err := firehydrantAPIClient.Transposers().Get(ctx, params)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		for _, t := range ts.Transposers {
+			if t.Slug == transposer {
+				ingestURL = t.IngestURL
+			}
+		}
+		if ingestURL == "" {
+			return diag.Errorf("No transposer found with slug %s", transposer)
+		}
 	}
 
 	// Set the ID
-	if err := d.Set("url", finalURL); err != nil {
+	if err := d.Set("url", ingestURL); err != nil {
 		return diag.Errorf("Error setting url: %v", err)
 	}
 
