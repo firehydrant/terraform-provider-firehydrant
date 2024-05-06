@@ -60,6 +60,7 @@ func Provider() *schema.Provider {
 			"firehydrant_environment":    dataSourceEnvironment(),
 			"firehydrant_functionality":  dataSourceFunctionality(),
 			"firehydrant_incident_role":  dataSourceIncidentRole(),
+			"firehydrant_ingest_url":     dataSourceIngestURL(),
 			"firehydrant_priority":       dataSourcePriority(),
 			"firehydrant_runbook":        dataSourceRunbook(),
 			"firehydrant_runbook_action": dataSourceRunbookAction(),
