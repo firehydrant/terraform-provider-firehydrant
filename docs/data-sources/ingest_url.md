@@ -27,8 +27,6 @@ resource "datadog_webhook" "firehydrant-myteam" {
 
 The following arguments are supported:
 
-> You must provide one of these options.
-
 * `user_id` - (Optional) The ID for an existing firehydrant user.
 * `team_id` - (Optional) The ID for an existing firehydrant team.
 * `escalation_policy_id` - (Optional) The ID for an escalation policy belonging to a given team.  If this is used, `team_id` must be provided.
