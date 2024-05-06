@@ -52,6 +52,10 @@ func TestOfflineIngestURL_UserID(t *testing.T) {
 	} else {
 		t.Fatal("attribute url not present")
 	}
+	id := r.Id()
+	if id == "" {
+		t.Fatal("ID cannot be empty")
+	}
 }
 
 func TestOfflineIngestURL_ValidTransposer(t *testing.T) {
@@ -80,6 +84,10 @@ func TestOfflineIngestURL_ValidTransposer(t *testing.T) {
 		}
 	} else {
 		t.Fatal("attribute url not present")
+	}
+	id := r.Id()
+	if id == "" {
+		t.Fatal("ID cannot be empty")
 	}
 }
 

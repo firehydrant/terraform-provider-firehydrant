@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"strconv"
+	"time"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
@@ -100,6 +102,7 @@ func dataFireHydrantIngestURL(ctx context.Context, d *schema.ResourceData, m int
 	if err := d.Set("url", ingestURL); err != nil {
 		return diag.Errorf("Error setting url: %v", err)
 	}
+	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 
 	return diag.Diagnostics{}
 }
