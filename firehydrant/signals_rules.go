@@ -27,28 +27,36 @@ type SignalRuleTarget struct {
 	Type string `json:"type"`
 }
 
+type SignalRuleIncidentType struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 type SignalsRuleResponse struct {
-	ID         string           `json:"id"`
-	Name       string           `json:"name"`
-	Expression string           `json:"expression"`
-	Target     SignalRuleTarget `json:"target"`
+	ID           string                 `json:"id"`
+	Name         string                 `json:"name"`
+	Expression   string                 `json:"expression"`
+	Target       SignalRuleTarget       `json:"target"`
+	IncidentType SignalRuleIncidentType `json:"incident_type"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type CreateSignalsRuleRequest struct {
-	Name       string `json:"name"`
-	Expression string `json:"expression"`
-	TargetType string `json:"target_type"`
-	TargetID   string `json:"target_id"`
+	Name           string `json:"name"`
+	Expression     string `json:"expression"`
+	TargetType     string `json:"target_type"`
+	TargetID       string `json:"target_id"`
+	IncidentTypeID string `json:"incident_type_id,omitempty"`
 }
 
 type UpdateSignalsRuleRequest struct {
-	Name       string `json:"name"`
-	Expression string `json:"expression"`
-	TargetType string `json:"target_type"`
-	TargetID   string `json:"target_id"`
+	Name           string `json:"name"`
+	Expression     string `json:"expression"`
+	TargetType     string `json:"target_type"`
+	TargetID       string `json:"target_id"`
+	IncidentTypeID string `json:"incident_type_id,omitempty"`
 }
 
 func (c *RESTSignalsRulesClient) restClient() *sling.Sling {

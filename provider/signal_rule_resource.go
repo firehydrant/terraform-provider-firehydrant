@@ -44,6 +44,10 @@ func resourceSignalRule() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"incident_type_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -75,10 +79,11 @@ func readResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceDa
 
 	// Gather values from API response
 	attributes := map[string]interface{}{
-		"name":        signalRule.Name,
-		"expression":  signalRule.Expression,
-		"target_type": signalRule.Target.Type,
-		"target_id":   signalRule.Target.ID,
+		"name":             signalRule.Name,
+		"expression":       signalRule.Expression,
+		"target_type":      signalRule.Target.Type,
+		"target_id":        signalRule.Target.ID,
+		"incident_type_id": signalRule.IncidentType.ID,
 	}
 
 	// Set the resource attributes to the values we got from the API
@@ -97,10 +102,11 @@ func createResourceFireHydrantSignalRule(ctx context.Context, d *schema.Resource
 
 	// Construct the create request
 	createRequest := firehydrant.CreateSignalsRuleRequest{
-		Name:       d.Get("name").(string),
-		Expression: d.Get("expression").(string),
-		TargetType: d.Get("target_type").(string),
-		TargetID:   d.Get("target_id").(string),
+		Name:           d.Get("name").(string),
+		Expression:     d.Get("expression").(string),
+		TargetType:     d.Get("target_type").(string),
+		TargetID:       d.Get("target_id").(string),
+		IncidentTypeID: d.Get("incident_type_id").(string),
 	}
 
 	// Create the signal rule
@@ -125,10 +131,11 @@ func updateResourceFireHydrantSignalRule(ctx context.Context, d *schema.Resource
 
 	// Construct the update request
 	updateRequest := firehydrant.UpdateSignalsRuleRequest{
-		Name:       d.Get("name").(string),
-		Expression: d.Get("expression").(string),
-		TargetType: d.Get("target_type").(string),
-		TargetID:   d.Get("target_id").(string),
+		Name:           d.Get("name").(string),
+		Expression:     d.Get("expression").(string),
+		TargetType:     d.Get("target_type").(string),
+		TargetID:       d.Get("target_id").(string),
+		IncidentTypeID: d.Get("incident_type_id").(string),
 	}
 
 	// Update the signal rule

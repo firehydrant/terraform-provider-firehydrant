@@ -40,6 +40,7 @@ func testAccFireHydrantSignalRuleConfigBasic() string {
 		expression = "signal.summary == 'test-signal-summary'"
 		target_type = "User"
 		target_id = data.firehydrant_user.test_user.id
+		incident_type_id = "00000000-0000-4000-8000-000000000000"
 	}
 	`, os.Getenv("EXISTING_USER_EMAIL"))
 }
