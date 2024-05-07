@@ -64,6 +64,7 @@ type UpdateOnCallScheduleRequest struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	MemberIDs   []string `json:"member_ids,omitempty"`
+	EffectiveAt string   `json:"effective_at,omitempty"`
 }
 
 type OnCallScheduleRestriction struct {
@@ -114,6 +115,10 @@ func (c *RESTOnCallSchedulesClient) Get(ctx context.Context, teamID, id string) 
 func (c *RESTOnCallSchedulesClient) Update(ctx context.Context, teamID, id string, updateReq UpdateOnCallScheduleRequest) (*OnCallScheduleResponse, error) {
 	onCallScheduleResponse := &OnCallScheduleResponse{}
 	apiError := &APIError{}
+
+	if updateReq.EffectiveAt == "" {
+		updateReq.EffectiveAt = time.Now().Format(time.RFC3339)
+	}
 
 	response, err := c.restClient().Patch(fmt.Sprintf("teams/%s/on_call_schedules/%s", teamID, id)).BodyJSON(updateReq).Receive(onCallScheduleResponse, apiError)
 	if err != nil {
