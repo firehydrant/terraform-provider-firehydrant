@@ -2,10 +2,12 @@ package firehydrant
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func expectedOnCallScheduleResponse() *OnCallScheduleResponse {
@@ -95,5 +97,50 @@ func TestOnCallSchedulesGet(t *testing.T) {
 	expectedResponse := expectedOnCallScheduleResponse()
 	if !reflect.DeepEqual(expectedResponse, res) {
 		t.Fatalf("response mismatch: expected '%+v', got: '%+v'", expectedResponse, res)
+	}
+}
+
+func TestOnCallScheduleUpdateHasEffectiveAt(t *testing.T) {
+	var requestPath string
+	var requestBody map[string]any
+	h := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		requestPath = req.URL.Path
+		if err := json.NewDecoder(req.Body).Decode(&requestBody); err != nil {
+			t.Fatalf("error unmarshalling request body: %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		w.Write([]byte(expectedOnCallScheduleResponseJSON()))
+	})
+
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	c, err := NewRestClient("test-token-very-authorized", WithBaseURL(ts.URL))
+	if err != nil {
+		t.Fatalf("Received error initializing API client: %s", err.Error())
+		return
+	}
+	updateReq := UpdateOnCallScheduleRequest{
+		Name:        "A pleasant on-call schedule",
+		Description: "Managed by Terraform. Contact @platform-eng for changes.",
+		MemberIDs:   []string{"77779528-690b-4161-84ca-312e932c626e"},
+	}
+	if _, err := c.OnCallSchedules().Update(context.TODO(), "team-id", "schedule-id", updateReq); err != nil {
+		t.Fatalf("error retrieving on-call schedule: %s", err.Error())
+	}
+
+	if expected := "/teams/team-id/on_call_schedules/schedule-id"; expected != requestPath {
+		t.Fatalf("request path mismatch: expected '%s', got: '%s'", expected, requestPath)
+	}
+	effectiveAt := requestBody["effective_at"].(string)
+	if effectiveAt == "" {
+		t.Fatalf("expected effective_at to be set")
+	}
+	e, err := time.Parse(time.RFC3339, effectiveAt)
+	if err != nil {
+		t.Fatalf("error parsing effective_at: %s", err.Error())
+	}
+	if dur := time.Since(e); dur > time.Minute {
+		t.Fatalf("expected effective_at to be now-ish, found %s ago", dur)
 	}
 }
