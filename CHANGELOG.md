@@ -1,3 +1,11 @@
+## 0.9.0
+
+* **New Data Source**: `firehydrant_ingest_url` ([#152](https://github.com/firehydrant/terraform-provider-firehydrant/pull/152)).
+* **Added to Resource**: `firehydrant_signal_rule` `incident_type_id` can now be specified for rules ([#153](https://github.com/firehydrant/terraform-provider-firehydrant/pull/153)).
+
+BUG FIXES:
+* `EffectiveAt` is now sent for all on call schedule updates. ([#154](https://github.com/firehydrant/terraform-provider-firehydrant/pull/154)).
+
 ## 0.8.0
 
 * `firehydrant_on_call_schedule` scheduling strategy now supports `custom` shift durations ([#151](https://github.com/firehydrant/terraform-provider-firehydrant/pull/151)).
