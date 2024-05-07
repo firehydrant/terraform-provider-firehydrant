@@ -42,6 +42,7 @@ The following arguments are supported:
 * `expression` - (Required) The expression to evaluate incoming events against.
 * `target_type` - (Required) The type of resource to send alerts to. Valid values are `EscalationPolicy`, `OnCallSchedule`, and `User`.
 * `target_id` - (Required) The ID of the resource to send alerts to.
+* `incident_type_id` - (Optional) The ID of the incident type associated with this rule.
 
 ## Attributes Reference
 
