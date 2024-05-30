@@ -15,12 +15,25 @@ data "firehydrant_user" "my-user" {
   email = "user@example.com"
 }
 
+data "firehydrant_user" "backup-user" {
+  email = "backup-user@example.com"
+}
+
 resource "firehydrant_team" "example-team" {
   name        = "example-team"
   description = "This is an example team"
 
   memberships {
     user_id          = data.firehydrant_user.my-user.id
+  }
+}
+
+resource "firehydrant_team" "backup-team" {
+  name        = "backup-team"
+  description = "The backup for the example team"
+
+  memberships {
+    user_id          = data.firehydrant_user.backup-user.id
   }
 }
 
@@ -46,8 +59,8 @@ resource "firehydrant_escalation_policy" "default_policy" {
   repetitions = 2
 
   handoff_step {
-    target_type = "User"
-    target_id   = data.firehydrant_user.my-user.id
+    target_type = "Team"
+    target_id   = firehydrant_team.backup-team.id
   }
 }
 ```
@@ -61,6 +74,8 @@ The following arguments are supported:
 * `team_id` - (Required) The ID of the team to associate the escalation policy with.
 * `step` - (Required) A block to define a step in the escalation policy. (a minimum of one is required)
 * `handoff_step` - (Optional) A block to define a handoff step in the escalation policy.
+* `default` - (Optional) Set this to `true` to mark this as the default escalation policy for this team.
+* `repetitions` - (Required) The number of times to repeat the escalation policy. Defaults to 0.
 
 The `step` block supports:
 
@@ -69,13 +84,13 @@ The `step` block supports:
 
 The `targets` block supports:
 
-* `repetitions` - (Required) The number of times to repeat the escalation policy. Defaults to 0.
-* `handoff_step` - (Optional) A block to define a handoff step in the escalation policy.
+* `id` - (Required) The ID of the target for this step.
+* `type` - (Required) The type of target for this step. Must be one of `User`, `SlackChannel`, or `OnCallSchedule`.
 
 The `handoff_step` block supports:
 
 * `target_id` - (Required) The ID of the target to handoff to.
-* `target_type` - (Required) The type of target to handoff to. Must be one of `User`, `Team`, or `OnCallSchedule`.
+* `target_type` - (Required) The type of target to handoff to. Must be one of `Team` or `EscalationPolicy`.
 
 ## Attributes Reference
 
