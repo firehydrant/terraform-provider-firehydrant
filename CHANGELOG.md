@@ -1,3 +1,8 @@
+## 0.9.1
+
+BUG FIXES:
+* `firehydrant_escalation_policy` example and documentation updated to correctly reflect the usage requirements.
+
 ## 0.9.0
 
 * **New Data Source**: `firehydrant_ingest_url` ([#152](https://github.com/firehydrant/terraform-provider-firehydrant/pull/152)).
