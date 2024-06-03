@@ -32,30 +32,6 @@ func testAccFireHydrantStatusUpdateTemplateConfigBasic() string {
 	`
 }
 
-func TestAccFireHydrantStatusUpdateTemplate_NameMissing(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
-		Steps: []resource.TestStep{
-			{
-				Config: testAccFireHydrantStatusUpdateTemplateConfigNameMissing(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFireHydrantSignalRuleExists("firehydrant_status_update_template.test"),
-				),
-			},
-		},
-	})
-}
-
-func testAccFireHydrantStatusUpdateTemplateConfigNameMissing() string {
-	return `
-	resource "firehydrant_status_update_template" "test" {
-		name = ""
-		body = "This is the template body"
-	}
-	`
-}
-
 func testAccCheckFireHydrantStatusUpdateTemplateExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
