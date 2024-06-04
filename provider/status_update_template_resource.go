@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
@@ -43,16 +42,12 @@ func readResourceFireHydrantStatusUpdateTemplate(ctx context.Context, d *schema.
 	firehydrantAPIClient := m.(firehydrant.Client)
 
 	id := d.Id()
-	tflog.Debug(ctx, fmt.Sprintf("Read status update template: %s", id), map[string]interface{}{
-		"id": id,
-	})
+	tflog.Debug(ctx, "Read status update template", map[string]interface{}{"id": id})
 
 	template, err := firehydrantAPIClient.StatusUpdateTemplates().Get(ctx, id)
 	if err != nil {
 		if errors.Is(err, firehydrant.ErrorNotFound) {
-			tflog.Debug(ctx, fmt.Sprintf("Status update template %s does not exist", id), map[string]interface{}{
-				"id": id,
-			})
+			tflog.Debug(ctx, "Status update template %s does not exist", map[string]interface{}{"id": id})
 			d.SetId("")
 			return nil
 		}
@@ -81,9 +76,7 @@ func createResourceFireHydrantStatusUpdateTemplate(ctx context.Context, d *schem
 		Body: d.Get("body").(string),
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Create status update template: %s", d.Id()), map[string]interface{}{
-		"id": d.Id(),
-	})
+	tflog.Debug(ctx, "Create status update template", map[string]interface{}{"id": d.Id()})
 	statusUpdateTemplateResponse, err := firehydrantAPIClient.StatusUpdateTemplates().Create(ctx, createRequest)
 	if err != nil {
 		return diag.Errorf("Error creating status update template %s: %v", d.Id(), err)
@@ -102,9 +95,7 @@ func updateResourceFireHydrantStatusUpdateTemplate(ctx context.Context, d *schem
 		Body: d.Get("body").(string),
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Update status update template: %s", d.Id()), map[string]interface{}{
-		"id": d.Id(),
-	})
+	tflog.Debug(ctx, "Update status update template", map[string]interface{}{"id": d.Id()})
 	_, err := firehydrantAPIClient.StatusUpdateTemplates().Update(ctx, d.Id(), updateRequest)
 	if err != nil {
 		return diag.Errorf("Error updating status update template %s: %v", d.Id(), err)
@@ -116,9 +107,7 @@ func updateResourceFireHydrantStatusUpdateTemplate(ctx context.Context, d *schem
 func deleteResourceFireHydrantStatusUpdateTemplate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	firehydrantAPIClient := m.(firehydrant.Client)
 
-	tflog.Debug(ctx, fmt.Sprintf("Delete status update template: %s", d.Id()), map[string]interface{}{
-		"id": d.Id(),
-	})
+	tflog.Debug(ctx, "Delete status update template", map[string]interface{}{"id": d.Id()})
 	err := firehydrantAPIClient.StatusUpdateTemplates().Delete(ctx, d.Id())
 	if err != nil {
 		return diag.Errorf("Error deleting status update template %s: %v", d.Id(), err)
