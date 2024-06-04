@@ -65,6 +65,7 @@ type Client interface {
 	TaskLists() TaskListsClient
 	Teams() TeamsClient
 	SlackChannels() SlackChannelsClient
+	StatusUpdateTemplates() StatusUpdateTemplates
 
 	// Users
 	GetUsers(ctx context.Context, params GetUserParams) (*UserResponse, error)
@@ -223,6 +224,10 @@ func (c *APIClient) IngestURL() IngestURLClient {
 // Transposers returns a TransposersClient interface for retrieving transposers from FireHydrant
 func (c *APIClient) Transposers() TransposersClient {
 	return &RESTTransposersClient{client: c}
+}
+
+func (c *APIClient) StatusUpdateTemplates() StatusUpdateTemplates {
+	return &RESTStatusUpdateTemplateClient{client: c}
 }
 
 // GetUsers gets matching users in FireHydrant
