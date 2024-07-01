@@ -117,6 +117,7 @@ type ServiceQuery struct {
 	Query          string         `url:"query,omitempty"`
 	ServiceTier    int            `url:"int,service_tier,omitempty"`
 	LabelsSelector LabelsSelector `url:"labels,omitempty"`
+	Page           int            `url:"page,omitempty"`
 }
 
 type LabelsSelector map[string]string
@@ -146,7 +147,8 @@ var _ query.Encoder = LabelsSelector{}
 
 // ServicesResponse is the payload for retrieving a list of services
 type ServicesResponse struct {
-	Services []ServiceResponse `json:"data"`
+	Services   []ServiceResponse `json:"data"`
+	Pagination *Pagination       `json:"pagination,omitempty"`
 }
 
 // UserResponse is the payload for a user
