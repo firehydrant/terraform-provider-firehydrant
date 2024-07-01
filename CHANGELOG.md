@@ -1,3 +1,8 @@
+## 0.9.2 (Unreleased)
+
+BUG FIXES:
+* `firehydrant_services` data source pulls all services correctly
+
 ## 0.9.1
 
 BUG FIXES:

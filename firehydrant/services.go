@@ -48,14 +48,24 @@ func (c *RESTServicesClient) Get(ctx context.Context, id string) (*ServiceRespon
 func (c *RESTServicesClient) List(ctx context.Context, req *ServiceQuery) (*ServicesResponse, error) {
 	servicesResponse := &ServicesResponse{}
 	apiError := &APIError{}
-	response, err := c.restClient().Get("services").QueryStruct(req).Receive(servicesResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get services")
-	}
+	curPage := 1
 
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
+	for {
+		req.Page = curPage
+		response, err := c.restClient().Get("services").QueryStruct(req).Receive(servicesResponse, apiError)
+		if err != nil {
+			return nil, errors.Wrap(err, "could not get services")
+		}
+
+		err = checkResponseStatusCode(response, apiError)
+		if err != nil {
+			return nil, err
+		}
+
+		if servicesResponse.Pagination == nil || servicesResponse.Pagination.Last == curPage {
+			break
+		}
+		curPage += 1
 	}
 
 	return servicesResponse, nil
