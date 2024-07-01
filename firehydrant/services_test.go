@@ -88,7 +88,7 @@ func TestGetServices(t *testing.T) {
 		t.Fatalf("Received error hitting ping endpoint: %s", err.Error())
 	}
 
-	if expected := "/services?labels=key1%3Dval1%2Ckey2%3Dval2&query=hello-world"; expected != requestPathRcvd {
+	if expected := "/services?labels=key1%3Dval1%2Ckey2%3Dval2&page=1&query=hello-world"; expected != requestPathRcvd {
 		t.Fatalf("Expected %s, Got: %s for request path", expected, requestPathRcvd)
 	}
 }
