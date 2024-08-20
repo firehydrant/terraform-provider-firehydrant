@@ -44,7 +44,8 @@ func (c *RESTTeamsClient) Get(ctx context.Context, id string) (*TeamResponse, er
 	return teamResponse, nil
 }
 
-// List retrieves a list of teams based on a team query
+// List retrieves a list of teams based on a team query. Pagination object in the returned response
+// can be ignored as this function handles pagination automatically.
 func (c *RESTTeamsClient) List(ctx context.Context, req *TeamQuery) (*TeamsResponse, error) {
 	teamsResponse := &TeamsResponse{}
 	apiError := &APIError{}
@@ -52,7 +53,8 @@ func (c *RESTTeamsClient) List(ctx context.Context, req *TeamQuery) (*TeamsRespo
 
 	for {
 		req.Page = curPage
-		response, err := c.restClient().Get("teams").QueryStruct(req).Receive(teamsResponse, apiError)
+		var pageResponse TeamsResponse
+		response, err := c.restClient().Get("teams").QueryStruct(req).Receive(&pageResponse, apiError)
 		if err != nil {
 			return nil, errors.Wrap(err, "could not get teams")
 		}
@@ -62,10 +64,15 @@ func (c *RESTTeamsClient) List(ctx context.Context, req *TeamQuery) (*TeamsRespo
 			return nil, err
 		}
 
-		if teamsResponse.Pagination == nil || teamsResponse.Pagination.Last == curPage {
+		for _, team := range pageResponse.Teams {
+			teamsResponse.Teams = append(teamsResponse.Teams, team)
+		}
+
+		if pageResponse.Pagination == nil || pageResponse.Pagination.Next == 0 {
 			break
 		}
-		curPage += 1
+
+		curPage = pageResponse.Pagination.Next
 	}
 
 	return teamsResponse, nil

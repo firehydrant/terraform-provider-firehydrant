@@ -1,4 +1,9 @@
-## 0.9.2 (Unreleased)
+## 0.11.0
+
+BUG FIXES:
+* `firehydrant_teams` and `firehydrant_services` data sources are now aware of all pages of teams ([#160](https://github.com/firehydrant/terraform-provider-firehydrant/pull/160))
+
+## 0.10.0
 
 BUG FIXES:
 * `firehydrant_services` data source pulls all services correctly
@@ -28,7 +33,7 @@ BUG FIXES:
 ## 0.7.0
 
 ENHANCEMENTS:
-* **Added to Data Source**: `firehydrant_slack_channel`. Now you can pass either the channel id or the channel name to the data source. 
+* **Added to Data Source**: `firehydrant_slack_channel`. Now you can pass either the channel id or the channel name to the data source.
 
 ## 0.6.0
 

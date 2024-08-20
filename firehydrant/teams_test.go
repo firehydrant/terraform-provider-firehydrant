@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/google/go-querystring/query"
@@ -53,7 +54,7 @@ func TestGetTeams(t *testing.T) {
 			Items: 1,
 			Pages: 1,
 			Last:  1,
-			Next:  1,
+			Next:  0,
 		},
 	}
 
@@ -76,9 +77,7 @@ func TestGetTeams(t *testing.T) {
 		return
 	}
 
-	qry := &TeamQuery{
-		Query: "test-team",
-	}
+	qry := &TeamQuery{Query: "test-team"}
 
 	vs, err := query.Values(qry)
 	if err != nil {
@@ -94,5 +93,100 @@ func TestGetTeams(t *testing.T) {
 
 	if expected := "/teams?page=1&query=test-team"; expected != requestPathRcvd {
 		t.Fatalf("Expected %s, Got: %s for request path", expected, requestPathRcvd)
+	}
+}
+
+func TestListTeamsPaginated(t *testing.T) {
+	responses := []TeamsResponse{
+		{
+			Teams: []TeamResponse{
+				{
+					ID: "team-1",
+				},
+			},
+			Pagination: &Pagination{
+				Count: 2,
+				Page:  1,
+				Items: 1,
+				Pages: 2,
+				Last:  2,
+				Next:  2,
+			},
+		},
+		{
+			Teams: []TeamResponse{
+				{
+					ID: "team-2",
+				},
+			},
+			Pagination: &Pagination{
+				Count: 2,
+				Page:  2,
+				Items: 1,
+				Pages: 2,
+				Last:  2,
+				Next:  0, // Technically null in JSON, but marshalled to zero-value of int in Go.
+			},
+		},
+	}
+
+	requestCount := 0
+
+	h := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if requestCount >= len(responses) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		q := req.URL.Query()
+		pageStr := q.Get("page")
+		if pageStr == "" {
+			pageStr = "1"
+		}
+		page, err := strconv.Atoi(pageStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		requestCount++
+
+		// Decrement page to get the correct response in slice.
+		// URL pages are 1-indexed, but slices are 0-indexed.
+		response := responses[page-1]
+
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			panic(err)
+		}
+	})
+	ts := httptest.NewServer(h)
+
+	defer ts.Close()
+
+	testToken := "testing-123"
+	c, err := NewRestClient(testToken, WithBaseURL(ts.URL))
+
+	if err != nil {
+		t.Fatalf("Received error initializing API client: %s", err.Error())
+		return
+	}
+
+	qry := &TeamQuery{}
+
+	result, err := c.Teams().List(context.TODO(), qry)
+	if err != nil {
+		t.Fatalf("Received error hitting ping endpoint: %s", err.Error())
+	}
+	if requestCount != 2 {
+		t.Errorf("Expected 2 requests, got %d", requestCount)
+	}
+	if total := len(result.Teams); total != 2 {
+		t.Errorf("Expected 2 results, got %d", total)
+	}
+	if result.Teams[0].ID != "team-1" {
+		t.Errorf("Expected team-1, got %s", result.Teams[0].ID)
+	}
+	if result.Teams[1].ID != "team-2" {
+		t.Errorf("Expected team-2, got %s", result.Teams[1].ID)
 	}
 }

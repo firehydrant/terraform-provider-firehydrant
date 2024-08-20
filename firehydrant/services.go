@@ -52,7 +52,8 @@ func (c *RESTServicesClient) List(ctx context.Context, req *ServiceQuery) (*Serv
 
 	for {
 		req.Page = curPage
-		response, err := c.restClient().Get("services").QueryStruct(req).Receive(servicesResponse, apiError)
+		var pageResponse ServicesResponse
+		response, err := c.restClient().Get("services").QueryStruct(req).Receive(&pageResponse, apiError)
 		if err != nil {
 			return nil, errors.Wrap(err, "could not get services")
 		}
@@ -62,10 +63,15 @@ func (c *RESTServicesClient) List(ctx context.Context, req *ServiceQuery) (*Serv
 			return nil, err
 		}
 
-		if servicesResponse.Pagination == nil || servicesResponse.Pagination.Last == curPage {
+		for _, service := range pageResponse.Services {
+			servicesResponse.Services = append(servicesResponse.Services, service)
+		}
+
+		if pageResponse.Pagination == nil || pageResponse.Pagination.Next == 0 {
 			break
 		}
-		curPage += 1
+
+		curPage = pageResponse.Pagination.Next
 	}
 
 	return servicesResponse, nil
