@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/google/go-querystring/query"
@@ -90,5 +91,97 @@ func TestGetServices(t *testing.T) {
 
 	if expected := "/services?labels=key1%3Dval1%2Ckey2%3Dval2&page=1&query=hello-world"; expected != requestPathRcvd {
 		t.Fatalf("Expected %s, Got: %s for request path", expected, requestPathRcvd)
+	}
+}
+
+func TestListServicesPaginated(t *testing.T) {
+	responses := []ServicesResponse{
+		ServicesResponse{
+			Services: []ServiceResponse{
+				{
+					ID: "service-1",
+				},
+			},
+			Pagination: &Pagination{
+				Count: 2,
+				Page:  1,
+				Items: 1,
+				Pages: 2,
+				Last:  2,
+				Next:  2,
+			},
+		},
+		ServicesResponse{
+			Services: []ServiceResponse{
+				{
+					ID: "service-2",
+				},
+			},
+			Pagination: &Pagination{
+				Count: 2,
+				Page:  2,
+				Items: 1,
+				Pages: 2,
+				Last:  2,
+			},
+		},
+	}
+
+	requestCount := 0
+	h := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if requestCount >= len(responses) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		q := req.URL.Query()
+		pageStr := q.Get("page")
+		if pageStr == "" {
+			pageStr = "1"
+		}
+		page, err := strconv.Atoi(pageStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		requestCount++
+
+		// Decrement page to get the correct response in slice.
+		// URL pages are 1-indexed, but slices are 0-indexed.
+		response := responses[page-1]
+
+		if err := json.NewEncoder(w).Encode(&response); err != nil {
+			panic(err)
+		}
+	})
+	ts := httptest.NewServer(h)
+
+	defer ts.Close()
+
+	testToken := "testing-123"
+	c, err := NewRestClient(testToken, WithBaseURL(ts.URL))
+
+	if err != nil {
+		t.Fatalf("Received error initializing API client: %s", err.Error())
+		return
+	}
+
+	response, err := c.Services().List(context.TODO(), &ServiceQuery{})
+	if err != nil {
+		t.Fatalf("Received error hitting ping endpoint: %s", err.Error())
+	}
+
+	if len(response.Services) != 2 {
+		t.Fatalf("Expected 2 services, got %d", len(response.Services))
+	}
+	if requestCount != 2 {
+		t.Errorf("Expected 2 requests, got %d", requestCount)
+	}
+	if response.Services[0].ID != "service-1" {
+		t.Errorf("Expected service-1, got %s", response.Services[0].ID)
+	}
+	if response.Services[1].ID != "service-2" {
+		t.Errorf("Expected service-2, got %s", response.Services[1].ID)
 	}
 }
