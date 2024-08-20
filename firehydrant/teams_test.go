@@ -98,7 +98,7 @@ func TestGetTeams(t *testing.T) {
 
 func TestListTeamsPaginated(t *testing.T) {
 	responses := []TeamsResponse{
-		TeamsResponse{
+		{
 			Teams: []TeamResponse{
 				{
 					ID: "team-1",
@@ -113,7 +113,7 @@ func TestListTeamsPaginated(t *testing.T) {
 				Next:  2,
 			},
 		},
-		TeamsResponse{
+		{
 			Teams: []TeamResponse{
 				{
 					ID: "team-2",

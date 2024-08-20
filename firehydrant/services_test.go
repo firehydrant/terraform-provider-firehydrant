@@ -96,7 +96,7 @@ func TestGetServices(t *testing.T) {
 
 func TestListServicesPaginated(t *testing.T) {
 	responses := []ServicesResponse{
-		ServicesResponse{
+		{
 			Services: []ServiceResponse{
 				{
 					ID: "service-1",
@@ -111,7 +111,7 @@ func TestListServicesPaginated(t *testing.T) {
 				Next:  2,
 			},
 		},
-		ServicesResponse{
+		{
 			Services: []ServiceResponse{
 				{
 					ID: "service-2",

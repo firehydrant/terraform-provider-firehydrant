@@ -20,8 +20,8 @@ build: fmtcheck
 .PHONY: fmt
 fmt:
 	echo "==> Fixing code with gofmt..."
-	gofmt -l -w ./$(NAME)
-	gofmt -l -w ./provider
+	gofmt -l -s -w ./$(NAME)
+	gofmt -l -s -w ./provider
 
 .PHONY: fmtcheck
 fmtcheck:
