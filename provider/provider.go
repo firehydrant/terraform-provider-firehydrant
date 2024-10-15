@@ -15,16 +15,6 @@ const (
 	firehydrantBaseURLName = "firehydrant_base_url"
 )
 
-// Commit SHA for the commit of this provider's release.
-//
-// note: injected by goreleaser using ldflags.
-var Commit = ""
-
-// Version semver of this provider.
-//
-// note: injected by goreleaser using ldflags.
-var Version = ""
-
 // Provider returns a terraform provider for the FireHydrant API
 func Provider() *schema.Provider {
 	provider := &schema.Provider{
@@ -81,7 +71,7 @@ func Provider() *schema.Provider {
 		terraformVersion := provider.TerraformVersion
 
 		if terraformVersion == "" {
-			terraformVersion = "0.11+compatible"
+			terraformVersion = "unknown"
 		}
 
 		return setupFireHydrantContext(ctx, rd, terraformVersion)
