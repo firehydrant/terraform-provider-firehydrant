@@ -1,3 +1,8 @@
+## 0.12.0
+
+ENHANCEMENTS:
+* Resilient client-side rate limiting and burst control ([#162](https://github.com/firehydrant/terraform-provider-firehydrant/pull/162))
+
 ## 0.11.0
 
 BUG FIXES:
