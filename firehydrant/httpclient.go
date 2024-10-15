@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"sync"
 	"time"
 
+	"github.com/dghubble/sling"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"golang.org/x/time/rate"
 )
@@ -25,13 +27,23 @@ type RateLimitedHTTPDoer struct {
 	backoff time.Duration
 }
 
+var _ sling.Doer = &RateLimitedHTTPDoer{}
+
 const (
 	RateLimitSeconds  = 5 * time.Second
 	RateLimitRequests = 10
 )
 
 func DefaultHTTPDoerRateLimit() *rate.Limiter {
-	return rate.NewLimiter(rate.Every(RateLimitSeconds), RateLimitRequests)
+	bucket := RateLimitSeconds
+	timeBucket := os.Getenv("FIREHYDRANT_RATE_LIMIT_SECONDS")
+	if timeBucket != "" {
+		if n, err := strconv.Atoi(timeBucket); err == nil {
+			bucket = time.Duration(n) * time.Second
+		}
+	}
+
+	return rate.NewLimiter(rate.Every(bucket), RateLimitRequests)
 }
 
 func NewRateLimitedHTTPDoer() *RateLimitedHTTPDoer {
