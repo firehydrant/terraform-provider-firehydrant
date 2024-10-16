@@ -13,7 +13,6 @@ import (
 	"github.com/bxcodec/faker/v3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/time/rate"
 )
 
 var (
@@ -75,9 +74,6 @@ func setupClient(requestPath string, mockedResponse interface{}, requestTests ..
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not generate rest client: %w", err)
 	}
-
-	// Don't perform client-side rate limiting in tests.
-	c.doer.WithLimiter(rate.NewLimiter(rate.Inf, 0))
 
 	teardown := func() {
 		ts.Close()

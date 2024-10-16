@@ -1,3 +1,8 @@
+## 0.12.1
+
+REVERTED:
+* Reverted the client-side rate limiting and burst control ([#164](https://github.com/firehydrant/terraform-provider-firehydrant/pull/164))
+
 ## 0.12.0
 
 ENHANCEMENTS:

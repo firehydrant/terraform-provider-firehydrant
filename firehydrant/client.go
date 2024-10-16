@@ -37,7 +37,6 @@ type APIClient struct {
 	baseURL         string
 	token           string
 	userAgentSuffix string
-	doer            *RateLimitedHTTPDoer
 }
 
 const (
@@ -115,8 +114,6 @@ func NewRestClient(token string, opts ...OptFunc) (*APIClient, error) {
 		}
 	}
 
-	c.doer = NewRateLimitedHTTPDoer()
-
 	return c, nil
 }
 
@@ -124,7 +121,6 @@ func (c *APIClient) client() *sling.Sling {
 	bi := GetBuildInfo()
 
 	return sling.New().Base(c.baseURL).
-		Doer(c.doer).
 		Set(
 			"User-Agent",
 			fmt.Sprintf(
