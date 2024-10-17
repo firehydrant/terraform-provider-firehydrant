@@ -9,6 +9,23 @@ import (
 	"github.com/pkg/errors"
 )
 
+type NotificationPriority string
+
+const (
+	NotificationPriorityLow    NotificationPriority = "LOW"
+	NotificationPriorityMedium NotificationPriority = "MEDIUM"
+	NotificationPriorityHigh   NotificationPriority = "HIGH"
+)
+
+// Validate checks if the NotificationPriority is valid
+func (np NotificationPriority) Validate() error {
+	switch np {
+	case NotificationPriorityLow, NotificationPriorityMedium, NotificationPriorityHigh:
+		return nil
+	}
+	return fmt.Errorf("invalid notification priority: %s", np)
+}
+
 type SignalsRules interface {
 	Get(ctx context.Context, teamID, id string) (*SignalsRuleResponse, error)
 	Create(ctx context.Context, teamID string, createReq CreateSignalsRuleRequest) (*SignalsRuleResponse, error)
@@ -33,30 +50,33 @@ type SignalRuleIncidentType struct {
 }
 
 type SignalsRuleResponse struct {
-	ID           string                 `json:"id"`
-	Name         string                 `json:"name"`
-	Expression   string                 `json:"expression"`
-	Target       SignalRuleTarget       `json:"target"`
-	IncidentType SignalRuleIncidentType `json:"incident_type"`
+	ID                           string                 `json:"id"`
+	Name                         string                 `json:"name"`
+	Expression                   string                 `json:"expression"`
+	Target                       SignalRuleTarget       `json:"target"`
+	IncidentType                 SignalRuleIncidentType `json:"incident_type"`
+	NotificationPriorityOverride NotificationPriority   `json:"notification_priority_override,omitempty"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type CreateSignalsRuleRequest struct {
-	Name           string `json:"name"`
-	Expression     string `json:"expression"`
-	TargetType     string `json:"target_type"`
-	TargetID       string `json:"target_id"`
-	IncidentTypeID string `json:"incident_type_id,omitempty"`
+	Name                         string               `json:"name"`
+	Expression                   string               `json:"expression"`
+	TargetType                   string               `json:"target_type"`
+	TargetID                     string               `json:"target_id"`
+	IncidentTypeID               string               `json:"incident_type_id,omitempty"`
+	NotificationPriorityOverride NotificationPriority `json:"notification_priority_override,omitempty"`
 }
 
 type UpdateSignalsRuleRequest struct {
-	Name           string `json:"name"`
-	Expression     string `json:"expression"`
-	TargetType     string `json:"target_type"`
-	TargetID       string `json:"target_id"`
-	IncidentTypeID string `json:"incident_type_id,omitempty"`
+	Name                         string               `json:"name"`
+	Expression                   string               `json:"expression"`
+	TargetType                   string               `json:"target_type"`
+	TargetID                     string               `json:"target_id"`
+	IncidentTypeID               string               `json:"incident_type_id,omitempty"`
+	NotificationPriorityOverride NotificationPriority `json:"notification_priority_override,omitempty"`
 }
 
 func (c *RESTSignalsRulesClient) restClient() *sling.Sling {
