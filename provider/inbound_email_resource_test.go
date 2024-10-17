@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -81,13 +82,10 @@ func testAccCheckInboundEmailResourceExists(resourceName string) resource.TestCh
 			return fmt.Errorf("No Inbound Email ID is set")
 		}
 
-		// Get the provider
-		providerFactories := defaultProviderFactories()
-		p, err := providerFactories["firehydrant"]()
+		client, err := getTestClient()
 		if err != nil {
-			return err
+			return fmt.Errorf("Error getting client: %s", err)
 		}
-		client := p.Meta().(firehydrant.Client)
 
 		_, err = client.InboundEmails().Get(context.Background(), rs.Primary.ID)
 		if err != nil {
@@ -100,13 +98,10 @@ func testAccCheckInboundEmailResourceExists(resourceName string) resource.TestCh
 
 func testAccCheckInboundEmailResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		// Get the provider
-		providerFactories := defaultProviderFactories()
-		p, err := providerFactories["firehydrant"]()
+		client, err := getTestClient()
 		if err != nil {
-			return err
+			return fmt.Errorf("Error getting client: %s", err)
 		}
-		client := p.Meta().(firehydrant.Client)
 
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "firehydrant_inbound_email" {
@@ -121,6 +116,20 @@ func testAccCheckInboundEmailResourceDestroy() resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func getTestClient() (firehydrant.Client, error) {
+	apiKey := os.Getenv("FIREHYDRANT_API_KEY")
+	if apiKey == "" {
+		return nil, fmt.Errorf("FIREHYDRANT_API_KEY must be set for acceptance tests")
+	}
+
+	client, err := firehydrant.NewRestClient(apiKey)
+	if err != nil {
+		return nil, fmt.Errorf("Error creating client: %s", err)
+	}
+
+	return client, nil
 }
 
 func testAccInboundEmailResourceConfig_basic(rName string) string {
