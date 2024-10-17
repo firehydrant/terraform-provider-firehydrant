@@ -1,3 +1,8 @@
+## 0.13.0 (Unreleased)
+
+ENHANCEMENTS:
+* Adds the attribute for notification priority override to the `firehydrant_signal_rule` resource ([#166](https://github.com/firehydrant/terraform-provider-firehydrant/pull/166))
+
 ## 0.12.1
 
 REVERTED:

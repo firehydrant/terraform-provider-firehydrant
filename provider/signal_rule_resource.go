@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceSignalRule() *schema.Resource {
@@ -47,6 +48,15 @@ func resourceSignalRule() *schema.Resource {
 			"incident_type_id": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"notification_priority_override": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					string(firehydrant.NotificationPriorityLow),
+					string(firehydrant.NotificationPriorityMedium),
+					string(firehydrant.NotificationPriorityHigh),
+				}, false),
 			},
 		},
 	}
@@ -93,6 +103,8 @@ func readResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
+	d.Set("notification_priority_override", string(signalRule.NotificationPriorityOverride))
+
 	return diag.Diagnostics{}
 }
 
@@ -102,11 +114,12 @@ func createResourceFireHydrantSignalRule(ctx context.Context, d *schema.Resource
 
 	// Construct the create request
 	createRequest := firehydrant.CreateSignalsRuleRequest{
-		Name:           d.Get("name").(string),
-		Expression:     d.Get("expression").(string),
-		TargetType:     d.Get("target_type").(string),
-		TargetID:       d.Get("target_id").(string),
-		IncidentTypeID: d.Get("incident_type_id").(string),
+		Name:                         d.Get("name").(string),
+		Expression:                   d.Get("expression").(string),
+		TargetType:                   d.Get("target_type").(string),
+		TargetID:                     d.Get("target_id").(string),
+		IncidentTypeID:               d.Get("incident_type_id").(string),
+		NotificationPriorityOverride: firehydrant.NotificationPriority(d.Get("notification_priority_override").(string)),
 	}
 
 	// Create the signal rule
@@ -131,11 +144,12 @@ func updateResourceFireHydrantSignalRule(ctx context.Context, d *schema.Resource
 
 	// Construct the update request
 	updateRequest := firehydrant.UpdateSignalsRuleRequest{
-		Name:           d.Get("name").(string),
-		Expression:     d.Get("expression").(string),
-		TargetType:     d.Get("target_type").(string),
-		TargetID:       d.Get("target_id").(string),
-		IncidentTypeID: d.Get("incident_type_id").(string),
+		Name:                         d.Get("name").(string),
+		Expression:                   d.Get("expression").(string),
+		TargetType:                   d.Get("target_type").(string),
+		TargetID:                     d.Get("target_id").(string),
+		IncidentTypeID:               d.Get("incident_type_id").(string),
+		NotificationPriorityOverride: firehydrant.NotificationPriority(d.Get("notification_priority_override").(string)),
 	}
 
 	// Update the signal rule
