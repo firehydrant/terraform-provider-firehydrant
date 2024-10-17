@@ -1,6 +1,7 @@
-## 0.13.0 (Unreleased)
+## 0.13.0
 
 ENHANCEMENTS:
+* **New Resource**: `firehydrant_inbound_email` ([#165](https://github.com/firehydrant/terraform-provider-firehydrant/pull/165/))
 * Adds the attribute for notification priority override to the `firehydrant_signal_rule` resource ([#166](https://github.com/firehydrant/terraform-provider-firehydrant/pull/166))
 
 ## 0.12.1

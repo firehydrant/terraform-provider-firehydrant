@@ -76,6 +76,7 @@ type Client interface {
 	EscalationPolicies() EscalationPolicies
 	IngestURL() IngestURLClient
 	Transposers() TransposersClient
+	InboundEmails() InboundEmailsClient
 }
 
 // OptFunc is a function that sets a setting on a client
