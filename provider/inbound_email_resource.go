@@ -69,6 +69,10 @@ func resourceInboundEmail() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"email": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -115,6 +119,7 @@ func resourceInboundEmailRead(ctx context.Context, d *schema.ResourceData, m int
 	d.Set("target", []interface{}{flattenTarget(inboundEmail.Target)})
 	d.Set("rules", inboundEmail.Rules)
 	d.Set("rule_matching_strategy", inboundEmail.RuleMatchingStrategy)
+	d.Set("email", inboundEmail.Email)
 
 	return nil
 }

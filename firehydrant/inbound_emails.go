@@ -57,6 +57,9 @@ type InboundEmailResponse struct {
 	Target               Target   `json:"target"`
 	Rules                []string `json:"rules"`
 	RuleMatchingStrategy string   `json:"rule_matching_strategy"`
+
+	// Calculated fields
+	Email string `json:"email"`
 }
 
 // UpdateInboundEmailRequest is the payload for updating an inbound email

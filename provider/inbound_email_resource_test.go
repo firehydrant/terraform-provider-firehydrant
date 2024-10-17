@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -36,6 +37,7 @@ func TestAccInboundEmailResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "rules.#", "1"),
 					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "rules.0", "email.body.contains(\"hello\")"),
 					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "rule_matching_strategy", "all"),
+					testAccCheckInboundEmailResourceEmailAddressFormat("firehydrant_inbound_email.test"),
 				),
 			},
 		},
@@ -55,6 +57,7 @@ func TestAccInboundEmailResource_update(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckInboundEmailResourceExists("firehydrant_inbound_email.test"),
 					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "name", fmt.Sprintf("test-inbound-email-%s", rName)),
+					testAccCheckInboundEmailResourceEmailAddressFormat("firehydrant_inbound_email.test"),
 				),
 			},
 			{
@@ -112,6 +115,29 @@ func testAccCheckInboundEmailResourceDestroy() resource.TestCheckFunc {
 			if err == nil {
 				return fmt.Errorf("Inbound Email still exists")
 			}
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckInboundEmailResourceEmailAddressFormat(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		emailAddress := rs.Primary.Attributes["email"]
+		if emailAddress == "" {
+			return fmt.Errorf("No email address set")
+		}
+
+		// Check if the email address matches the expected format
+		// This is a basic check; adjust the regex as needed to match the actual format
+		match, _ := regexp.MatchString(`^[a-zA-Z0-9._%+-]+@signals\.email$`, emailAddress)
+		if !match {
+			return fmt.Errorf("Email address %s does not match the expected format", emailAddress)
 		}
 
 		return nil
