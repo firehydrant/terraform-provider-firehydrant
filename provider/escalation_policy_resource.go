@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -106,6 +108,14 @@ func readResourceFireHydrantEscalationPolicy(ctx context.Context, d *schema.Reso
 
 	escalationPolicy, err := firehydrantAPIClient.EscalationPolicies().Get(ctx, teamID, id)
 	if err != nil {
+		if errors.Is(err, firehydrant.ErrorNotFound) {
+			tflog.Debug(ctx, fmt.Sprintf("Escalation Policy %s no longer exists", id), map[string]interface{}{
+				"id": id,
+			})
+			d.SetId("")
+			return nil
+		}
+
 		return diag.Errorf("Error reading escalation policy %s: %v", id, err)
 	}
 
