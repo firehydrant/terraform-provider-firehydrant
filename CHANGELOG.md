@@ -1,3 +1,8 @@
+## 0.13.1
+
+BUG FIXES:
+* Fixes a bug where escalation policy resources were not being removed from state if deleted outside of Terraform
+
 ## 0.13.0
 
 ENHANCEMENTS:
