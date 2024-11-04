@@ -69,6 +69,7 @@ The following arguments are supported:
 * `time_zone` - (Required) The time zone that the on-call schedule is in.
 * `strategy` - (Required) A block to define the strategy for the on-call schedule.
 * `restrictions` - (Optional) A block to define a restriction for the on-call schedule.
+* `effective_at` - (Optional) The date and time that the on-call schedule becomes effective. Must be in `YYYY-MM-DDTHH:MM:SSZ` format. Defaults to the current date and time. If set to the past, the schedule will be effective immediately. This attribute is not stored in Terraform state.
 
 The `strategy` block supports:
 
