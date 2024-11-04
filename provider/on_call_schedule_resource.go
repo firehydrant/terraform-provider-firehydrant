@@ -260,11 +260,13 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 		"team_id": teamID,
 	})
 
-	onCallSchedule := firehydrant.UpdateOnCallScheduleRequest{
+	// Initialize updateRequest with basic fields
+	updateRequest := firehydrant.UpdateOnCallScheduleRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 	}
 
+	// Get member IDs
 	inputMemberIDs := d.Get("member_ids").([]interface{})
 	if len(inputMemberIDs) == 0 {
 		inputMemberIDs = d.Get("members").([]interface{})
@@ -275,10 +277,44 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 			memberIDs = append(memberIDs, v)
 		}
 	}
-	onCallSchedule.MemberIDs = memberIDs
+	updateRequest.MemberIDs = memberIDs
+
+	// Get strategy configuration
+	if v, ok := d.GetOk("strategy"); ok {
+		if strategies := v.([]interface{}); len(strategies) > 0 {
+			strategy := strategies[0].(map[string]interface{})
+			updateRequest.Strategy = &firehydrant.OnCallScheduleStrategy{
+				Type:        strategy["type"].(string),
+				HandoffTime: strategy["handoff_time"].(string),
+				HandoffDay:  strategy["handoff_day"].(string),
+			}
+
+			// Set shift duration for custom strategy
+			if strategy["type"].(string) == "custom" {
+				updateRequest.Strategy.ShiftDuration = strategy["shift_duration"].(string)
+			}
+		}
+	}
+
+	// Get color if set
+	if v, ok := d.GetOk("color"); ok {
+		updateRequest.Color = v.(string)
+	}
+
+	// Get restrictions
+	restrictions := d.Get("restrictions").([]interface{})
+	for _, r := range restrictions {
+		restriction := r.(map[string]interface{})
+		updateRequest.Restrictions = append(updateRequest.Restrictions, firehydrant.OnCallScheduleRestriction{
+			StartDay:  restriction["start_day"].(string),
+			StartTime: restriction["start_time"].(string),
+			EndDay:    restriction["end_day"].(string),
+			EndTime:   restriction["end_time"].(string),
+		})
+	}
 
 	// Update the on-call schedule
-	_, err := firehydrantAPIClient.OnCallSchedules().Update(ctx, teamID, id, onCallSchedule)
+	_, err := firehydrantAPIClient.OnCallSchedules().Update(ctx, teamID, id, updateRequest)
 	if err != nil {
 		return diag.Errorf("Error updating on-call schedule %s: %v", id, err)
 	}
