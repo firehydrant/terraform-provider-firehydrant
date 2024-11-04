@@ -67,7 +67,7 @@ type UpdateOnCallScheduleRequest struct {
 	EffectiveAt  string                      `json:"effective_at,omitempty"`
 	Color        string                      `json:"color,omitempty"`
 	Strategy     *OnCallScheduleStrategy     `json:"strategy,omitempty"`
-	Restrictions []OnCallScheduleRestriction `json:"restrictions,omitempty"`
+	Restrictions []OnCallScheduleRestriction `json:"restrictions"`
 }
 
 type OnCallScheduleRestriction struct {

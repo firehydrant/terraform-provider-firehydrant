@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -114,6 +116,33 @@ func resourceOnCallSchedule() *schema.Resource {
 							Required: true,
 						},
 					},
+				},
+			},
+			"effective_at": {
+				Type:     schema.TypeString,
+				Optional: true,
+				// Don't set computed:true since we don't want it in the state
+				Description: "RFC3339 timestamp for when the schedule update should take effect. If not provided or if the time is in the past, the update will take effect immediately.",
+				ValidateDiagFunc: schema.SchemaValidateDiagFunc(
+					func(v interface{}, path cty.Path) diag.Diagnostics {
+						timeStr := v.(string)
+						_, err := time.Parse(time.RFC3339, timeStr)
+						if err != nil {
+							return diag.Diagnostics{
+								diag.Diagnostic{
+									Severity:      diag.Error,
+									Summary:       "Invalid effective_at timestamp",
+									Detail:        fmt.Sprintf("effective_at must be a valid RFC3339 timestamp (e.g. 2024-01-01T15:04:05Z), got: %s", timeStr),
+									AttributePath: path,
+								},
+							}
+						}
+
+						return nil
+					},
+				),
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return true
 				},
 			},
 		},
@@ -264,6 +293,28 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 	updateRequest := firehydrant.UpdateOnCallScheduleRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
+	}
+
+	// Check if effective_at exists in raw config rather than state
+	if raw := d.GetRawConfig().GetAttr("effective_at"); !raw.IsNull() {
+		effectiveAtStr := raw.AsString()
+		effectiveAt, err := time.Parse(time.RFC3339, effectiveAtStr)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// Only set effective_at if it's in the future
+		if effectiveAt.After(time.Now()) {
+			updateRequest.EffectiveAt = effectiveAt.Format(time.RFC3339)
+			tflog.Debug(ctx, "Schedule update will take effect at: "+updateRequest.EffectiveAt, map[string]interface{}{
+				"effective_at": updateRequest.EffectiveAt,
+			})
+		} else {
+			tflog.Debug(ctx, "Provided effective_at is in the past, update will take effect immediately", map[string]interface{}{
+				"effective_at": effectiveAtStr,
+				"now":          time.Now().Format(time.RFC3339),
+			})
+		}
 	}
 
 	// Get member IDs
