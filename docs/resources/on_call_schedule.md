@@ -76,7 +76,7 @@ The `strategy` block supports:
 * `type` - (Required) The type of strategy to use for the on-call schedule. Valid values are `weekly`, `daily`, or `custom`.
 * `handoff_time` - (Required) The time of day that the on-call schedule handoff occurs. Must be in `HH:MM:SS` format.
 * `handoff_day` - (Required) The day of the week that the on-call schedule handoff occurs. Valid values are `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, and `saturday`.
-* `shift_duration` - (Optional) The duration of the on-call shift in ISO8601 format. Required for `custom` strategy.
+* `shift_duration` - (Optional) The duration of the on-call shift in [ISO8601 format](https://en.wikipedia.org/wiki/ISO_8601#Durations) (e.g. `PT8H`). Required for `custom` strategy.
 
 The `restrictions` block supports:
 
