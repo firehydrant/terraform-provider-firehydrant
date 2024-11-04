@@ -1,3 +1,11 @@
+## 0.13.2
+
+BUG FIXES:
+* Fixes a bug where on-call schedule handoff days were not being updated in FireHydrant
+
+EHNANCEMENTS:
+* Adds a new `effective_at` attribute to the `firehydrant_on_call_schedule` resource to allow for scheduling changes to take effect at a future date
+
 ## 0.13.1
 
 BUG FIXES:
