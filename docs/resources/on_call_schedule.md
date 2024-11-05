@@ -69,13 +69,14 @@ The following arguments are supported:
 * `time_zone` - (Required) The time zone that the on-call schedule is in.
 * `strategy` - (Required) A block to define the strategy for the on-call schedule.
 * `restrictions` - (Optional) A block to define a restriction for the on-call schedule.
+* `effective_at` - (Optional) The date and time that the on-call schedule becomes effective. Must be in `YYYY-MM-DDTHH:MM:SSZ` format. Defaults to the current date and time. If set to the past, the schedule will be effective immediately. This attribute is not stored in Terraform state.
 
 The `strategy` block supports:
 
 * `type` - (Required) The type of strategy to use for the on-call schedule. Valid values are `weekly`, `daily`, or `custom`.
 * `handoff_time` - (Required) The time of day that the on-call schedule handoff occurs. Must be in `HH:MM:SS` format.
 * `handoff_day` - (Required) The day of the week that the on-call schedule handoff occurs. Valid values are `sunday`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, and `saturday`.
-* `shift_duration` - (Optional) The duration of the on-call shift in ISO8601 format. Required for `custom` strategy.
+* `shift_duration` - (Optional) The duration of the on-call shift in [ISO8601 format](https://en.wikipedia.org/wiki/ISO_8601#Durations) (e.g. `PT8H`). Required for `custom` strategy.
 
 The `restrictions` block supports:
 

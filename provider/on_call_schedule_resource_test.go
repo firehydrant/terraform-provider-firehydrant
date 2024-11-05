@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"regexp"
 	"testing"
+	"time"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -298,4 +300,279 @@ func TestOfflineOnCallScheduleCreateDeprecated(t *testing.T) {
 	if memberID != "member-1" {
 		t.Fatalf("expected member ID to be member-1, got %s", memberIDs[0].(string))
 	}
+}
+
+func TestAccOnCallScheduleResource_updateHandoffAndRestrictions(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		CheckDestroy:      testAccCheckOnCallScheduleResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				// Initial configuration
+				Config: testAccOnCallScheduleConfig_withHandoff(rName, "monday", "09:00:00"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "name", fmt.Sprintf("test-schedule-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.type", "weekly"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_time", "09:00:00"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "monday"),
+					// Initial configuration has no restrictions
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.#", "0"),
+				),
+			},
+			{
+				// Update handoff day/time and add restrictions
+				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "wednesday", "13:00:00"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "name", fmt.Sprintf("test-schedule-%s", rName)),
+					// Changed handoff settings
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.type", "weekly"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_time", "13:00:00"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "wednesday"),
+					// Added restrictions
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.#", "2"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.0.start_day", "monday"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.0.start_time", "09:00:00"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.0.end_day", "monday"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.0.end_time", "17:00:00"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.1.start_day", "tuesday"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.1.start_time", "09:00:00"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.1.end_day", "tuesday"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.1.end_time", "17:00:00"),
+				),
+			},
+			{
+				// Update just handoff time, keeping restrictions
+				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "wednesday", "15:00:00"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
+					// Changed handoff time only
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_time", "15:00:00"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "wednesday"),
+					// Restrictions still present
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.#", "2"),
+				),
+			},
+		},
+	})
+}
+
+func testAccOnCallScheduleConfig_withHandoff(rName, handoffDay, handoffTime string) string {
+	return fmt.Sprintf(`
+	resource "firehydrant_team" "test_team" {
+		name = "test-team-%s"
+	}
+
+	resource "firehydrant_on_call_schedule" "test_schedule" {
+		team_id = firehydrant_team.test_team.id
+		name = "test-schedule-%s"
+		time_zone = "America/New_York"
+
+		strategy {
+			type         = "weekly"
+			handoff_time = "%s"
+			handoff_day  = "%s"
+		}
+	}
+	`, rName, rName, handoffTime, handoffDay)
+}
+
+func testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, handoffDay, handoffTime string) string {
+	return fmt.Sprintf(`
+	resource "firehydrant_team" "test_team" {
+		name = "test-team-%s"
+	}
+
+	resource "firehydrant_on_call_schedule" "test_schedule" {
+		team_id = firehydrant_team.test_team.id
+		name = "test-schedule-%s"
+		time_zone = "America/New_York"
+
+		strategy {
+			type         = "weekly"
+			handoff_time = "%s"
+			handoff_day  = "%s"
+		}
+
+		restrictions {
+			start_day = "monday"
+			start_time = "09:00:00"
+			end_day = "monday"
+			end_time = "17:00:00"
+		}
+
+		restrictions {
+			start_day = "tuesday"
+			start_time = "09:00:00"
+			end_day = "tuesday"
+			end_time = "17:00:00"
+		}
+	}
+	`, rName, rName, handoffTime, handoffDay)
+}
+
+func TestAccOnCallScheduleResource_scheduleModifications(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		CheckDestroy:      testAccCheckOnCallScheduleResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				// Initial configuration with restrictions
+				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "monday", "09:00:00"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.type", "weekly"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_time", "09:00:00"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "monday"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.#", "2"),
+				),
+			},
+			{
+				// Change just handoff day, keeping time and restrictions
+				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "friday", "09:00:00"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "friday"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_time", "09:00:00"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.#", "2"),
+				),
+			},
+			{
+				// Remove all restrictions but keep handoff settings
+				Config: testAccOnCallScheduleConfig_withHandoff(rName, "friday", "09:00:00"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "friday"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_time", "09:00:00"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.#", "0"),
+				),
+			},
+			{
+				// Add different restriction pattern
+				Config: testAccOnCallScheduleConfig_withBusinessHours(rName, "friday", "09:00:00"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "friday"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_time", "09:00:00"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.#", "1"),
+					// Check business hours restriction
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.0.start_day", "monday"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.0.start_time", "09:00:00"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.0.end_day", "friday"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.0.end_time", "17:00:00"),
+				),
+			},
+		},
+	})
+}
+
+func testAccOnCallScheduleConfig_withBusinessHours(rName, handoffDay, handoffTime string) string {
+	return fmt.Sprintf(`
+	resource "firehydrant_team" "test_team" {
+		name = "test-team-%s"
+	}
+
+	resource "firehydrant_on_call_schedule" "test_schedule" {
+		team_id = firehydrant_team.test_team.id
+		name = "test-schedule-%s"
+		time_zone = "America/New_York"
+
+		strategy {
+			type         = "weekly"
+			handoff_time = "%s"
+			handoff_day  = "%s"
+		}
+
+		restrictions {
+			start_day = "monday"
+			start_time = "09:00:00"
+			end_day = "friday"
+			end_time = "17:00:00"
+		}
+	}
+	`, rName, rName, handoffTime, handoffDay)
+}
+
+func TestAccOnCallScheduleResource_effectiveAt(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+	futureTime := time.Now().Add(24 * time.Hour).Format(time.RFC3339) // Tomorrow
+	pastTime := time.Now().Add(-24 * time.Hour).Format(time.RFC3339)  // Yesterday
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		CheckDestroy:      testAccCheckOnCallScheduleResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				// Initial schedule setup
+				Config: testAccOnCallScheduleConfig_withHandoff(rName, "monday", "09:00:00"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "monday"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_time", "09:00:00"),
+				),
+			},
+			{
+				// Update with future effective_at
+				Config: testAccOnCallScheduleConfig_withEffectiveAt(rName, "friday", "13:00:00", futureTime),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "friday"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_time", "13:00:00"),
+					// effective_at shouldn't be in state
+					resource.TestCheckNoResourceAttr("firehydrant_on_call_schedule.test_schedule", "effective_at"),
+				),
+			},
+			{
+				// Update with past effective_at (should apply immediately)
+				Config: testAccOnCallScheduleConfig_withEffectiveAt(rName, "wednesday", "15:00:00", pastTime),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "wednesday"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_time", "15:00:00"),
+					// effective_at shouldn't be in state
+					resource.TestCheckNoResourceAttr("firehydrant_on_call_schedule.test_schedule", "effective_at"),
+				),
+			},
+			{
+				// Test invalid timestamp format
+				Config:      testAccOnCallScheduleConfig_withEffectiveAt(rName, "thursday", "10:00:00", "invalid-timestamp"),
+				ExpectError: regexp.MustCompile("effective_at must be a valid RFC3339 timestamp"),
+			},
+			{
+				// Verify plan is empty when effective_at changes but nothing else does
+				Config:   testAccOnCallScheduleConfig_withEffectiveAt(rName, "wednesday", "15:00:00", futureTime),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func testAccOnCallScheduleConfig_withEffectiveAt(rName, handoffDay, handoffTime, effectiveAt string) string {
+	return fmt.Sprintf(`
+	resource "firehydrant_team" "test_team" {
+		name = "test-team-%s"
+	}
+
+	resource "firehydrant_on_call_schedule" "test_schedule" {
+		team_id = firehydrant_team.test_team.id
+		name = "test-schedule-%s"
+		time_zone = "America/New_York"
+
+		strategy {
+			type         = "weekly"
+			handoff_time = "%s"
+			handoff_day  = "%s"
+		}
+
+		effective_at = "%s"
+	}
+	`, rName, rName, handoffTime, handoffDay, effectiveAt)
 }
