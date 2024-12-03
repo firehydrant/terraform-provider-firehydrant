@@ -1,3 +1,8 @@
+## 0.13.3 (Unreleased)
+
+BUG FIXES:
+* Fixes a discrepancy between the FireHydrant API and `firehydrant_inbound_email` resource where the `target` attribute was erroneously being required.
+
 ## 0.13.2
 
 BUG FIXES:
