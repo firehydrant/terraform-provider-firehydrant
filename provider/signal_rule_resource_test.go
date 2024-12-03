@@ -89,6 +89,72 @@ func TestAccFireHydrantSignalRule_IncidentTypeIDMissing(t *testing.T) {
 	})
 }
 
+func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				// First create with a priority set
+				Config: testAccFireHydrantSignalRuleConfigWithPriority("HIGH"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
+					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "HIGH"),
+				),
+			},
+			{
+				// Then update to remove the priority
+				Config: testAccFireHydrantSignalRuleConfigWithoutPriority(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
+					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", ""),
+				),
+			},
+		},
+	})
+}
+
+func testAccFireHydrantSignalRuleConfigWithPriority(priority string) string {
+	return fmt.Sprintf(`
+	data "firehydrant_user" "test_user" {
+		email = "%s"
+	}
+
+	resource "firehydrant_team" "test" {
+		name = "test-team"
+	}
+
+	resource "firehydrant_signal_rule" "test" {
+		team_id = firehydrant_team.test.id
+		name = "test-signal-rule"
+		expression = "signal.summary == 'test-signal-summary'"
+		target_type = "User"
+		target_id = data.firehydrant_user.test_user.id
+		notification_priority_override = "%s"
+	}
+	`, os.Getenv("EXISTING_USER_EMAIL"), priority)
+}
+
+func testAccFireHydrantSignalRuleConfigWithoutPriority() string {
+	return fmt.Sprintf(`
+	data "firehydrant_user" "test_user" {
+		email = "%s"
+	}
+
+	resource "firehydrant_team" "test" {
+		name = "test-team"
+	}
+
+	resource "firehydrant_signal_rule" "test" {
+		team_id = firehydrant_team.test.id
+		name = "test-signal-rule"
+		expression = "signal.summary == 'test-signal-summary'"
+		target_type = "User"
+		target_id = data.firehydrant_user.test_user.id
+	}
+	`, os.Getenv("EXISTING_USER_EMAIL"))
+}
+
 func testAccFireHydrantSignalRuleConfigIncidentTypeIDMissing() string {
 	return fmt.Sprintf(`
 	data "firehydrant_user" "test_user" {
