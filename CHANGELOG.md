@@ -1,7 +1,8 @@
-## 0.13.3 (Unreleased)
+## 0.13.3
 
 BUG FIXES:
 * Fixes a discrepancy between the FireHydrant API and `firehydrant_inbound_email` resource where the `target` attribute was erroneously being required.
+* Fixes a bug where `notification_priority_override` could not be unset on a `firehydrant_signal_rule` resource.
 
 ## 0.13.2
 

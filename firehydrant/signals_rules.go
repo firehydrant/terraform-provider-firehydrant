@@ -17,15 +17,6 @@ const (
 	NotificationPriorityHigh   NotificationPriority = "HIGH"
 )
 
-// Validate checks if the NotificationPriority is valid
-func (np NotificationPriority) Validate() error {
-	switch np {
-	case NotificationPriorityLow, NotificationPriorityMedium, NotificationPriorityHigh:
-		return nil
-	}
-	return fmt.Errorf("invalid notification priority: %s", np)
-}
-
 type SignalsRules interface {
 	Get(ctx context.Context, teamID, id string) (*SignalsRuleResponse, error)
 	Create(ctx context.Context, teamID string, createReq CreateSignalsRuleRequest) (*SignalsRuleResponse, error)
@@ -76,7 +67,7 @@ type UpdateSignalsRuleRequest struct {
 	TargetType                   string               `json:"target_type"`
 	TargetID                     string               `json:"target_id"`
 	IncidentTypeID               string               `json:"incident_type_id,omitempty"`
-	NotificationPriorityOverride NotificationPriority `json:"notification_priority_override,omitempty"`
+	NotificationPriorityOverride NotificationPriority `json:"notification_priority_override"`
 }
 
 func (c *RESTSignalsRulesClient) restClient() *sling.Sling {

@@ -87,13 +87,19 @@ func readResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("Error reading signal rule %s: %v", id, err)
 	}
 
+	tflog.Debug(ctx, fmt.Sprintf("Read signal rule %s", id), map[string]interface{}{
+		"id":                             id,
+		"notification_priority_override": signalRule.NotificationPriorityOverride,
+	})
+
 	// Gather values from API response
 	attributes := map[string]interface{}{
-		"name":             signalRule.Name,
-		"expression":       signalRule.Expression,
-		"target_type":      signalRule.Target.Type,
-		"target_id":        signalRule.Target.ID,
-		"incident_type_id": signalRule.IncidentType.ID,
+		"name":                           signalRule.Name,
+		"expression":                     signalRule.Expression,
+		"target_type":                    signalRule.Target.Type,
+		"target_id":                      signalRule.Target.ID,
+		"incident_type_id":               signalRule.IncidentType.ID,
+		"notification_priority_override": string(signalRule.NotificationPriorityOverride),
 	}
 
 	// Set the resource attributes to the values we got from the API
@@ -102,8 +108,6 @@ func readResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceDa
 			return diag.Errorf("Error setting %s for signal rule %s: %v", key, id, err)
 		}
 	}
-
-	d.Set("notification_priority_override", string(signalRule.NotificationPriorityOverride))
 
 	return diag.Diagnostics{}
 }
@@ -154,7 +158,8 @@ func updateResourceFireHydrantSignalRule(ctx context.Context, d *schema.Resource
 
 	// Update the signal rule
 	tflog.Debug(ctx, fmt.Sprintf("Update signal rule: %s", d.Id()), map[string]interface{}{
-		"id": d.Id(),
+		"id":                             d.Id(),
+		"notification_priority_override": d.Get("notification_priority_override"),
 	})
 	_, err := firehydrantAPIClient.SignalsRules().Update(ctx, d.Get("team_id").(string), d.Id(), updateRequest)
 	if err != nil {
