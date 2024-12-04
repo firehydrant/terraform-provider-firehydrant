@@ -34,7 +34,7 @@ type CreateInboundEmailRequest struct {
 	StatusCEL            string   `json:"status_cel"`
 	LevelCEL             string   `json:"level_cel"`
 	AllowedSenders       []string `json:"allowed_senders"`
-	Target               Target   `json:"target"`
+	Target               *Target  `json:"target,omitempty"`
 	Rules                []string `json:"rules"`
 	RuleMatchingStrategy string   `json:"rule_matching_strategy"`
 }
@@ -54,7 +54,7 @@ type InboundEmailResponse struct {
 	StatusCEL            string   `json:"status_cel"`
 	LevelCEL             string   `json:"level_cel"`
 	AllowedSenders       []string `json:"allowed_senders"`
-	Target               Target   `json:"target"`
+	Target               *Target  `json:"target,omitempty"`
 	Rules                []string `json:"rules"`
 	RuleMatchingStrategy string   `json:"rule_matching_strategy"`
 
@@ -70,7 +70,7 @@ type UpdateInboundEmailRequest struct {
 	StatusCEL            string   `json:"status_cel"`
 	LevelCEL             string   `json:"level_cel"`
 	AllowedSenders       []string `json:"allowed_senders"`
-	Target               Target   `json:"target"`
+	Target               *Target  `json:"target"`
 	Rules                []string `json:"rules"`
 	RuleMatchingStrategy string   `json:"rule_matching_strategy"`
 }

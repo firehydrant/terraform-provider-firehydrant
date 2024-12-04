@@ -74,6 +74,37 @@ func TestAccInboundEmailResource_update(t *testing.T) {
 	})
 }
 
+// TestAccInboundEmailResource_no_target tests the case where the target block is not set
+func TestAccInboundEmailResource_no_target(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		CheckDestroy:      testAccCheckInboundEmailResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccInboundResourceConfig_no_target(rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckInboundEmailResourceExists("firehydrant_inbound_email.test"),
+					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "name", fmt.Sprintf("test-inbound-email-%s", rName)),
+					resource.TestCheckNoResourceAttr("firehydrant_inbound_email.test", "target.0"),
+				),
+			},
+			// update the inbound email to have a target block
+			{
+				Config: testAccInboundEmailResourceConfig_basic(rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckInboundEmailResourceExists("firehydrant_inbound_email.test"),
+					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "name", fmt.Sprintf("test-inbound-email-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "target.0.type", "Team"),
+					resource.TestCheckResourceAttrSet("firehydrant_inbound_email.test", "target.0.id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckInboundEmailResourceExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -198,6 +229,25 @@ resource "firehydrant_inbound_email" "test" {
     type = "Team"
     id   = firehydrant_team.test.id
   }
+  rules                  = ["email.body.contains(\"hello\")", "email.body.contains(\"urgent\")"]
+  rule_matching_strategy = "any"
+}
+`, rName, rName, rName)
+}
+
+func testAccInboundResourceConfig_no_target(rName string) string {
+	return fmt.Sprintf(`
+resource "firehydrant_team" "test" {
+  name = "test-team-%s"
+}
+
+resource "firehydrant_inbound_email" "test" {
+  name                   = "test-inbound-email-%s"
+  slug                   = "test-inbound-email-%s"
+  description            = "Updated test inbound email description"
+  status_cel             = "email.body.contains('resolved') ? 'CLOSED' : 'OPEN'"
+  level_cel              = "email.body.contains('critical') ? 'ERROR' : 'INFO'"
+  allowed_senders        = ["@firehydrant.com", "@example.com"]
   rules                  = ["email.body.contains(\"hello\")", "email.body.contains(\"urgent\")"]
   rule_matching_strategy = "any"
 }
