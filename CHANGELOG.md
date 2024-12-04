@@ -1,3 +1,8 @@
+## 0.13.4
+
+BUG FIXES:
+* Fixes inbound email targets panic when attempting to access index out of range
+
 ## 0.13.3
 
 BUG FIXES:

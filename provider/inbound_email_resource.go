@@ -87,7 +87,7 @@ func resourceInboundEmailCreate(ctx context.Context, d *schema.ResourceData, m i
 		StatusCEL:            d.Get("status_cel").(string),
 		LevelCEL:             d.Get("level_cel").(string),
 		AllowedSenders:       expandStringSet(d.Get("allowed_senders").(*schema.Set)),
-		Target:               expandTarget(d.Get("target").([]interface{})[0].(map[string]interface{})),
+		Target:               targetFromResourceData(d),
 		Rules:                expandStringSet(d.Get("rules").(*schema.Set)),
 		RuleMatchingStrategy: d.Get("rule_matching_strategy").(string),
 	}
@@ -110,13 +110,18 @@ func resourceInboundEmailRead(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
+	var targetResourceData []interface{}
+	if inboundEmail.Target != nil {
+		targetResourceData = []interface{}{flattenTarget(inboundEmail.Target)}
+	}
+
 	d.Set("name", inboundEmail.Name)
 	d.Set("slug", inboundEmail.Slug)
 	d.Set("description", inboundEmail.Description)
 	d.Set("status_cel", inboundEmail.StatusCEL)
 	d.Set("level_cel", inboundEmail.LevelCEL)
 	d.Set("allowed_senders", inboundEmail.AllowedSenders)
-	d.Set("target", []interface{}{flattenTarget(inboundEmail.Target)})
+	d.Set("target", targetResourceData)
 	d.Set("rules", inboundEmail.Rules)
 	d.Set("rule_matching_strategy", inboundEmail.RuleMatchingStrategy)
 	d.Set("email", inboundEmail.Email)
@@ -134,7 +139,7 @@ func resourceInboundEmailUpdate(ctx context.Context, d *schema.ResourceData, m i
 		StatusCEL:            d.Get("status_cel").(string),
 		LevelCEL:             d.Get("level_cel").(string),
 		AllowedSenders:       expandStringSet(d.Get("allowed_senders").(*schema.Set)),
-		Target:               expandTarget(d.Get("target").([]interface{})[0].(map[string]interface{})),
+		Target:               targetFromResourceData(d),
 		Rules:                expandStringSet(d.Get("rules").(*schema.Set)),
 		RuleMatchingStrategy: d.Get("rule_matching_strategy").(string),
 	}
@@ -168,6 +173,18 @@ func expandStringSet(set *schema.Set) []string {
 	return s
 }
 
+func targetFromResourceData(d *schema.ResourceData) *firehydrant.Target {
+	if len(d.Get("target").([]interface{})) == 0 {
+		return nil
+	}
+
+	t := d.Get("target").([]interface{})[0].(map[string]interface{})
+	return &firehydrant.Target{
+		Type: t["type"].(string),
+		ID:   t["id"].(string),
+	}
+}
+
 func expandTarget(m map[string]interface{}) firehydrant.Target {
 	return firehydrant.Target{
 		Type: m["type"].(string),
@@ -175,7 +192,15 @@ func expandTarget(m map[string]interface{}) firehydrant.Target {
 	}
 }
 
-func flattenTarget(target firehydrant.Target) map[string]interface{} {
+func flattenTarget(target *firehydrant.Target) map[string]interface{} {
+	if target == nil {
+		return nil
+	}
+
+	if target.ID == "" || target.Type == "" {
+		return nil
+	}
+
 	return map[string]interface{}{
 		"type": target.Type,
 		"id":   target.ID,
