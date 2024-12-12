@@ -1,3 +1,6 @@
+## 0.13.5
+* Adds a new `membership` attribute to the `firehydrant_team` data
+
 ## 0.13.4
 
 BUG FIXES:
