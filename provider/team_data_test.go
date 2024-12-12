@@ -26,7 +26,7 @@ func TestTeamDataSource_OneMatch(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"id": "123", "name": "Test Team", "slug": "test_team"}`))
+		w.Write([]byte(`{"id": "123", "name": "Test Team", "slug": "test_team", memberships: [{user:{"id": "456", "name": "Test User", "email": "user@example.com"}}]}`))
 	}))
 
 	defer server.Close()
@@ -47,6 +47,13 @@ func TestTeamDataSource_OneMatch(t *testing.T) {
 						"data.firehydrant_team.test_team", "id", "123"),
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_team.test_team", "name", "Test Team"),
+					resource.TestCheckResourceAttr(
+						"data.firehydrant_team.test_team", "memberships.0.id", "456"),
+					resource.TestCheckResourceAttr(
+						"data.firehydrant_team.test_team", "memberships.0.name", "Test User"),
+					resource.TestCheckResourceAttr(
+						"data.firehydrant_team.test_team", "memberships.0.email", "user@example.com"),
+
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_team.test_team", "slug", "test_team"),
 				),

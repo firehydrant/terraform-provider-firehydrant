@@ -30,6 +30,26 @@ func dataSourceTeam() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"memberships": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"email": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"slug": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -66,11 +86,21 @@ func dataFireHydrantTeam(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.Errorf("Error reading team %s: %v", id, err)
 	}
 
+	var memberships []map[string]interface{}
+	for _, membership := range teamResponse.Memberships {
+		memberships = append(memberships, map[string]interface{}{
+			"id":    membership.User.ID,
+			"name":  membership.User.Name,
+			"email": membership.User.Email,
+		})
+	}
+
 	// Gather values from API response
 	attributes := map[string]interface{}{
 		"id":          teamResponse.ID,
 		"name":        teamResponse.Name,
 		"description": teamResponse.Description,
+		"memberships": memberships,
 		"slug":        teamResponse.Slug,
 	}
 

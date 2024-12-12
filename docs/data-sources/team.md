@@ -30,6 +30,7 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - The ID of the team.
 * `name` - The name of the team.
 * `description` - A description of the team.
+* `memberships` - A set of user IDs of the members of this team
 * `slug` - The slug for the team.
 * `service_ids` - A set of IDs of the services associated with this team
 * `owned_service_ids` - A set of IDs of the services owned by this team
