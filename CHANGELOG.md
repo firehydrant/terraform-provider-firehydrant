@@ -1,3 +1,9 @@
+## Pending Release
+
+ENHANCEMENTS:
+* **New Data Source**: `firehydrant_on_call_schedule`
+* **New Data Source**: `firehydrant_on_call_schedules`
+
 ## 0.13.4
 
 BUG FIXES:

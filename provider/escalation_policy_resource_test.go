@@ -46,6 +46,7 @@ func testAccEscalationPolicyConfig_basic(rName string) string {
 		team_id = firehydrant_team.test-team.id
 		name = "test-on-call-schedule-restrictions-%s"
 		time_zone = "America/New_York"
+		slack_user_group_id = "test-group-1"
 
 		strategy {
 			type         = "weekly"
