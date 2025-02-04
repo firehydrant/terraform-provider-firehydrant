@@ -90,6 +90,7 @@ func testAccOnCallScheduleConfig_restrictions(rName string) string {
 		name = "test-on-call-schedule-restrictions-%s"
 		description = "test-description-%s"
 		time_zone = "America/New_York"
+		slack_user_group_id = "test-group-1"
 
 		strategy {
 			type         = "weekly"
@@ -126,6 +127,7 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_custom_strategy" 
   team_id     = firehydrant_team.team_team.id
   time_zone   = "America/Los_Angeles"
   start_time  = "2024-04-11T11:56:29-07:00"
+  slack_user_group_id = "test-group-1"
 
   strategy {
     type           = "custom"
@@ -316,6 +318,9 @@ func TestAccOnCallScheduleResource_updateHandoffAndRestrictions(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "name", fmt.Sprintf("test-schedule-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "time_zone", "America/New_York"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "slack_user_group_id", "test-group-1"),
+					// Strategy settings
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.type", "weekly"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_time", "09:00:00"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "monday"),
@@ -329,6 +334,8 @@ func TestAccOnCallScheduleResource_updateHandoffAndRestrictions(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "name", fmt.Sprintf("test-schedule-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "time_zone", "America/New_York"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "slack_user_group_id", "test-group-1"),
 					// Changed handoff settings
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.type", "weekly"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_time", "13:00:00"),
@@ -371,6 +378,7 @@ func testAccOnCallScheduleConfig_withHandoff(rName, handoffDay, handoffTime stri
 		team_id = firehydrant_team.test_team.id
 		name = "test-schedule-%s"
 		time_zone = "America/New_York"
+		slack_user_group_id = "test-group-1"
 
 		strategy {
 			type         = "weekly"
@@ -391,6 +399,7 @@ func testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, handoffDay, h
 		team_id = firehydrant_team.test_team.id
 		name = "test-schedule-%s"
 		time_zone = "America/New_York"
+		slack_user_group_id = "test-group-1"
 
 		strategy {
 			type         = "weekly"
@@ -483,6 +492,7 @@ func testAccOnCallScheduleConfig_withBusinessHours(rName, handoffDay, handoffTim
 		team_id = firehydrant_team.test_team.id
 		name = "test-schedule-%s"
 		time_zone = "America/New_York"
+		slack_user_group_id = "test-group-1"
 
 		strategy {
 			type         = "weekly"
@@ -565,6 +575,7 @@ func testAccOnCallScheduleConfig_withEffectiveAt(rName, handoffDay, handoffTime,
 		team_id = firehydrant_team.test_team.id
 		name = "test-schedule-%s"
 		time_zone = "America/New_York"
+		slack_user_group_id = "test-group-1"
 
 		strategy {
 			type         = "weekly"

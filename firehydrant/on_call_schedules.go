@@ -11,6 +11,7 @@ import (
 
 type OnCallSchedules interface {
 	Get(ctx context.Context, teamID, id string) (*OnCallScheduleResponse, error)
+	List(ctx context.Context, req *OnCallSchedulesQuery) (*OnCallSchedulesResponse, error)
 	Create(ctx context.Context, teamID string, createReq CreateOnCallScheduleRequest) (*OnCallScheduleResponse, error)
 	Update(ctx context.Context, teamID, id string, updateReq UpdateOnCallScheduleRequest) (*OnCallScheduleResponse, error)
 	Delete(ctx context.Context, teamID, id string) error
@@ -35,25 +36,41 @@ type OnCallScheduleMember struct {
 }
 
 type OnCallScheduleResponse struct {
-	ID           string                      `json:"id"`
-	Name         string                      `json:"name"`
-	Description  string                      `json:"description"`
-	TimeZone     string                      `json:"time_zone"`
-	Strategy     OnCallScheduleStrategy      `json:"strategy"`
-	Members      []OnCallScheduleMember      `json:"members"`
-	Restrictions []OnCallScheduleRestriction `json:"restrictions"`
+	ID               string                      `json:"id"`
+	Name             string                      `json:"name"`
+	Description      string                      `json:"description"`
+	TimeZone         string                      `json:"time_zone"`
+	Color            string                      `json:"color"`
+	SlackUserGroupID string                      `json:"slack_user_group_id"`
+	Strategy         OnCallScheduleStrategy      `json:"strategy"`
+	Members          []OnCallScheduleMember      `json:"members"`
+	Restrictions     []OnCallScheduleRestriction `json:"restrictions"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// OnCallSchedulesResponse is the payload for retrieving a list of on call schedules for a team
+type OnCallSchedulesResponse struct {
+	OnCallSchedules []*OnCallScheduleResponse `json:"data"`
+	Pagination      *Pagination               `json:"pagination,omitempty"`
+}
+
+// OnCallSchedulesQuery is the query used to search for on call schedules
+type OnCallSchedulesQuery struct {
+	TeamID string `url:"team_id,omitempty"` // optional
+	Query  string `url:"query,omitempty"`   // optional
+	Page   int    `url:"page,omitempty"`
+}
+
 type CreateOnCallScheduleRequest struct {
-	Name         string                      `json:"name"`
-	Description  string                      `json:"description"`
-	TimeZone     string                      `json:"time_zone"`
-	Strategy     OnCallScheduleStrategy      `json:"strategy"`
-	Restrictions []OnCallScheduleRestriction `json:"restrictions"`
-	MemberIDs    []string                    `json:"member_ids"`
+	Name             string                      `json:"name"`
+	Description      string                      `json:"description"`
+	TimeZone         string                      `json:"time_zone"`
+	SlackUserGroupID string                      `json:"slack_user_group_id,omitempty"`
+	Strategy         OnCallScheduleStrategy      `json:"strategy"`
+	Restrictions     []OnCallScheduleRestriction `json:"restrictions"`
+	MemberIDs        []string                    `json:"member_ids"`
 
 	// StartTime is only required for `custom` strategy.
 	// ISO8601 / Go RFC3339 format.
@@ -61,13 +78,14 @@ type CreateOnCallScheduleRequest struct {
 }
 
 type UpdateOnCallScheduleRequest struct {
-	Name         string                      `json:"name"`
-	Description  string                      `json:"description"`
-	MemberIDs    []string                    `json:"member_ids,omitempty"`
-	EffectiveAt  string                      `json:"effective_at,omitempty"`
-	Color        string                      `json:"color,omitempty"`
-	Strategy     *OnCallScheduleStrategy     `json:"strategy,omitempty"`
-	Restrictions []OnCallScheduleRestriction `json:"restrictions"`
+	Name             string                      `json:"name"`
+	Description      string                      `json:"description"`
+	MemberIDs        []string                    `json:"member_ids,omitempty"`
+	EffectiveAt      string                      `json:"effective_at,omitempty"`
+	Color            string                      `json:"color,omitempty"`
+	SlackUserGroupID string                      `json:"slack_user_group_id,omitempty"`
+	Strategy         *OnCallScheduleStrategy     `json:"strategy,omitempty"`
+	Restrictions     []OnCallScheduleRestriction `json:"restrictions"`
 }
 
 type OnCallScheduleRestriction struct {
@@ -113,6 +131,38 @@ func (c *RESTOnCallSchedulesClient) Get(ctx context.Context, teamID, id string) 
 	}
 
 	return onCallScheduleResponse, nil
+}
+
+func (c *RESTOnCallSchedulesClient) List(_ context.Context, req *OnCallSchedulesQuery) (*OnCallSchedulesResponse, error) {
+	onCallSchedulesResponse := &OnCallSchedulesResponse{}
+	apiError := &APIError{}
+	curPage := 1
+
+	for {
+		req.Page = curPage
+		var pageResponse OnCallSchedulesResponse
+		response, err := c.restClient().Get(fmt.Sprintf("teams/%s/on_call_schedules", req.TeamID)).QueryStruct(req).Receive(&pageResponse, apiError)
+		if err != nil {
+			return nil, errors.Wrap(err, "could not get on-call schedules")
+		}
+
+		err = checkResponseStatusCode(response, apiError)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, schedule := range pageResponse.OnCallSchedules {
+			onCallSchedulesResponse.OnCallSchedules = append(onCallSchedulesResponse.OnCallSchedules, schedule)
+		}
+
+		if pageResponse.Pagination == nil || pageResponse.Pagination.Next == 0 {
+			break
+		}
+
+		curPage = pageResponse.Pagination.Next
+	}
+
+	return onCallSchedulesResponse, nil
 }
 
 func (c *RESTOnCallSchedulesClient) Update(ctx context.Context, teamID, id string, updateReq UpdateOnCallScheduleRequest) (*OnCallScheduleResponse, error) {

@@ -94,6 +94,10 @@ func resourceOnCallSchedule() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"slack_user_group_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"restrictions": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -186,6 +190,11 @@ func createResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 		Restrictions: oncallRestrictionsFromData(d),
 	}
 
+	// Get slack_user_group_id if set and non-empty
+	if v, ok := d.GetOk("slack_user_group_id"); ok && v.(string) != "" {
+		onCallSchedule.SlackUserGroupID = v.(string)
+	}
+
 	if onCallSchedule.Strategy.Type != "" {
 		isCustomStrategy := onCallSchedule.Strategy.Type == "custom"
 		if isCustomStrategy {
@@ -264,6 +273,9 @@ func readResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Resour
 		"member_ids":   memberIDs,
 		"restrictions": restrictionsToData(onCallSchedule.Restrictions),
 	}
+	if onCallSchedule.SlackUserGroupID != "" {
+		attributes["slack_user_group_id"] = onCallSchedule.SlackUserGroupID
+	}
 
 	// Set the data source attributes to the values we got from the API
 	for key, val := range attributes {
@@ -293,6 +305,11 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 	updateRequest := firehydrant.UpdateOnCallScheduleRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
+	}
+
+	// Get slack_user_group_id if set
+	if v, ok := d.GetOk("slack_user_group_id"); ok {
+		updateRequest.SlackUserGroupID = v.(string)
 	}
 
 	// Check if effective_at exists in raw config rather than state
@@ -345,11 +362,6 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 				updateRequest.Strategy.ShiftDuration = strategy["shift_duration"].(string)
 			}
 		}
-	}
-
-	// Get color if set
-	if v, ok := d.GetOk("color"); ok {
-		updateRequest.Color = v.(string)
 	}
 
 	// Get restrictions
