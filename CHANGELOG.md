@@ -1,8 +1,8 @@
-## Pending Release
+## 0.13.5
 
 ENHANCEMENTS:
-* **New Data Source**: `firehydrant_on_call_schedule`
-* **New Data Source**: `firehydrant_on_call_schedules`
+* **New Data Source**: `firehydrant_on_call_schedule` ([#174](https://github.com/firehydrant/terraform-provider-firehydrant/pull/174))
+* **New Data Source**: `firehydrant_on_call_schedules` ([#174](https://github.com/firehydrant/terraform-provider-firehydrant/pull/174))
 
 ## 0.13.4
 
