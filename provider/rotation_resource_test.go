@@ -87,6 +87,7 @@ func testAccRotationConfig_basic(rName string) string {
 
 		enable_slack_channel_notifications = true
 		prevent_shift_deletion = true
+		color = "#3192ff"
 
 		members = [
 		  "a-user-id",
@@ -131,6 +132,7 @@ func testAccRotationConfig_restrictions(rName string) string {
 
 		enable_slack_channel_notifications = true
 		prevent_shift_deletion = true
+		color = "#3192ff"
 
 		members = [
 		  "a-user-id",
@@ -374,6 +376,7 @@ func testAccRotationConfig_withHandoff(rName, handoffDay, handoffTime string) st
 		name = "test-rotation-%s"
 		time_zone = "America/New_York"
 		slack_user_group_id = "test-group-1"
+		color = "#3192ff"
 
 		strategy {
 			type         = "weekly"
@@ -409,6 +412,7 @@ func testAccRotationConfig_withHandoffAndRestrictions(rName, handoffDay, handoff
 		name = "test-rotation-%s"
 		time_zone = "America/New_York"
 		slack_user_group_id = "test-group-1"
+		color = "#3192ff"
 
 		strategy {
 			type         = "weekly"
@@ -516,6 +520,7 @@ func testAccRotationConfig_withBusinessHours(rName, handoffDay, handoffTime stri
 		name = "test-rotation-%s"
 		time_zone = "America/New_York"
 		slack_user_group_id = "test-group-1"
+		color = "#3192ff"
 
 		strategy {
 			type         = "weekly"
@@ -613,6 +618,7 @@ func testAccRotationConfig_withEffectiveAt(rName, handoffDay, handoffTime, effec
 		name = "test-rotation-%s"
 		time_zone = "America/New_York"
 		slack_user_group_id = "test-group-1"
+		color = "#3192ff"
 
 		strategy {
 			type         = "weekly"
