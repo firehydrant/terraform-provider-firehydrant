@@ -272,10 +272,13 @@ func createResourceFireHydrantRotation(ctx context.Context, d *schema.ResourceDa
 		rotation.PreventShiftDeletion = v.(bool)
 	}
 	if v, ok := d.GetOk("coverage_gap_notification_interval"); ok && v.(string) != "" {
-		rotation.SlackUserGroupID = v.(string)
+		rotation.CoverageGapNotificationInterval = v.(string)
 	}
 	if v, ok := d.GetOk("start_time"); ok && v.(string) != "" {
-		rotation.SlackUserGroupID = v.(string)
+		rotation.StartTime = v.(string)
+	}
+	if v, ok := d.GetOk("color"); ok && v.(string) != "" {
+		rotation.Color = v.(string)
 	}
 
 	if rotation.Strategy.Type != "" {
@@ -343,6 +346,9 @@ func updateResourceFireHydrantRotation(ctx context.Context, d *schema.ResourceDa
 	}
 	if v, ok := d.GetOk("prevent_shift_deletion"); ok {
 		updateRequest.PreventShiftDeletion = v.(bool)
+	}
+	if v, ok := d.GetOk("color"); ok && v.(string) != "" {
+		updateRequest.Color = v.(string)
 	}
 
 	// Check if effective_at exists in raw config rather than state
