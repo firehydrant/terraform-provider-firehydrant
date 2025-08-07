@@ -54,7 +54,6 @@ resource "firehydrant_rotation" "test_rotation_data_1" {
 	time_zone = "America/Los_Angeles"
 
 	slack_user_group_id = "test-slack-user-group-id"
-	enable_slack_channel_notifications = true
 	prevent_shift_deletion = true
 	color = "#3192ff"
 
