@@ -125,14 +125,9 @@ func testAccRotationConfig_restrictions(rName string) string {
 		description = "test-description-%s"
 		time_zone = "America/New_York"
 
-		enable_slack_channel_notifications = true
+		enable_slack_channel_notifications = false
 		prevent_shift_deletion = true
 		color = "#3192ff"
-
-		members = [
-		  "a-user-id",
-			"another-user-id",
-		]
 
 		strategy {
 			type         = "weekly"
