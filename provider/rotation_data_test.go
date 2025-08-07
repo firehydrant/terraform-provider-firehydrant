@@ -20,14 +20,14 @@ func TestRotationData(t *testing.T) {
 
 func (s *testRotationDataSuite) terraform(rName string) string {
 	return fmt.Sprintf(`
-resource "firehydrant_team" "test_on_call_schedule_data_team" {
+resource "firehydrant_team" "test_rotation_data_team" {
 	name = "test-team-%s"
 }
 
 resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
   name        = "test-on-call-schedule-%s"
   description = "test-description"
-  team_id     = firehydrant_team.test_on_call_schedule_data_team.id
+  team_id     = firehydrant_team.test_rotation_data_team.id
   time_zone   = "America/Los_Angeles"
   
   slack_user_group_id = "test-slack-user-group-id"
@@ -49,7 +49,7 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
 resource "firehydrant_rotation" "test_rotation_data_1" {
   name = "test-rotation-%s"
 	description = "test-description"
-	team_id = firehydrant_team.test_on_call_schedule_data_team.id
+	team_id = firehydrant_team.test_rotation_data_team.id
 	schedule_id = firehydrant_on_call_schedule.test_on_call_schedule_data_1.id
 	time_zone = "America/Los_Angeles"
 

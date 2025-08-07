@@ -265,10 +265,10 @@ func createResourceFireHydrantRotation(ctx context.Context, d *schema.ResourceDa
 	if v, ok := d.GetOk("slack_user_group_id"); ok && v.(string) != "" {
 		rotation.SlackUserGroupID = v.(string)
 	}
-	if v, ok := d.GetOk("enable_slack_channel_notifications"); ok && v.(string) != "" {
+	if v, ok := d.GetOk("enable_slack_channel_notifications"); ok {
 		rotation.EnableSlackChannelNotifications = v.(bool)
 	}
-	if v, ok := d.GetOk("prevent_shift_deletion"); ok && v.(string) != "" {
+	if v, ok := d.GetOk("prevent_shift_deletion"); ok {
 		rotation.PreventShiftDeletion = v.(bool)
 	}
 	if v, ok := d.GetOk("coverage_gap_notification_interval"); ok && v.(string) != "" {
