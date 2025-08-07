@@ -121,7 +121,7 @@ func testAccRotationConfig_restrictions(rName string) string {
 	resource "firehydrant_rotation" "test_rotation_with_restrictions" {
 	  team_id = firehydrant_team.team_team.id
 		schedule_id = firehydrant_on_call_schedule.test_on_call_schedule.id
-		name = "test-rotation-%s"
+		name = "test-rotation-restrictions-%s"
 		description = "test-description-%s"
 		time_zone = "America/New_York"
 
