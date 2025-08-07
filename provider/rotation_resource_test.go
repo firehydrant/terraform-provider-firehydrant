@@ -89,11 +89,6 @@ func testAccRotationConfig_basic(rName string) string {
 		prevent_shift_deletion = true
 		color = "#3192ff"
 
-		members = [
-		  "a-user-id",
-			"another-user-id",
-		]
-
 		strategy {
 			type         = "weekly"
 			handoff_time = "10:00:00"
