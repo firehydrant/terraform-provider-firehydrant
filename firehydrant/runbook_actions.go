@@ -48,13 +48,14 @@ type Integration struct {
 type RunbookActionsQuery struct {
 	Type  string `url:"type,omitempty"`
 	Items uint   `url:"per_page,omitempty"`
+	Lite  bool   `url:"lite,omitempty"`
 }
 
 // Get returns a runbook action from the FireHydrant API
 func (c *RESTRunbookActionsClient) Get(ctx context.Context, runbookType string, integrationSlug string, actionSlug string) (*RunbookAction, error) {
 	runbookActionResponse := &RunbookActionsResponse{}
 	apiError := &APIError{}
-	query := RunbookActionsQuery{Type: runbookType, Items: 100}
+	query := RunbookActionsQuery{Type: runbookType, Items: 100, Lite: true}
 	response, err := c.restClient().Get("runbooks/actions").QueryStruct(query).Receive(runbookActionResponse, apiError)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get runbook")
