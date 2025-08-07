@@ -225,7 +225,7 @@ func TestOfflineRotationReadMemberID(t *testing.T) {
 	r := schema.TestResourceDataRaw(t, resourceRotation().Schema, map[string]interface{}{
 		"team_id":     "team-1",
 		"schedule_id": "schedule-1",
-		"name":        "test-on-call-schedule",
+		"name":        "test-rotation",
 		"description": "test-description",
 		"time_zone":   "America/New_York",
 		"members":     []interface{}{"member-1"},
@@ -233,7 +233,7 @@ func TestOfflineRotationReadMemberID(t *testing.T) {
 
 	d := readResourceFireHydrantRotation(context.Background(), r, c)
 	if d.HasError() {
-		t.Fatalf("error reading on-call schedule: %v", d)
+		t.Fatalf("error reading rotation: %v", d)
 	}
 
 	memberIDs := r.Get("members").([]interface{})
@@ -313,7 +313,7 @@ func TestAccRotationResource_updateHandoffAndRestrictions(t *testing.T) {
 			},
 			{
 				// Update handoff day/time and add restrictions
-				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "wednesday", "13:00:00"),
+				Config: testAccRotationConfig_withHandoffAndRestrictions(rName, "wednesday", "13:00:00"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation", "id"),
 					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation", "name", fmt.Sprintf("test-rotation-%s", rName)),
@@ -337,7 +337,7 @@ func TestAccRotationResource_updateHandoffAndRestrictions(t *testing.T) {
 			},
 			{
 				// Update just handoff time, keeping restrictions
-				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "wednesday", "15:00:00"),
+				Config: testAccRotationConfig_withHandoffAndRestrictions(rName, "wednesday", "15:00:00"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation", "id"),
 					// Changed handoff time only
