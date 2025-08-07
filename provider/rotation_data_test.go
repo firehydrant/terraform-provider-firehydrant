@@ -47,7 +47,7 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
 }
 
 resource "firehydrant_rotation" "test_rotation_data_1" {
-  name = test-rotation-%s"
+  name = "test-rotation-%s"
 	description = "test-description"
 	team_id = firehydrant_team.test_on_call_schedule_data_team.id
 	schedule_id = firehydrant_on_call_schedule.test_on_call_schedule_data_1.id
