@@ -64,6 +64,7 @@ type CreateRotationRequest struct {
 	Name                            string                `json:"name"`
 	Description                     string                `json:"description"`
 	TimeZone                        string                `json:"time_zone"`
+	Color                           string                `json:"color,omitempty"`
 	SlackUserGroupID                string                `json:"slack_user_group_id,omitempty"`
 	EnableSlackChannelNotifications bool                  `json:"enable_slack_channel_notifications,omitempty"`
 	PreventShiftDeletion            bool                  `json:"prevent_shift_deletion,omitempty"`
