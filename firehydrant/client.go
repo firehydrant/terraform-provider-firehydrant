@@ -77,6 +77,7 @@ type Client interface {
 	IngestURL() IngestURLClient
 	Transposers() TransposersClient
 	InboundEmails() InboundEmailsClient
+	Rotations() Rotations
 }
 
 // OptFunc is a function that sets a setting on a client
@@ -236,6 +237,10 @@ func (c *APIClient) Transposers() TransposersClient {
 
 func (c *APIClient) StatusUpdateTemplates() StatusUpdateTemplates {
 	return &RESTStatusUpdateTemplateClient{client: c}
+}
+
+func (c *APIClient) Rotations() Rotations {
+	return &RESTRotationsClient{client: c}
 }
 
 // GetUsers gets matching users in FireHydrant
