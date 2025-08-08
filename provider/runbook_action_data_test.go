@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -70,26 +69,26 @@ func TestAccRunbookActionDataSource_multipleActionsForSlug(t *testing.T) {
 }
 
 func testAccRunbookActionDataSourceConfig_basic() string {
-	return fmt.Sprintf(`
+	return `
 data "firehydrant_runbook_action" "test_runbook_action" {
   integration_slug = "slack"
   slug             = "add_bookmark_to_incident_channel"
-}`)
+}`
 }
 
 func testAccRunbookActionDataSourceConfig_allAttributes() string {
-	return fmt.Sprintf(`
+	return `
 data "firehydrant_runbook_action" "test_runbook_action" {
   integration_slug = "slack"
   slug             = "create_incident_channel"
   type             = "incident"
-}`)
+}`
 }
 
 func testAccRunbookActionDataSourceConfig_multipleActionsForSlug() string {
-	return fmt.Sprintf(`
+	return `
 data "firehydrant_runbook_action" "test_runbook_action" {
   integration_slug = "shortcut"
   slug             = "create_incident_issue"
-}`)
+}`
 }

@@ -151,9 +151,7 @@ func (c *RESTOnCallSchedulesClient) List(_ context.Context, req *OnCallSchedules
 			return nil, err
 		}
 
-		for _, schedule := range pageResponse.OnCallSchedules {
-			onCallSchedulesResponse.OnCallSchedules = append(onCallSchedulesResponse.OnCallSchedules, schedule)
-		}
+		onCallSchedulesResponse.OnCallSchedules = append(onCallSchedulesResponse.OnCallSchedules, pageResponse.OnCallSchedules...)
 
 		if pageResponse.Pagination == nil || pageResponse.Pagination.Next == 0 {
 			break

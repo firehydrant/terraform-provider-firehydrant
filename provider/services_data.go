@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -48,7 +47,7 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 	for key, value := range labels {
 		labelsSelector[key] = value.(string)
 	}
-	tflog.Debug(ctx, fmt.Sprintf("Read services"), map[string]interface{}{
+	tflog.Debug(ctx, "Read services", map[string]interface{}{
 		"query":  query,
 		"labels": labels,
 	})

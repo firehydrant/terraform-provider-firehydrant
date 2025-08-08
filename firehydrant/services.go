@@ -63,9 +63,7 @@ func (c *RESTServicesClient) List(ctx context.Context, req *ServiceQuery) (*Serv
 			return nil, err
 		}
 
-		for _, service := range pageResponse.Services {
-			servicesResponse.Services = append(servicesResponse.Services, service)
-		}
+		servicesResponse.Services = append(servicesResponse.Services, pageResponse.Services...)
 
 		if pageResponse.Pagination == nil || pageResponse.Pagination.Next == 0 {
 			break

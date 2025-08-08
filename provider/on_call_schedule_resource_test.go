@@ -115,35 +115,6 @@ func testAccOnCallScheduleConfig_restrictions(rName string) string {
 	`, rName, rName, rName)
 }
 
-func testAccOnCallScheduleConfig_customStrategy(rName string) string {
-	return fmt.Sprintf(`
-resource "firehydrant_team" "team_team" {
-  name = "test-team-%s"
-}
-
-resource "firehydrant_on_call_schedule" "test_on_call_schedule_custom_strategy" {
-  name        = "test-on-call-schedule-custom-strategy-%s"
-  description = "test-description-%s"
-  team_id     = firehydrant_team.team_team.id
-  time_zone   = "America/Los_Angeles"
-  start_time  = "2024-04-11T11:56:29-07:00"
-  slack_user_group_id = "test-group-1"
-
-  strategy {
-    type           = "custom"
-    shift_duration = "PT93600S"
-  }
-
-  restrictions {
-    start_day  = "monday"
-    start_time = "14:00:00"
-    end_day    = "friday"
-    end_time   = "17:00:00"
-  }
-}
-`, rName, rName, rName)
-}
-
 func testAccCheckOnCallScheduleResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
