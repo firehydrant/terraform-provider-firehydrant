@@ -79,7 +79,7 @@ func TestGetServices(t *testing.T) {
 
 	vs, err := query.Values(qry)
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf("Unexpected error getting values from query: %v", err.Error())
 	}
 
 	t.Log(vs)

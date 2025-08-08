@@ -34,7 +34,7 @@ type CreateServiceRequest struct {
 	Links                 []ServiceLink      `json:"links,omitempty"`
 	Name                  string             `json:"name"`
 	Owner                 *ServiceTeam       `json:"owner,omitempty"`
-	ServiceTier           int                `json:"service_tier,int,omitempty"`
+	ServiceTier           int                `json:"service_tier,omitempty"`
 	Teams                 []ServiceTeam      `json:"teams,omitempty"`
 	ExternalResources     []ExternalResource `json:"external_resources,omitempty"`
 }
@@ -87,7 +87,7 @@ type UpdateServiceRequest struct {
 	RemoveOwner                      bool               `json:"remove_owner,omitempty"`
 	RemoveRemainingTeams             bool               `json:"remove_remaining_teams,omitempty"`
 	RemoveRemainingExternalResources bool               `json:"remove_remaining_external_resources,omitempty"`
-	ServiceTier                      int                `json:"service_tier,int"`
+	ServiceTier                      int                `json:"service_tier"`
 	Teams                            []ServiceTeam      `json:"teams"`
 	ExternalResources                []ExternalResource `json:"external_resources,omitempty"`
 }

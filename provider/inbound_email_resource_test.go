@@ -238,21 +238,21 @@ resource "firehydrant_inbound_email" "test" {
 `, rName, rName, rName)
 }
 
-func testAccInboundResourceConfig_no_target(rName string) string {
-	return fmt.Sprintf(`
-resource "firehydrant_team" "test" {
-  name = "test-team-%s"
-}
+// func testAccInboundResourceConfig_no_target(rName string) string {
+// 	return fmt.Sprintf(`
+// resource "firehydrant_team" "test" {
+//   name = "test-team-%s"
+// }
 
-resource "firehydrant_inbound_email" "test" {
-  name                   = "test-inbound-email-%s"
-  slug                   = "test-inbound-email-%s"
-  description            = "Updated test inbound email description"
-  status_cel             = "email.body.contains('resolved') ? 'CLOSED' : 'OPEN'"
-  level_cel              = "email.body.contains('critical') ? 'ERROR' : 'INFO'"
-  allowed_senders        = ["@firehydrant.com", "@example.com"]
-  rules                  = ["email.body.contains(\"hello\")", "email.body.contains(\"urgent\")"]
-  rule_matching_strategy = "any"
-}
-`, rName, rName, rName)
-}
+// resource "firehydrant_inbound_email" "test" {
+//   name                   = "test-inbound-email-%s"
+//   slug                   = "test-inbound-email-%s"
+//   description            = "Updated test inbound email description"
+//   status_cel             = "email.body.contains('resolved') ? 'CLOSED' : 'OPEN'"
+//   level_cel              = "email.body.contains('critical') ? 'ERROR' : 'INFO'"
+//   allowed_senders        = ["@firehydrant.com", "@example.com"]
+//   rules                  = ["email.body.contains(\"hello\")", "email.body.contains(\"urgent\")"]
+//   rule_matching_strategy = "any"
+// }
+// `, rName, rName, rName)
+// }

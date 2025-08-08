@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -39,7 +38,7 @@ func dataFireHydrantTeams(ctx context.Context, d *schema.ResourceData, m interfa
 
 	// Get the teams
 	query := d.Get("query").(string)
-	tflog.Debug(ctx, fmt.Sprintf("Read teams"), map[string]interface{}{
+	tflog.Debug(ctx, "Read teams", map[string]interface{}{
 		"query": query,
 	})
 	teamsResponse, err := firehydrantAPIClient.Teams().List(ctx, &firehydrant.TeamQuery{

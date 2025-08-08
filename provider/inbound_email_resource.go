@@ -185,13 +185,6 @@ func targetFromResourceData(d *schema.ResourceData) *firehydrant.Target {
 	}
 }
 
-func expandTarget(m map[string]interface{}) firehydrant.Target {
-	return firehydrant.Target{
-		Type: m["type"].(string),
-		ID:   m["id"].(string),
-	}
-}
-
 func flattenTarget(target *firehydrant.Target) map[string]interface{} {
 	if target == nil {
 		return nil

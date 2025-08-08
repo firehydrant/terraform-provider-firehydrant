@@ -32,7 +32,7 @@ func resourcePriority() *schema.Resource {
 				DiffSuppressFunc: func(k string, oldValue string, newValue string, d *schema.ResourceData) bool {
 					// Slug is case-insensitive, so don't show a diff if the string are the same when compared
 					// in all lowercase
-					if strings.ToLower(oldValue) == strings.ToLower(newValue) {
+					if strings.EqualFold(oldValue, newValue) {
 						return true
 					}
 					return false

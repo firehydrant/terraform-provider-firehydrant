@@ -64,9 +64,7 @@ func (c *RESTTeamsClient) List(ctx context.Context, req *TeamQuery) (*TeamsRespo
 			return nil, err
 		}
 
-		for _, team := range pageResponse.Teams {
-			teamsResponse.Teams = append(teamsResponse.Teams, team)
-		}
+		teamsResponse.Teams = append(teamsResponse.Teams, pageResponse.Teams...)
 
 		if pageResponse.Pagination == nil || pageResponse.Pagination.Next == 0 {
 			break

@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,8 +16,7 @@ import (
 )
 
 var (
-	pingResponseJSON    = `{"response":"pong","actor":{"id":"2af3339f-9d81-434b-a208-427d6d85c124","name":"Bobby Tables","email":"bobby+dalmatians@firehydrant.io","type":"firehydrant_user"}}`
-	serviceResponseJSON = `{"id": "da4bd45b-2b68-4c05-8564-d08dc7725291", "name": "Chow Hall", "description": "", "slug": "chow-hall", "created_at": "2019-07-30T13:02:22.243Z", "updated_at": "2019-12-09T23:59:18.094Z", "labels": {}}`
+	pingResponseJSON = `{"response":"pong","actor":{"id":"2af3339f-9d81-434b-a208-427d6d85c124","name":"Bobby Tables","email":"bobby+dalmatians@firehydrant.io","type":"firehydrant_user"}}`
 )
 
 type RequestTest func(req *http.Request)
@@ -25,13 +24,13 @@ type RequestTest func(req *http.Request)
 func AssertRequestJSONBody(t *testing.T, src interface{}) RequestTest {
 	return func(req *http.Request) {
 		t.Run("AssertRequestJSONBody", func(t *testing.T) {
-			body := ioutil.NopCloser(req.Body)
+			body := io.NopCloser(req.Body)
 
 			buf := new(bytes.Buffer)
 			require.NoError(t, json.NewEncoder(buf).Encode(src))
 
 			// Read the body out so we can compare to what we received
-			b, err := ioutil.ReadAll(body)
+			b, err := io.ReadAll(body)
 			require.NoError(t, err)
 
 			assert.Equal(t, buf.Bytes(), b)

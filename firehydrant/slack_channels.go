@@ -52,7 +52,7 @@ func (c *RESTSlackChannelsClient) Get(ctx context.Context, params SlackChannelPa
 		return nil, err
 	}
 
-	if channels.Channels == nil || len(channels.Channels) == 0 {
+	if len(channels.Channels) == 0 { //len of nil slices is defined as 0
 		return nil, fmt.Errorf("no slack channel found with options name '%s' and / or id '%s'", params.Name, params.ID)
 	}
 	if channelCount := len(channels.Channels); channelCount > 1 {
@@ -70,7 +70,7 @@ func (c *RESTSlackChannelsClient) Get(ctx context.Context, params SlackChannelPa
 				"slack_channel_name": channel.Name,
 			})
 		}
-		return nil, fmt.Errorf("more than one Slack channel found: see Terraform logs for more information.")
+		return nil, fmt.Errorf("more than one Slack channel found: see Terraform logs for more information")
 	}
 
 	tflog.Info(ctx, "found Slack channel", map[string]interface{}{

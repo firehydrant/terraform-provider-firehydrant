@@ -59,7 +59,7 @@ func (c *RESTTransposersClient) Get(ctx context.Context, params TransposersParam
 		return nil, err
 	}
 
-	if transposers.Transposers == nil || len(transposers.Transposers) == 0 {
+	if len(transposers.Transposers) == 0 { //len of nil slices is defined as 0
 		return nil, fmt.Errorf("no transposers found with options %#v", params)
 	}
 

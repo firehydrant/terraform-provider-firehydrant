@@ -239,10 +239,10 @@ func createResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	for _, currentStep := range steps {
 		step := currentStep.(map[string]interface{})
 
-		if step["repeats"].(bool) == true && step["repeats_duration"].(string) == "" {
+		if step["repeats"].(bool) && step["repeats_duration"].(string) == "" {
 			return diag.Errorf("step repeats requires step repeats_duration to be set")
 		}
-		if step["repeats"].(bool) == false && step["repeats_duration"].(string) != "" {
+		if !step["repeats"].(bool) && step["repeats_duration"].(string) != "" {
 			return diag.Errorf("step repeats_duration requires step repeats to be set to true")
 		}
 
@@ -322,10 +322,10 @@ func updateResourceFireHydrantRunbook(ctx context.Context, d *schema.ResourceDat
 	for _, currentStep := range steps {
 		step := currentStep.(map[string]interface{})
 
-		if step["repeats"].(bool) == true && step["repeats_duration"].(string) == "" {
+		if step["repeats"].(bool) && step["repeats_duration"].(string) == "" {
 			return diag.Errorf("step repeats requires step repeats_duration to be set")
 		}
-		if step["repeats"].(bool) == false && step["repeats_duration"].(string) != "" {
+		if !step["repeats"].(bool) && step["repeats_duration"].(string) != "" {
 			return diag.Errorf("step repeats_duration requires step repeat to be set to true")
 		}
 
