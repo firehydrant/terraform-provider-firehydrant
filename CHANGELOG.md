@@ -1,4 +1,4 @@
-## Unreleased
+## 0.14.0
 
 ENHANCEMENTS:
 * **New Data Source**: `firehydrant_rotation` ([#184](https://github.com/firehydrant/terraform-provider-firehydrant/pull/184))
