@@ -19,9 +19,9 @@ func resourceOnCallSchedule() *schema.Resource {
 		ReadContext:   readResourceFireHydrantOnCallSchedule,
 		UpdateContext: updateResourceFireHydrantOnCallSchedule,
 		DeleteContext: deleteResourceFireHydrantOnCallSchedule,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		// Importer: &schema.ResourceImporter{
+		// 	StateContext: schema.ImportStatePassthroughContext,
+		// },
 
 		Schema: map[string]*schema.Schema{
 			"team_id": {
