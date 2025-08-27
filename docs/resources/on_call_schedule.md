@@ -57,6 +57,33 @@ resource "firehydrant_on_call_schedule" "primary" {
 }
 ```
 
+Schedule with a custom strategy:
+```hcl
+resource "firehydrant_team" "example_team" {
+  name = "example-team"
+}
+
+resource "firehydrant_on_call_schedule" "primary" {
+  name        = "Primary On-Call Schedule"
+  description = "This is an example on-call schedule"
+  team_id     = firehydrant_team.example_team.id
+  time_zone   = "America/Los_Angeles"
+  start_time  = "2024-04-11T11:56:29-07:00"
+  
+  strategy {
+    type           = "custom"
+    shift_duration = "PT93600S"
+  }
+
+  restrictions {
+    start_day  = "monday"
+    start_time = "14:00:00"
+    end_day    = "friday"
+    end_time   = "17:00:00"
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -71,6 +98,7 @@ The following arguments are supported:
 * `strategy` - (Required) A block to define the strategy for the on-call schedule.
 * `restrictions` - (Optional) A block to define a restriction for the on-call schedule.
 * `effective_at` - (Optional) The date and time that the on-call schedule becomes effective. Must be in `YYYY-MM-DDTHH:MM:SSZ` format. Defaults to the current date and time. If set to the past, the schedule will be effective immediately. This attribute is not stored in Terraform state.
+* `start_time` - (Optional) An ISO8601 time string specifying when the initial rotation should start. This value is only used if the rotation's strategy type is "custom".
 
 The `strategy` block supports:
 
