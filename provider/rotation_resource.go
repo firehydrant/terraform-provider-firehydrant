@@ -20,9 +20,9 @@ func resourceRotation() *schema.Resource {
 		ReadContext:   readResourceFireHydrantRotation,
 		UpdateContext: updateResourceFireHydrantRotation,
 		DeleteContext: deleteResourceFireHydrantRotation,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		// Importer: &schema.ResourceImporter{
+		// 	StateContext: schema.ImportStatePassthroughContext,
+		// },
 
 		Schema: map[string]*schema.Schema{
 			"team_id": {
