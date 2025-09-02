@@ -17,6 +17,18 @@ type RESTPermissionsClient struct {
 	client *APIClient
 }
 
+// Permission represents a single permission that can be assigned to roles
+type Permission struct {
+	Slug                string   `json:"slug"`
+	DisplayName         string   `json:"display_name"`
+	Description         string   `json:"description"`
+	CategoryDisplayName string   `json:"category_display_name"`
+	CategorySlug        string   `json:"category_slug"`
+	ParentSlug          string   `json:"parent_slug"`
+	Available           bool     `json:"available"`
+	DependencySlugs     []string `json:"dependency_slugs"`
+}
+
 var _ Permissions = &RESTPermissionsClient{}
 
 // PermissionsListResponse represents the API response for listing permissions

@@ -22,18 +22,6 @@ type RESTRolesClient struct {
 
 var _ Roles = &RESTRolesClient{}
 
-// Permission represents a single permission that can be assigned to roles
-type Permission struct {
-	Slug                string   `json:"slug"`
-	DisplayName         string   `json:"display_name"`
-	Description         string   `json:"description"`
-	CategoryDisplayName string   `json:"category_display_name"`
-	CategorySlug        string   `json:"category_slug"`
-	ParentSlug          string   `json:"parent_slug"`
-	Available           bool     `json:"available"`
-	DependencySlugs     []string `json:"dependency_slugs"`
-}
-
 // RoleResponse represents the API response for a single role
 type RoleResponse struct {
 	ID             string       `json:"id"`
