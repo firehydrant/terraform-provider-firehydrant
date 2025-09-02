@@ -36,6 +36,7 @@ func Provider() *schema.Provider {
 			"firehydrant_functionality":          resourceFunctionality(),
 			"firehydrant_incident_role":          resourceIncidentRole(),
 			"firehydrant_priority":               resourcePriority(),
+			"firehydrant_role":                   resourceRole(),
 			"firehydrant_rotation":               resourceRotation(),
 			"firehydrant_runbook":                resourceRunbook(),
 			"firehydrant_service_dependency":     resourceServiceDependency(),
@@ -57,6 +58,7 @@ func Provider() *schema.Provider {
 			"firehydrant_on_call_schedule":  dataSourceOnCallSchedule(),
 			"firehydrant_on_call_schedules": dataSourceOnCallSchedules(),
 			"firehydrant_priority":          dataSourcePriority(),
+			"firehydrant_role":              dataSourceRole(),
 			"firehydrant_rotation":          dataSourceRotation(),
 			"firehydrant_runbook":           dataSourceRunbook(),
 			"firehydrant_runbook_action":    dataSourceRunbookAction(),
@@ -69,6 +71,9 @@ func Provider() *schema.Provider {
 			"firehydrant_team":              dataSourceTeam(),
 			"firehydrant_teams":             dataSourceTeams(),
 			"firehydrant_user":              dataSourceUser(),
+			"firehydrant_permissions":       dataSourcePermissions(),
+			"firehydrant_user_permissions":  dataSourceUserPermissions(),
+			"firehydrant_team_permissions":  dataSourceTeamPermissions(),
 		},
 	}
 
