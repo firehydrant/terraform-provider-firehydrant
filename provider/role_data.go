@@ -46,11 +46,7 @@ func dataSourceRole() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"organization_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The organization ID this role belongs to",
-			},
+
 			"built_in": {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -119,16 +115,16 @@ func dataFireHydrantRole(ctx context.Context, d *schema.ResourceData, m interfac
 
 	// Set all computed attributes
 	attributes := map[string]interface{}{
-		"id":              role.ID,
-		"name":            role.Name,
-		"slug":            role.Slug,
-		"description":     role.Description,
-		"permissions":     schema.NewSet(schema.HashString, convertStringSliceToInterface(permissionSlugs)),
-		"organization_id": role.OrganizationID,
-		"built_in":        role.BuiltIn,
-		"read_only":       role.ReadOnly,
-		"created_at":      role.CreatedAt,
-		"updated_at":      role.UpdatedAt,
+		"id":          role.ID,
+		"name":        role.Name,
+		"slug":        role.Slug,
+		"description": role.Description,
+		"permissions": schema.NewSet(schema.HashString, convertStringSliceToInterface(permissionSlugs)),
+
+		"built_in":   role.BuiltIn,
+		"read_only":  role.ReadOnly,
+		"created_at": role.CreatedAt,
+		"updated_at": role.UpdatedAt,
 	}
 
 	for key, value := range attributes {

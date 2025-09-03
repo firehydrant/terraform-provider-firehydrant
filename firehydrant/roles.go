@@ -24,16 +24,15 @@ var _ Roles = &RESTRolesClient{}
 
 // RoleResponse represents the API response for a single role
 type RoleResponse struct {
-	ID             string       `json:"id"`
-	Name           string       `json:"name"`
-	Slug           string       `json:"slug"`
-	Description    string       `json:"description"`
-	OrganizationID string       `json:"organization_id"`
-	BuiltIn        bool         `json:"built_in"`
-	ReadOnly       bool         `json:"read_only"`
-	Permissions    []Permission `json:"permissions"`
-	CreatedAt      string       `json:"created_at"`
-	UpdatedAt      string       `json:"updated_at"`
+	ID          string       `json:"id"`
+	Name        string       `json:"name"`
+	Slug        string       `json:"slug"`
+	Description string       `json:"description"`
+	BuiltIn     bool         `json:"built_in"`
+	ReadOnly    bool         `json:"read_only"`
+	Permissions []Permission `json:"permissions"`
+	CreatedAt   string       `json:"created_at"`
+	UpdatedAt   string       `json:"updated_at"`
 }
 
 // RolesListResponse represents the API response for listing roles

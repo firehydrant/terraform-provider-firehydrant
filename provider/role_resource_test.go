@@ -2,18 +2,15 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccRoleResource_basic(t *testing.T) {
@@ -31,7 +28,7 @@ func TestAccRoleResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("firehydrant_role.test_role", "name", fmt.Sprintf("test-role-%s", rName)),
 					resource.TestCheckResourceAttr("firehydrant_role.test_role", "description", "Test role for Terraform"),
 					resource.TestCheckResourceAttrSet("firehydrant_role.test_role", "slug"),
-					resource.TestCheckResourceAttrSet("firehydrant_role.test_role", "organization_id"),
+
 					resource.TestCheckResourceAttr("firehydrant_role.test_role", "built_in", "false"),
 					resource.TestCheckResourceAttr("firehydrant_role.test_role", "permissions.#", "1"),
 				),
@@ -162,37 +159,6 @@ func testAccRoleConfig_withUpdatedPermissions(rName string) string {
 	`, rName)
 }
 
-func testAccCheckRoleResourceDestroy() resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
-		if err != nil {
-			return err
-		}
-
-		for _, stateResource := range s.RootModule().Resources {
-			if stateResource.Type != "firehydrant_role" {
-				continue
-			}
-
-			if stateResource.Primary.ID == "" {
-				return fmt.Errorf("No instance ID is set")
-			}
-
-			_, err := client.Roles().Get(context.TODO(), stateResource.Primary.ID)
-			if err == nil {
-				return fmt.Errorf("Role %s still exists", stateResource.Primary.ID)
-			}
-
-			// If we get a 404, that's what we expect after deletion
-			if !errors.Is(err, firehydrant.ErrorNotFound) {
-				return fmt.Errorf("Unexpected error checking role deletion: %v", err)
-			}
-		}
-
-		return nil
-	}
-}
-
 // Offline test with mock server for faster unit testing
 func offlineRoleMockServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -201,12 +167,12 @@ func offlineRoleMockServer() *httptest.Server {
 			"name": "Test Role",
 			"slug": "test-role",
 			"description": "A test role",
-			"organization_id": "org-456",
+
 			"built_in": false,
 			"read_only": false,
 			"permissions": [
 				{
-					"slug": "incidents.read",
+					"slug": "read_incidents",
 					"display_name": "Read Incidents",
 					"description": "Can view incidents",
 					"available": true

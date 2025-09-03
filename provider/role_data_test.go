@@ -24,7 +24,7 @@ func TestAccRoleDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.firehydrant_role.member", "slug", "member"),
 					resource.TestCheckResourceAttrSet("data.firehydrant_role.member", "name"),
 					resource.TestCheckResourceAttrSet("data.firehydrant_role.member", "description"),
-					resource.TestCheckResourceAttrSet("data.firehydrant_role.member", "organization_id"),
+
 					resource.TestCheckResourceAttrSet("data.firehydrant_role.member", "permissions.#"),
 				),
 			},
@@ -80,12 +80,11 @@ func TestOfflineRoleDataSource(t *testing.T) {
 						"name": "Test Role",
 						"slug": "test-role",
 						"description": "A test role",
-						"organization_id": "org-456",
 						"built_in": false,
 						"read_only": false,
 						"permissions": [
 							{
-								"slug": "incidents.read",
+								"slug": "read_incidents",
 								"display_name": "Read Incidents",
 								"description": "Can view incidents",
 								"available": true,
@@ -110,12 +109,11 @@ func TestOfflineRoleDataSource(t *testing.T) {
 				"name": "Test Role",
 				"slug": "test-role",
 				"description": "A test role",
-				"organization_id": "org-456",
 				"built_in": false,
 				"read_only": false,
 				"permissions": [
 					{
-						"slug": "incidents.read",
+						"slug": "read_incidents",
 						"display_name": "Read Incidents",
 						"description": "Can view incidents",
 						"available": true,

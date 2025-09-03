@@ -65,9 +65,9 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the role.
 * `slug` - The slug of the role (auto-generated from the name).
-* `organization_id` - The ID of the organization this role belongs to.
+
 * `built_in` - Whether this is a built-in role provided by FireHydrant (always `false` for custom roles).
-* `read_only` - Whether this role can be modified (always `false` for custom roles).
+* `read_only` - Whether this role can be modified. Should only be set to true for `viewer` role, (always `false` for custom roles).
 * `created_at` - When the role was created.
 * `updated_at` - When the role was last updated.
 
@@ -82,5 +82,5 @@ terraform import firehydrant_role.example 3638b647-b99c-5051-b715-eda2c912c42e
 ## Notes
 
 * **Permission Dependencies**: Some permissions have dependencies on other permissions. For example, `create_alerts` requires `read_alerts` and several other read permissions. The provider will validate these dependencies when creating or updating roles.
-* **Built-in Roles**: Built-in roles provided by FireHydrant (like `member`, `admin`) cannot be modified or deleted through this resource.
+* **Built-in Roles**: Built-in roles provided by FireHydrant (like `member`, `owner`) cannot be modified or deleted through this resource.
 * **Permission Validation**: The provider validates that all specified permissions exist and are available before creating or updating a role.

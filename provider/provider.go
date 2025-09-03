@@ -72,8 +72,6 @@ func Provider() *schema.Provider {
 			"firehydrant_teams":             dataSourceTeams(),
 			"firehydrant_user":              dataSourceUser(),
 			"firehydrant_permissions":       dataSourcePermissions(),
-			"firehydrant_user_permissions":  dataSourceUserPermissions(),
-			"firehydrant_team_permissions":  dataSourceTeamPermissions(),
 		},
 	}
 

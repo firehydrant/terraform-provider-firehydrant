@@ -47,11 +47,7 @@ func resourceRole() *schema.Resource {
 				},
 			},
 			// Computed attributes
-			"organization_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The organization ID this role belongs to",
-			},
+
 			"built_in": {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -146,15 +142,15 @@ func readResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, m 
 
 	// Update state with current values
 	attributes := map[string]interface{}{
-		"name":            role.Name,
-		"slug":            role.Slug,
-		"description":     role.Description,
-		"permissions":     schema.NewSet(schema.HashString, convertStringSliceToInterface(permissionSlugs)),
-		"organization_id": role.OrganizationID,
-		"built_in":        role.BuiltIn,
-		"read_only":       role.ReadOnly,
-		"created_at":      role.CreatedAt,
-		"updated_at":      role.UpdatedAt,
+		"name":        role.Name,
+		"slug":        role.Slug,
+		"description": role.Description,
+		"permissions": schema.NewSet(schema.HashString, convertStringSliceToInterface(permissionSlugs)),
+
+		"built_in":   role.BuiltIn,
+		"read_only":  role.ReadOnly,
+		"created_at": role.CreatedAt,
+		"updated_at": role.UpdatedAt,
 	}
 
 	for key, value := range attributes {
@@ -176,13 +172,9 @@ func updateResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, 
 
 	updateReq := firehydrant.UpdateRoleRequest{}
 
-	if d.HasChange("name") {
-		updateReq.Name = d.Get("name").(string)
-	}
-
-	if d.HasChange("description") {
-		updateReq.Description = d.Get("description").(string)
-	}
+	// Always include name and description as they are required by the API
+	updateReq.Name = d.Get("name").(string)
+	updateReq.Description = d.Get("description").(string)
 
 	if d.HasChange("permissions") {
 		if v, ok := d.GetOk("permissions"); ok {

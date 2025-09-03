@@ -7,7 +7,7 @@ subcategory: ""
 
 Use this data source to get information on all available permissions in FireHydrant.
 
-FireHydrant permissions define what actions users and roles can perform within the system. This data source allows you to retrieve all available permissions for use in role definitions or policy configurations.
+FireHydrant permissions define what actions users and roles can perform within the system. This data source allows you to retrieve all available permissions for use in role definitions. Users and teams receive permissions through role assignments rather than direct permission grants.
 
 ## Example Usage
 
@@ -16,6 +16,28 @@ Basic usage:
 data "firehydrant_permissions" "all_permissions" {}
 
 output "permission_slugs" {
+  value = data.firehydrant_permissions.all_permissions.permissions[*].slug
+}
+```
+
+Using permissions with roles:
+```hcl
+data "firehydrant_permissions" "all_permissions" {}
+
+# Create a role with specific permissions
+resource "firehydrant_role" "incident_manager" {
+  name        = "incident-manager"
+  description = "Role for managing incidents and alerts"
+  permissions = [
+    "read_alerts",
+    "create_alerts",
+    "read_teams",
+    "read_users"
+  ]
+}
+
+# Get all available permission slugs for reference
+output "available_permissions" {
   value = data.firehydrant_permissions.all_permissions.permissions[*].slug
 }
 ```

@@ -48,7 +48,7 @@ In addition to all arguments above, the following attributes are exported:
 * `name` - The name of the role.
 * `slug` - The slug of the role.
 * `description` - A description of the role.
-* `organization_id` - The ID of the organization this role belongs to.
+
 * `built_in` - Whether this is a built-in role provided by FireHydrant.
 * `read_only` - Whether this role can be modified.
 * `permissions` - A list of permissions assigned to this role.

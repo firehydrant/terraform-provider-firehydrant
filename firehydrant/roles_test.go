@@ -12,16 +12,16 @@ import (
 
 func expectedRoleResponse() *RoleResponse {
 	return &RoleResponse{
-		ID:             "role-id",
-		Name:           "Test Role",
-		Slug:           "test-role",
-		Description:    "A test role for unit testing",
-		OrganizationID: "org-123",
-		BuiltIn:        false,
-		ReadOnly:       false,
+		ID:          "role-id",
+		Name:        "Test Role",
+		Slug:        "test-role",
+		Description: "A test role for unit testing",
+
+		BuiltIn:  false,
+		ReadOnly: false,
 		Permissions: []Permission{
 			{
-				Slug:                "incidents.read",
+				Slug:                "read_incidents",
 				DisplayName:         "Read Incidents",
 				Description:         "Can view incident details",
 				CategoryDisplayName: "Incidents",
@@ -31,14 +31,14 @@ func expectedRoleResponse() *RoleResponse {
 				DependencySlugs:     []string{},
 			},
 			{
-				Slug:                "incidents.write",
+				Slug:                "manage_incidents",
 				DisplayName:         "Write Incidents",
 				Description:         "Can create and modify incidents",
 				CategoryDisplayName: "Incidents",
 				CategorySlug:        "incidents",
-				ParentSlug:          "incidents.read",
+				ParentSlug:          "read_incidents",
 				Available:           true,
-				DependencySlugs:     []string{"incidents.read"},
+				DependencySlugs:     []string{"read_incidents"},
 			},
 		},
 		CreatedAt: "2025-01-01T00:00:00Z",
@@ -57,7 +57,7 @@ func expectedRoleResponseJSON() string {
 		"read_only": false,
 		"permissions": [
 			{
-				"slug": "incidents.read",
+				"slug": "read_incidents",
 				"display_name": "Read Incidents",
 				"description": "Can view incident details",
 				"category_display_name": "Incidents",
@@ -67,14 +67,14 @@ func expectedRoleResponseJSON() string {
 				"dependency_slugs": []
 			},
 			{
-				"slug": "incidents.write",
+				"slug": "manage_incidents",
 				"display_name": "Write Incidents", 
 				"description": "Can create and modify incidents",
 				"category_display_name": "Incidents",
 				"category_slug": "incidents",
-				"parent_slug": "incidents.read",
+				"parent_slug": "read_incidents",
 				"available": true,
-				"dependency_slugs": ["incidents.read"]
+				"dependency_slugs": ["read_incidents"]
 			}
 		],
 		"created_at": "2025-01-01T00:00:00Z",
@@ -201,7 +201,7 @@ func TestRoleCreate(t *testing.T) {
 		Name:        "Test Role",
 		Slug:        "test-role",
 		Description: "A test role for unit testing",
-		Permissions: []string{"incidents.read", "incidents.write"},
+		Permissions: []string{"read_incidents", "manage_incidents"},
 	}
 
 	res, err := c.Roles().Create(context.TODO(), createReq)
@@ -254,7 +254,7 @@ func TestRoleUpdate(t *testing.T) {
 	updateReq := UpdateRoleRequest{
 		Name:        "Updated Role Name",
 		Description: "Updated description",
-		Permissions: []string{"incidents.read"},
+		Permissions: []string{"read_incidents"},
 	}
 
 	res, err := c.Roles().Update(context.TODO(), "role-id", updateReq)
