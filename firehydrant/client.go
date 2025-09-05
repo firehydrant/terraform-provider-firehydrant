@@ -78,6 +78,8 @@ type Client interface {
 	Transposers() TransposersClient
 	InboundEmails() InboundEmailsClient
 	Rotations() Rotations
+	Roles() Roles
+	Permissions() Permissions
 }
 
 // OptFunc is a function that sets a setting on a client
@@ -241,6 +243,14 @@ func (c *APIClient) StatusUpdateTemplates() StatusUpdateTemplates {
 
 func (c *APIClient) Rotations() Rotations {
 	return &RESTRotationsClient{client: c}
+}
+
+func (c *APIClient) Roles() Roles {
+	return &RESTRolesClient{client: c}
+}
+
+func (c *APIClient) Permissions() Permissions {
+	return &RESTPermissionsClient{client: c}
 }
 
 // GetUsers gets matching users in FireHydrant

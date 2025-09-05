@@ -1,3 +1,11 @@
+## 0.14.2
+
+ENHANCEMENTS:
+
+* **New Resource**: `fire_hydrant_role` ([#188](https://github.com/firehydrant/terraform-provider-firehydrant/pull/188))
+* **New Data Source**: `fire_hydrant_role` ([#188](https://github.com/firehydrant/terraform-provider-firehydrant/pull/188))
+* **New Data Source**: `fire_hydrant_permissions` ([#188](https://github.com/firehydrant/terraform-provider-firehydrant/pull/188))
+
 ## 0.14.1
 
 Documentation for on-call schedules updated to show example for `start_time` parameter.
