@@ -172,7 +172,6 @@ func updateResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, 
 
 	updateReq := firehydrant.UpdateRoleRequest{}
 
-	// Always include name and description as they are required by the API
 	updateReq.Name = d.Get("name").(string)
 	updateReq.Description = d.Get("description").(string)
 

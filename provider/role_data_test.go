@@ -17,7 +17,7 @@ func TestAccRoleDataSource_basic(t *testing.T) {
 		ProviderFactories: defaultProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRoleDataSourceConfig_basic(),
+				Config: testAccBuiltInRoleDataSourceConfig(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Test data source lookup by slug
 					resource.TestCheckResourceAttrSet("data.firehydrant_role.member", "id"),
@@ -48,13 +48,6 @@ func TestAccRoleDataSource_builtIn(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccRoleDataSourceConfig_basic() string {
-	return `
-data "firehydrant_role" "member" {
-	slug = "member"
-}`
 }
 
 func testAccBuiltInRoleDataSourceConfig() string {

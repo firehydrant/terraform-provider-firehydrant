@@ -24,18 +24,6 @@ Using permissions with roles:
 ```hcl
 data "firehydrant_permissions" "all_permissions" {}
 
-# Create a role with specific permissions
-resource "firehydrant_role" "incident_manager" {
-  name        = "incident-manager"
-  description = "Role for managing incidents and alerts"
-  permissions = [
-    "read_alerts",
-    "create_alerts",
-    "read_teams",
-    "read_users"
-  ]
-}
-
 # Get all available permission slugs for reference
 output "available_permissions" {
   value = data.firehydrant_permissions.all_permissions.permissions[*].slug
