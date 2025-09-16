@@ -25,17 +25,17 @@ func testAccCheckRoleResourceDestroy() resource.TestCheckFunc {
 			}
 
 			if stateResource.Primary.ID == "" {
-				return fmt.Errorf("No instance ID is set")
+				return fmt.Errorf("no instance ID is set")
 			}
 
 			_, err := client.Roles().Get(context.Background(), stateResource.Primary.ID)
 			if err == nil {
-				return fmt.Errorf("Role %s still exists", stateResource.Primary.ID)
+				return fmt.Errorf("role %s still exists", stateResource.Primary.ID)
 			}
 
 			// If we get a 404, that's what we expect after deletion
 			if !errors.Is(err, firehydrant.ErrorNotFound) {
-				return fmt.Errorf("Unexpected error checking role deletion: %v", err)
+				return fmt.Errorf("unexpected error checking role deletion: %v", err)
 			}
 		}
 
