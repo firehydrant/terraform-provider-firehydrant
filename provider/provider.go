@@ -52,7 +52,11 @@ func Provider() *schema.Provider {
 			"firehydrant_escalation_policy":      resourceEscalationPolicy(),
 			"firehydrant_status_update_template": resourceStatusUpdateTemplate(),
 			"firehydrant_inbound_email":          resourceInboundEmail(),
+<<<<<<< HEAD
 			"firehydrant_custom_event_source":    resourceCustomEventSource(),
+=======
+			"firehydrant_notification_policy":    resourceNotificationPolicy(),
+>>>>>>> eb5bd39 (Add Notification Policy resource)
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"firehydrant_environment":       dataSourceEnvironment(),
