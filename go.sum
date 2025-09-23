@@ -30,8 +30,15 @@ github.com/emirpasic/gods v1.12.0 h1:QAUIPSaCu4G+POclxeqb3F+WPpdKqFGlw36+yOzGlrg
 github.com/emirpasic/gods v1.12.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
 github.com/ericlagergren/decimal v0.0.0-20221120152707-495c53812d05 h1:S92OBrGuLLZsyM5ybUzgc/mPjIYk2AZqufieooe98uw=
 github.com/ericlagergren/decimal v0.0.0-20221120152707-495c53812d05/go.mod h1:M9R1FoZ3y//hwwnJtO51ypFGwm8ZfpxPT/ZLtO1mcgQ=
+github.com/ericlagergren/decimal v0.0.0-20240411145413-00de7ca16731 h1:R/ZjJpjQKsZ6L/+Gf9WHbt31GG8NMVcpRqUE+1mMIyo=
+github.com/ericlagergren/decimal v0.0.0-20240411145413-00de7ca16731/go.mod h1:M9R1FoZ3y//hwwnJtO51ypFGwm8ZfpxPT/ZLtO1mcgQ=
 github.com/fatih/color v1.13.0 h1:8LOYc1KYPPmyKMuN8QV2DNRWNbLo6LZ0iLs8+mlH53w=
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
+<<<<<<< HEAD
+=======
+github.com/firehydrant/firehydrant-go-sdk v1.3.7 h1:TrVXm8WePOXTptAg+EQbcl+QZJcxqdkdmS4yXNW935M=
+github.com/firehydrant/firehydrant-go-sdk v1.3.7/go.mod h1:XeI8vqzuNlcqlD7UT2QFD66f2OhAhlVusyW2Dy08Jbc=
+>>>>>>> 4ef2867 (update fh go sdk)
 github.com/firehydrant/firehydrant-go-sdk v1.4.0 h1:l6q97y0Iaw1GLA0bMBaua0Brnqo44NfmHgUEHZJ6i48=
 github.com/firehydrant/firehydrant-go-sdk v1.4.0/go.mod h1:wRSFlp/uxoWWVwStzGoiwBzt4wmbA2qT7riraue2fCI=
 github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568/go.mod h1:xEzjJPgXI435gkrCt3MPfRiAkVrwSbHsst4LCFVfpJc=
