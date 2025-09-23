@@ -75,7 +75,7 @@ func createResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.
 	oldClient := m.(firehydrant.Client)
 	fhClient := setupNewFHClient(oldClient)
 
-	var ngm operations.CreateHandoffNotificationSettingNotificationGroupMethod
+	var ngm operations.CreateNotificationPolicyNotificationGroupMethod
 	desiredNgm := d.Get("notification_group_method").(string)
 	switch desiredNgm {
 	case "any":
@@ -89,14 +89,14 @@ func createResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.
 	case "mobile_text":
 		fallthrough
 	case "chat":
-		ngm = operations.CreateHandoffNotificationSettingNotificationGroupMethod(desiredNgm)
+		ngm = operations.CreateNotificationPolicyNotificationGroupMethod(desiredNgm)
 	default:
 		return diag.Errorf("invalid value for notification_group_method: %v", desiredNgm)
 	}
 
 	maxDelay := d.Get("max_delay").(string)
 
-	var priority operations.CreateHandoffNotificationSettingPriority
+	var priority operations.CreateNotificationPolicyPriority
 	desiredPriority := d.Get("priority").(string)
 	switch desiredPriority {
 	case "HIGH":
@@ -104,19 +104,19 @@ func createResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.
 	case "MEDIUM":
 		fallthrough
 	case "LOW":
-		priority = operations.CreateHandoffNotificationSettingPriority(desiredPriority)
+		priority = operations.CreateNotificationPolicyPriority(desiredPriority)
 	default:
 		return diag.Errorf("invalid value for priority: %v", desiredPriority)
 	}
 
-	createRequest := operations.CreateHandoffNotificationSettingRequest{
+	createRequest := operations.CreateNotificationPolicyRequest{
 		NotificationGroupMethod: ngm,
 		MaxDelay:                maxDelay,
 		Priority:                priority,
 	}
 
 	tflog.Debug(ctx, "Create new notification policy")
-	serviceResponse, err := fhClient.Signals.CreateHandoffNotificationSetting(ctx, createRequest)
+	serviceResponse, err := fhClient.Signals.CreateNotificationPolicy(ctx, createRequest)
 	if err != nil {
 		return diag.Errorf("Error creating new notification policy: %v", err)
 	}
