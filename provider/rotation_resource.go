@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -20,9 +21,9 @@ func resourceRotation() *schema.Resource {
 		ReadContext:   readResourceFireHydrantRotation,
 		UpdateContext: updateResourceFireHydrantRotation,
 		DeleteContext: deleteResourceFireHydrantRotation,
-		// Importer: &schema.ResourceImporter{
-		// 	StateContext: schema.ImportStatePassthroughContext,
-		// },
+		Importer: &schema.ResourceImporter{
+			StateContext: importResourceFireHydrantRotation,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"team_id": {
@@ -440,6 +441,29 @@ func deleteResourceFireHydrantRotation(ctx context.Context, d *schema.ResourceDa
 	d.SetId("")
 
 	return diag.Diagnostics{}
+}
+
+func importResourceFireHydrantRotation(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+	team_id, schedule_id, id, err := resourceFireHydrantRotationParseId(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	d.Set("team_id", team_id)
+	d.Set("schedule_id", schedule_id)
+	d.SetId(id)
+
+	return []*schema.ResourceData{d}, nil
+}
+
+func resourceFireHydrantRotationParseId(id string) (string, string, string, error) {
+	parts := strings.SplitN(id, ":", 3)
+
+	if len(parts) != 3 || parts[0] == "" || parts[1] == "" || parts[2] == "" {
+		return "", "", "", fmt.Errorf("unexpected format of ID (%s), expected Team_ID:Schedule_ID:Rotation_ID", id)
+	}
+
+	return parts[0], parts[1], parts[2], nil
 }
 
 func rotationStrategyToMap(strategy firehydrant.RotationStrategy) []map[string]interface{} {

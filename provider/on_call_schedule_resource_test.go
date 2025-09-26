@@ -579,7 +579,7 @@ func TestAccOnCallScheduleResourceImport_basic(t *testing.T) {
 					if !ok {
 						return "", fmt.Errorf("Not found: %s", resourceName)
 					}
-					return fmt.Sprintf("%s:%s", rs.Primary.Attributes["id"], rs.Primary.Attributes["team_id"]), nil
+					return fmt.Sprintf("%s:%s", rs.Primary.Attributes["team_id"], rs.Primary.Attributes["id"]), nil
 				},
 				ImportState:       true,
 				ImportStateVerify: true,
