@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -19,9 +20,9 @@ func resourceOnCallSchedule() *schema.Resource {
 		ReadContext:   readResourceFireHydrantOnCallSchedule,
 		UpdateContext: updateResourceFireHydrantOnCallSchedule,
 		DeleteContext: deleteResourceFireHydrantOnCallSchedule,
-		// Importer: &schema.ResourceImporter{
-		// 	StateContext: schema.ImportStatePassthroughContext,
-		// },
+		Importer: &schema.ResourceImporter{
+			StateContext: importResourceFireHydrantOnCallSchedule,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"team_id": {
@@ -406,6 +407,28 @@ func deleteResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 	d.SetId("")
 
 	return diag.Diagnostics{}
+}
+
+func importResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+	team_id, id, err := resourceFireHydrantOnCallScheduleParseId(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	d.Set("team_id", team_id)
+	d.SetId(id)
+
+	return []*schema.ResourceData{d}, nil
+}
+
+func resourceFireHydrantOnCallScheduleParseId(id string) (string, string, error) {
+	parts := strings.SplitN(id, ":", 2)
+
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", fmt.Errorf("unexpected format of ID (%s), expected Team_ID:Schedule_ID", id)
+	}
+
+	return parts[0], parts[1], nil
 }
 
 func strategyToMap(strategy firehydrant.OnCallScheduleStrategy) []map[string]interface{} {
