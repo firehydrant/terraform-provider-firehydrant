@@ -558,3 +558,32 @@ func testAccOnCallScheduleConfig_withEffectiveAt(rName, handoffDay, handoffTime,
 	}
 	`, rName, rName, handoffTime, handoffDay, effectiveAt)
 }
+
+func TestAccOnCallScheduleResourceImport_basic(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
+	resourceName := "firehydrant_on_call_schedule.test_on_call_schedule"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		CheckDestroy:      testAccCheckOnCallScheduleResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOnCallScheduleConfig_basic(rName),
+			},
+			{
+				ResourceName: resourceName,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("Not found: %s", resourceName)
+					}
+					return fmt.Sprintf("%s:%s", rs.Primary.Attributes["team_id"], rs.Primary.Attributes["id"]), nil
+				},
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}

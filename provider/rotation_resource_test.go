@@ -620,3 +620,32 @@ func testAccRotationConfig_withEffectiveAt(rName, handoffDay, handoffTime, effec
 	}
 	`, rName, rName, rName, handoffTime, handoffDay, effectiveAt)
 }
+
+func TestAccRotationResourceImport_basic(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
+	resourceName := "firehydrant_rotation.test_rotation"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		CheckDestroy:      testAccCheckRotationResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRotationConfig_basic(rName),
+			},
+			{
+				ResourceName: resourceName,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("Not found: %s", resourceName)
+					}
+					return fmt.Sprintf("%s:%s:%s", rs.Primary.Attributes["team_id"], rs.Primary.Attributes["schedule_id"], rs.Primary.Attributes["id"]), nil
+				},
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}

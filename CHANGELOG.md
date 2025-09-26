@@ -1,3 +1,9 @@
+## 0.14.3
+
+ENHANCEMENTS:
+
+* `firehydrant_on_call_schedule` and `firehydrant_rotation` now support imports.
+
 ## 0.14.2
 
 ENHANCEMENTS:
