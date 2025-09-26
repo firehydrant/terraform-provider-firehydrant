@@ -559,7 +559,7 @@ func testAccOnCallScheduleConfig_withEffectiveAt(rName, handoffDay, handoffTime,
 	`, rName, rName, handoffTime, handoffDay, effectiveAt)
 }
 
-func TestAccExampleModelResourceImport_basic(t *testing.T) {
+func TestAccOnCallScheduleResourceImport_basic(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resourceName := "firehydrant_on_call_schedule.test_on_call_schedule"
@@ -579,7 +579,7 @@ func TestAccExampleModelResourceImport_basic(t *testing.T) {
 					if !ok {
 						return "", fmt.Errorf("Not found: %s", resourceName)
 					}
-					return fmt.Sprintf("%s:%s", rs.Primary.Attributes["team_id"], rs.Primary.Attributes["id"]), nil
+					return fmt.Sprintf("%s:%s", rs.Primary.Attributes["id"], rs.Primary.Attributes["team_id"]), nil
 				},
 				ImportState:       true,
 				ImportStateVerify: true,
