@@ -122,7 +122,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Rotations can be imported; use `<TeamID>:<ScheduleID>` as the import ID. For example:
+On-call schedules can be imported; use `<TeamID>:<ScheduleID>` as the import ID. For example:
 
 ```shell
 terraform import firehydrant_rotation.example_rotation 3638b647-b99c-5051-b715-eda2c912c42e:12345678-90ab-cdef-1234-567890abcdef
