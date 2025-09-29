@@ -102,6 +102,11 @@ func setupFireHydrantContext(ctx context.Context, rd *schema.ResourceData, terra
 		return nil, diag.FromErr(err)
 	}
 
+	_, err = ac.Sdk.AccountSettings.Ping(ctx)
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+
 	return ac, nil
 }
 
