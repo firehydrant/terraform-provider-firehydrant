@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	fhsdk "github.com/firehydrant/firehydrant-go-sdk"
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
@@ -136,9 +137,14 @@ func NewRestClient(token string, opts ...OptFunc) (*APIClient, error) {
 	httpClient := &http.Client{Transport: &transportWithUserAgent{
 		userAgent: fmt.Sprintf("%s (%s)/%s", UserAgentPrefix, GetBuildInfo().String(), c.userAgentSuffix)},
 	}
+
+	// speakeasy sdk will only work with v1 of the api and adds this to each path automatically.  The server URL then assumes no path information
+	// Thus, we need to strip any trailing 'v1/' from the base URL provided to configure the old client.
+	firehydrantServerURL := strings.TrimSuffix(firehydrantBaseURL, "v1/")
+
 	c.Sdk = fhsdk.New(
 		fhsdk.WithClient(httpClient),
-		fhsdk.WithServerURL(firehydrantBaseURL),
+		fhsdk.WithServerURL(firehydrantServerURL),
 		fhsdk.WithSecurity(components.Security{
 			APIKey: token,
 		}),
