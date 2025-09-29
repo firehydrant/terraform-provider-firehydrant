@@ -21,7 +21,7 @@ data "firehydrant_user" "test_user" {
 func TestUserDataSource_OneMatch(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if r.URL.Path != "/ping" && r.URL.Path != "/users" {
+		if r.URL.Path != "/ping" && r.URL.Path != "/v1/ping" && r.URL.Path != "/users" {
 			t.Errorf("Expected to request '/ping' or '/users', got: %s", r.URL.Path)
 		}
 		if r.URL.Path == "/users" && r.URL.Query().Get("query") != "test-user@firehydrant.io" {
@@ -61,7 +61,7 @@ func TestUserDataSource_OneMatch(t *testing.T) {
 func TestUserDataSource_MultipleMatches(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if r.URL.Path != "/ping" && r.URL.Path != "/users" {
+		if r.URL.Path != "/ping" && r.URL.Path != "/v1/ping" && r.URL.Path != "/users" {
 			t.Errorf("Expected to request '/ping' or '/users', got: %s", r.URL.Path)
 		}
 		if r.URL.Path == "/users" && r.URL.Query().Get("query") != "test-user@firehydrant.io" {
@@ -93,7 +93,7 @@ func TestUserDataSource_MultipleMatches(t *testing.T) {
 func TestUserDataSource_NoMatches(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if r.URL.Path != "/ping" && r.URL.Path != "/users" {
+		if r.URL.Path != "/ping" && r.URL.Path != "/v1/ping" && r.URL.Path != "/users" {
 			t.Errorf("Expected to request '/ping' or '/users', got: %s", r.URL.Path)
 		}
 		if r.URL.Path == "/users" && r.URL.Query().Get("query") != "test-user@firehydrant.io" {

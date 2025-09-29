@@ -21,7 +21,7 @@ data "firehydrant_schedule" "test_schedule" {
 func TestScheduleDataSource_OneMatch(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if r.URL.Path != "/ping" && r.URL.Path != "/schedules" {
+		if r.URL.Path != "/ping" && r.URL.Path != "/v1/ping" && r.URL.Path != "/schedules" {
 			t.Errorf("Expected to request '/ping' or '/schedules', got: %s", r.URL.Path)
 		}
 
@@ -60,7 +60,7 @@ func TestScheduleDataSource_OneMatch(t *testing.T) {
 func TestScheduleDataSource_MultipleMatches(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if r.URL.Path != "/ping" && r.URL.Path != "/schedules" {
+		if r.URL.Path != "/ping" && r.URL.Path != "/v1/ping" && r.URL.Path != "/schedules" {
 			t.Errorf("Expected to request '/ping' or '/schedules', got: %s", r.URL.Path)
 		}
 		if r.URL.Path == "/schedules" && r.URL.Query().Get("query") != "My Rotation" {
@@ -92,7 +92,7 @@ func TestScheduleDataSource_MultipleMatches(t *testing.T) {
 func TestScheduleDataSource_NoMatches(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if r.URL.Path != "/ping" && r.URL.Path != "/schedules" {
+		if r.URL.Path != "/ping" && r.URL.Path != "/v1/ping" && r.URL.Path != "/schedules" {
 			t.Errorf("Expected to request '/ping' or '/schedules', got: %s", r.URL.Path)
 		}
 		if r.URL.Path == "/schedules" && r.URL.Query().Get("query") != "My Rotation" {

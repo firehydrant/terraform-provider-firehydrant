@@ -21,7 +21,7 @@ data "firehydrant_team" "test_team" {
 
 func TestTeamDataSource_OneMatch(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !strings.HasPrefix(r.URL.Path, "/ping") && !strings.HasPrefix(r.URL.Path, "/teams") {
+		if !strings.HasPrefix(r.URL.Path, "/ping") && !strings.HasPrefix(r.URL.Path, "/v1/ping") && !strings.HasPrefix(r.URL.Path, "/teams") {
 			t.Errorf("Expected to request '/ping' or '/teams', got: %s", r.URL.Path)
 		}
 
@@ -58,7 +58,7 @@ func TestTeamDataSource_OneMatch(t *testing.T) {
 func TestTeamDataSource_NoMatches(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if !strings.HasPrefix(r.URL.Path, "/ping") && !strings.HasPrefix(r.URL.Path, "/teams") {
+		if !strings.HasPrefix(r.URL.Path, "/ping") && !strings.HasPrefix(r.URL.Path, "/v1/ping") && !strings.HasPrefix(r.URL.Path, "/teams") {
 			t.Errorf("Expected to request '/ping' or '/teams', got: %s", r.URL.Path)
 		}
 
