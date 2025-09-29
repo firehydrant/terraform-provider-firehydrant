@@ -25,8 +25,8 @@ func TestTeamDataSource_OneMatch(t *testing.T) {
 			t.Errorf("Expected to request '/ping' or '/teams', got: %s", r.URL.Path)
 		}
 
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"id": "123", "name": "Test Team", "slug": "test_team"}`))
 	}))
 
@@ -63,8 +63,8 @@ func TestTeamDataSource_NoMatches(t *testing.T) {
 			t.Errorf("Expected to request '/ping' or '/teams', got: %s", r.URL.Path)
 		}
 
-		w.WriteHeader(http.StatusNotFound)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(`{"detail":"record not found"}`))
 	}))
 

@@ -20,8 +20,8 @@ func TestAccTeamsDataSource_QueryMatch(t *testing.T) {
 			t.Errorf("Expected to request '/ping' or '/teams', got: %s", r.URL.Path)
 		}
 
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"data":[{"id":"123","name":"Test team 1", "description": "a description", "slug": "test-team-1"},{"id":"234","name":"Test team 2", "description": "a description", "slug": "test-team-2"}],"pagination":{"count":2,"page":1,"items":20,"pages":1,"last":2,"prev":null,"next":null}}`))
 	}))
 

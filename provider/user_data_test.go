@@ -28,8 +28,8 @@ func TestUserDataSource_OneMatch(t *testing.T) {
 			t.Errorf("Expected query param 'query' to be 'test-user@firehydrant.io', got: %s", r.URL.Query().Get("query"))
 		}
 
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"data":[{"id": "123", "name": "Test Testerson", "email":"test-user@firehydrant.io"}]}`))
 	}))
 
@@ -69,8 +69,8 @@ func TestUserDataSource_MultipleMatches(t *testing.T) {
 			t.Errorf("Expected query param 'query' to be 'test-user@firehydrant.io', got: %s", r.URL.Query().Get("query"))
 		}
 
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"data":[{"id": "123", "email":"test-user@firehydrant.io", "name": "Test Testerson"},{"id": "456", "email":"test-user@example.io", "name": "Bob Testerson"}]}`))
 	}))
 
@@ -102,8 +102,8 @@ func TestUserDataSource_NoMatches(t *testing.T) {
 			t.Errorf("Expected query param 'query' to be 'test-user@firehydrant.io', got: %s", r.URL.Query().Get("query"))
 		}
 
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"data":[]}`))
 	}))
 

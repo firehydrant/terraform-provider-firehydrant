@@ -29,8 +29,8 @@ func TestScheduleDataSource_OneMatch(t *testing.T) {
 			t.Errorf("Expected query param 'query' to be 'My Rotation', got: %s", r.URL.Query().Get("query"))
 		}
 
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"data":[{"id": "123", "name":"My Rotation", "integration" : "", "discarded" : false }]}`))
 	}))
 
@@ -68,8 +68,8 @@ func TestScheduleDataSource_MultipleMatches(t *testing.T) {
 			t.Errorf("Expected query param 'query' to be 'My Rotation', got: %s", r.URL.Query().Get("query"))
 		}
 
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"data":[{"id": "123", "name":"My Rotation", "integration" : "", "discarded" : false }, {"id": "123", "name":"My Rotation", "integration" : "", "discarded" : false }]}`))
 	}))
 
@@ -101,8 +101,8 @@ func TestScheduleDataSource_NoMatches(t *testing.T) {
 			t.Errorf("Expected query param 'query' to be 'My Rotation', got: %s", r.URL.Query().Get("query"))
 		}
 
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"data":[]}`))
 	}))
 
