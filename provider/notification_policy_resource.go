@@ -41,7 +41,7 @@ func resourceNotificationPolicy() *schema.Resource {
 }
 
 func readResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(firehydrant.APIClient)
+	client := m.(*firehydrant.APIClient)
 
 	notificationPolicyID := d.Id()
 	tflog.Debug(ctx, fmt.Sprintf("Read notification policy: %s", notificationPolicyID), map[string]interface{}{
@@ -68,7 +68,7 @@ func readResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.Re
 }
 
 func createResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(firehydrant.APIClient)
+	client := m.(*firehydrant.APIClient)
 
 	var ngm operations.CreateNotificationPolicyNotificationGroupMethod
 	desiredNgm := d.Get("notification_group_method").(string)
@@ -124,7 +124,7 @@ func createResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.
 }
 
 func updateResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(firehydrant.APIClient)
+	client := m.(*firehydrant.APIClient)
 
 	var ngm operations.UpdateNotificationPolicyNotificationGroupMethod
 	desiredNgm := d.Get("notification_group_method").(string)
@@ -178,7 +178,7 @@ func updateResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.
 }
 
 func deleteResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(firehydrant.APIClient)
+	client := m.(*firehydrant.APIClient)
 
 	notificationPolicyID := d.Id()
 	tflog.Debug(ctx, fmt.Sprintf("Delete notification policy: %s", notificationPolicyID), map[string]interface{}{
