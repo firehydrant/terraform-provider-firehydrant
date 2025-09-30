@@ -20,7 +20,6 @@ require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-cidr v1.1.0 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
-	github.com/ericlagergren/decimal v0.0.0-20240411145413-00de7ca16731 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/firehydrant/firehydrant-go-sdk v1.7.1
 	github.com/golang/protobuf v1.5.4 // indirect

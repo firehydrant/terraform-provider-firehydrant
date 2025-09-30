@@ -54,9 +54,6 @@ var _ Client = &APIClient{}
 
 // Client is the client that makes requests to FireHydrant
 type Client interface {
-	GetBaseURL() string
-	GetToken() string
-	GetUserAgent() string
 	Ping(ctx context.Context) (*PingResponse, error)
 
 	Priorities() PrioritiesClient
@@ -158,18 +155,6 @@ func (c *APIClient) client() *sling.Sling {
 			),
 		).
 		Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
-}
-
-func (c APIClient) GetBaseURL() string {
-	return c.baseURL
-}
-
-func (c APIClient) GetToken() string {
-	return c.token
-}
-
-func (c APIClient) GetUserAgent() string {
-	return fmt.Sprintf("%s (%s)/%s", UserAgentPrefix, GetBuildInfo().String(), c.userAgentSuffix)
 }
 
 // Ping hits and verifies the HTTP of FireHydrant
