@@ -3,10 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/http"
 
-	fhsdk "github.com/firehydrant/firehydrant-go-sdk"
-	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/firehydrant-go-sdk/models/operations"
 	"github.com/firehydrant/firehydrant-go-sdk/models/sdkerrors"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -44,15 +41,14 @@ func resourceNotificationPolicy() *schema.Resource {
 }
 
 func readResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	oldClient := m.(firehydrant.Client)
-	fhClient := setupNewFHClient(oldClient)
+	client := m.(firehydrant.APIClient)
 
 	notificationPolicyID := d.Id()
 	tflog.Debug(ctx, fmt.Sprintf("Read notification policy: %s", notificationPolicyID), map[string]interface{}{
 		"id": notificationPolicyID,
 	})
 
-	response, err := fhClient.Signals.GetNotificationPolicy(ctx, notificationPolicyID)
+	response, err := client.Sdk.Signals.GetNotificationPolicy(ctx, notificationPolicyID)
 	if err != nil {
 	}
 
@@ -72,8 +68,7 @@ func readResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.Re
 }
 
 func createResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	oldClient := m.(firehydrant.Client)
-	fhClient := setupNewFHClient(oldClient)
+	client := m.(firehydrant.APIClient)
 
 	var ngm operations.CreateNotificationPolicyNotificationGroupMethod
 	desiredNgm := d.Get("notification_group_method").(string)
@@ -116,7 +111,7 @@ func createResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.
 	}
 
 	tflog.Debug(ctx, "Create new notification policy")
-	serviceResponse, err := fhClient.Signals.CreateNotificationPolicy(ctx, createRequest)
+	serviceResponse, err := client.Sdk.Signals.CreateNotificationPolicy(ctx, createRequest)
 	if err != nil {
 		return diag.Errorf("Error creating new notification policy: %v", err)
 	}
@@ -129,8 +124,7 @@ func createResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.
 }
 
 func updateResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	oldClient := m.(firehydrant.Client)
-	fhClient := setupNewFHClient(oldClient)
+	client := m.(firehydrant.APIClient)
 
 	var ngm operations.UpdateNotificationPolicyNotificationGroupMethod
 	desiredNgm := d.Get("notification_group_method").(string)
@@ -175,7 +169,7 @@ func updateResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.
 	tflog.Debug(ctx, fmt.Sprintf("Update notification policy: %s", d.Id()), map[string]interface{}{
 		"id": d.Id(),
 	})
-	err := fhClient.Signals.UpdateNotificationPolicy(ctx, d.Id(), &updateRequest)
+	err := client.Sdk.Signals.UpdateNotificationPolicy(ctx, d.Id(), &updateRequest)
 	if err != nil {
 		return diag.Errorf("Error updating notification policy %s: %v", d.Id(), err)
 	}
@@ -184,14 +178,13 @@ func updateResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.
 }
 
 func deleteResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	oldClient := m.(firehydrant.Client)
-	fhClient := setupNewFHClient(oldClient)
+	client := m.(firehydrant.APIClient)
 
 	notificationPolicyID := d.Id()
 	tflog.Debug(ctx, fmt.Sprintf("Delete notification policy: %s", notificationPolicyID), map[string]interface{}{
 		"id": notificationPolicyID,
 	})
-	err := fhClient.Signals.DeleteNotificationPolicy(ctx, notificationPolicyID)
+	err := client.Sdk.Signals.DeleteNotificationPolicy(ctx, notificationPolicyID)
 	if err != nil {
 		if err.(*sdkerrors.SDKError).StatusCode == 404 {
 			d.SetId("")
@@ -201,31 +194,4 @@ func deleteResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.
 	}
 
 	return diag.Diagnostics{}
-}
-
-type transportWithUserAgent struct {
-	userAgent string
-}
-
-func (t *transportWithUserAgent) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("User-Agent", t.userAgent)
-	return http.DefaultTransport.RoundTrip(req)
-}
-
-func setupNewFHClient(oldClient firehydrant.Client) *fhsdk.FireHydrant {
-	// This is going to look awkward for now, but I'm using this as an opportunity to test using the official SDK
-	// rather than rolling our own like we currently do.  Rather than doing one mega PR to replace the client everywhere,
-	// I'm replacing the client used for this specific resource first to make sure it behaves properly.  We'll follow up with
-	// a change to pass in params, rather than the whole client, and then swap out the client in a series of commits that should
-	// all look pretty uniform.  But for now, this is weird.  I get it.  Deal with it.
-
-	httpClient := &http.Client{Transport: &transportWithUserAgent{userAgent: oldClient.GetUserAgent()}}
-
-	return fhsdk.New(
-		fhsdk.WithClient(httpClient),
-		fhsdk.WithServerURL(oldClient.GetBaseURL()),
-		fhsdk.WithSecurity(components.Security{
-			APIKey: oldClient.GetToken(),
-		}),
-	)
 }
