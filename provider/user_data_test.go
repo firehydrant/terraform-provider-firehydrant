@@ -21,13 +21,14 @@ data "firehydrant_user" "test_user" {
 func TestUserDataSource_OneMatch(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if r.URL.Path != "/ping" && r.URL.Path != "/users" {
+		if r.URL.Path != "/ping" && r.URL.Path != "/v1/ping" && r.URL.Path != "/users" {
 			t.Errorf("Expected to request '/ping' or '/users', got: %s", r.URL.Path)
 		}
 		if r.URL.Path == "/users" && r.URL.Query().Get("query") != "test-user@firehydrant.io" {
 			t.Errorf("Expected query param 'query' to be 'test-user@firehydrant.io', got: %s", r.URL.Query().Get("query"))
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"data":[{"id": "123", "name": "Test Testerson", "email":"test-user@firehydrant.io"}]}`))
 	}))
@@ -61,13 +62,14 @@ func TestUserDataSource_OneMatch(t *testing.T) {
 func TestUserDataSource_MultipleMatches(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if r.URL.Path != "/ping" && r.URL.Path != "/users" {
+		if r.URL.Path != "/ping" && r.URL.Path != "/v1/ping" && r.URL.Path != "/users" {
 			t.Errorf("Expected to request '/ping' or '/users', got: %s", r.URL.Path)
 		}
 		if r.URL.Path == "/users" && r.URL.Query().Get("query") != "test-user@firehydrant.io" {
 			t.Errorf("Expected query param 'query' to be 'test-user@firehydrant.io', got: %s", r.URL.Query().Get("query"))
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"data":[{"id": "123", "email":"test-user@firehydrant.io", "name": "Test Testerson"},{"id": "456", "email":"test-user@example.io", "name": "Bob Testerson"}]}`))
 	}))
@@ -93,13 +95,14 @@ func TestUserDataSource_MultipleMatches(t *testing.T) {
 func TestUserDataSource_NoMatches(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if r.URL.Path != "/ping" && r.URL.Path != "/users" {
+		if r.URL.Path != "/ping" && r.URL.Path != "/v1/ping" && r.URL.Path != "/users" {
 			t.Errorf("Expected to request '/ping' or '/users', got: %s", r.URL.Path)
 		}
 		if r.URL.Path == "/users" && r.URL.Query().Get("query") != "test-user@firehydrant.io" {
 			t.Errorf("Expected query param 'query' to be 'test-user@firehydrant.io', got: %s", r.URL.Query().Get("query"))
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"data":[]}`))
 	}))

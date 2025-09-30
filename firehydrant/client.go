@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
+
+	fhsdk "github.com/firehydrant/firehydrant-go-sdk"
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 
 	"github.com/dghubble/sling"
 	"github.com/pkg/errors"
@@ -37,6 +41,8 @@ type APIClient struct {
 	baseURL         string
 	token           string
 	userAgentSuffix string
+
+	Sdk *fhsdk.FireHydrant
 }
 
 const (
@@ -82,6 +88,15 @@ type Client interface {
 	Permissions() Permissions
 }
 
+type transportWithUserAgent struct {
+	userAgent string
+}
+
+func (t *transportWithUserAgent) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("User-Agent", t.userAgent)
+	return http.DefaultTransport.RoundTrip(req)
+}
+
 // OptFunc is a function that sets a setting on a client
 type OptFunc func(c *APIClient) error
 
@@ -117,6 +132,23 @@ func NewRestClient(token string, opts ...OptFunc) (*APIClient, error) {
 			return nil, err
 		}
 	}
+
+	//init speakeasy client also
+	httpClient := &http.Client{Transport: &transportWithUserAgent{
+		userAgent: fmt.Sprintf("%s (%s)/%s", UserAgentPrefix, GetBuildInfo().String(), c.userAgentSuffix)},
+	}
+
+	// speakeasy sdk will only work with v1 of the api and adds this to each path automatically.  The server URL then assumes no path information
+	// Thus, we need to strip any trailing 'v1/' from the base URL provided to configure the old client.
+	firehydrantServerURL := strings.TrimSuffix(firehydrantBaseURL, "v1/")
+
+	c.Sdk = fhsdk.New(
+		fhsdk.WithClient(httpClient),
+		fhsdk.WithServerURL(firehydrantServerURL),
+		fhsdk.WithSecurity(components.Security{
+			APIKey: token,
+		}),
+	)
 
 	return c, nil
 }

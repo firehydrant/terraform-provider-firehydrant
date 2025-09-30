@@ -21,7 +21,7 @@ data "firehydrant_schedule" "test_schedule" {
 func TestScheduleDataSource_OneMatch(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if r.URL.Path != "/ping" && r.URL.Path != "/schedules" {
+		if r.URL.Path != "/ping" && r.URL.Path != "/v1/ping" && r.URL.Path != "/schedules" {
 			t.Errorf("Expected to request '/ping' or '/schedules', got: %s", r.URL.Path)
 		}
 
@@ -29,6 +29,7 @@ func TestScheduleDataSource_OneMatch(t *testing.T) {
 			t.Errorf("Expected query param 'query' to be 'My Rotation', got: %s", r.URL.Query().Get("query"))
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"data":[{"id": "123", "name":"My Rotation", "integration" : "", "discarded" : false }]}`))
 	}))
@@ -60,13 +61,14 @@ func TestScheduleDataSource_OneMatch(t *testing.T) {
 func TestScheduleDataSource_MultipleMatches(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if r.URL.Path != "/ping" && r.URL.Path != "/schedules" {
+		if r.URL.Path != "/ping" && r.URL.Path != "/v1/ping" && r.URL.Path != "/schedules" {
 			t.Errorf("Expected to request '/ping' or '/schedules', got: %s", r.URL.Path)
 		}
 		if r.URL.Path == "/schedules" && r.URL.Query().Get("query") != "My Rotation" {
 			t.Errorf("Expected query param 'query' to be 'My Rotation', got: %s", r.URL.Query().Get("query"))
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"data":[{"id": "123", "name":"My Rotation", "integration" : "", "discarded" : false }, {"id": "123", "name":"My Rotation", "integration" : "", "discarded" : false }]}`))
 	}))
@@ -92,13 +94,14 @@ func TestScheduleDataSource_MultipleMatches(t *testing.T) {
 func TestScheduleDataSource_NoMatches(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if r.URL.Path != "/ping" && r.URL.Path != "/schedules" {
+		if r.URL.Path != "/ping" && r.URL.Path != "/v1/ping" && r.URL.Path != "/schedules" {
 			t.Errorf("Expected to request '/ping' or '/schedules', got: %s", r.URL.Path)
 		}
 		if r.URL.Path == "/schedules" && r.URL.Query().Get("query") != "My Rotation" {
 			t.Errorf("Expected query param 'query' to be 'My Rotation', got: %s", r.URL.Query().Get("query"))
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"data":[]}`))
 	}))
