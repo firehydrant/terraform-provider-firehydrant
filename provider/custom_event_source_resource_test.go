@@ -25,7 +25,7 @@ func TestAccCustomEventSourceResource_basic(t *testing.T) {
 					testAccCheckCustomEventSourceResourceExistsWithAttributes_basic("firehydrant_custom_event_source.foo_transposer"),
 					resource.TestCheckResourceAttrSet("firehydrant_custom_event_source.foo_transposer", "id"),
 					resource.TestCheckResourceAttr(
-						"ffirehydrant_custom_event_source.foo_transposer", "name", "The Foo Transposer"),
+						"firehydrant_custom_event_source.foo_transposer", "name", "The Foo Transposer"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_custom_event_source.foo_transposer", "slug", "foo"),
 					resource.TestCheckResourceAttr(
@@ -54,7 +54,7 @@ func TestAccCustomEventSourceResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_custom_event_source.foo_transposer", "slug", "foo"),
 					resource.TestCheckResourceAttr(
-						"firehydrant_custom_event_source.foo_transposer", "description", "A new foo transposer description"),
+						"firehydrant_custom_event_source.foo_transposer", "description", "This is the foo transposer"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_custom_event_source.foo_transposer", "javascript", "function transpose(input) {\n  return input.data;\n}"),
 				),
@@ -69,7 +69,7 @@ func TestAccCustomEventSourceResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_custom_event_source.foo_transposer", "slug", "foo"),
 					resource.TestCheckResourceAttr(
-						"firehydrant_custom_event_source.foo_transposer", "description", "This is the foo transposer"),
+						"firehydrant_custom_event_source.foo_transposer", "description", "A new foo transposer description"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_custom_event_source.foo_transposer", "javascript", "function transpose(input) {\n  return input.foo;\n}"),
 				),
