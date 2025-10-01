@@ -504,6 +504,15 @@ used in the runbook `attachment_rule` or the runbook steps `rule` attributes.
     - "includes_none_of"
       - arg: Array[Runbook]
     - "is_empty"
+- incident_type
+    - "eq"
+      - arg: IncidentType
+    - "not_eq"
+      - arg: IncidentType
+    - "is_one_of"
+      - arg: Array[IncidentType]
+    - "is_not_one_of"
+      - arg: Array[IncidentType]
 ```
 
 ## Arguments & Operators - Attachment Rule

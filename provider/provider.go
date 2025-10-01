@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
@@ -49,6 +50,7 @@ func Provider() *schema.Provider {
 			"firehydrant_escalation_policy":      resourceEscalationPolicy(),
 			"firehydrant_status_update_template": resourceStatusUpdateTemplate(),
 			"firehydrant_inbound_email":          resourceInboundEmail(),
+			"firehydrant_custom_event_source":    resourceCustomEventSource(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"firehydrant_environment":       dataSourceEnvironment(),
@@ -102,9 +104,13 @@ func setupFireHydrantContext(ctx context.Context, rd *schema.ResourceData, terra
 		return nil, diag.FromErr(err)
 	}
 
-	_, err = ac.Sdk.AccountSettings.Ping(ctx)
-	if err != nil {
-		return nil, diag.FromErr(err)
+	// We're getting 429s during tests, so the var here is intended to reduce overall API calls.  The old provider, horrifyingly, seems
+	// to do part of its setup during this Ping() call, so we won't disable that one, but just cutting the pings in half should be sufficient.
+	if os.Getenv("TF_ACC") == "true" {
+		_, err = ac.Sdk.AccountSettings.Ping(ctx)
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
 	}
 
 	return ac, nil
