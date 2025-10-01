@@ -6,8 +6,6 @@ import (
 	"os"
 	"testing"
 
-	fhsdk "github.com/firehydrant/firehydrant-go-sdk"
-	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -41,7 +39,7 @@ func TestAccNotificationPolicyResource_update(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),
-		CheckDestroy:      testAccCheckServiceResourceDestroy(),
+		CheckDestroy:      testAccCheckNotificationPolicyResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNotificationPolicyResourceConfig_basic(),
@@ -83,9 +81,12 @@ func testAccCheckNotificationPolicyResourceExistsWithAttributes_basic(resourceNa
 			return fmt.Errorf("No ID is set")
 		}
 
-		client := fhsdk.New(fhsdk.WithSecurity(components.Security{APIKey: os.Getenv("FIREHYDRANT_API_KEY")}))
+		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		if err != nil {
+			return err
+		}
 
-		response, err := client.Signals.GetNotificationPolicy(context.TODO(), notificationPolicyResource.Primary.ID)
+		response, err := client.Sdk.Signals.GetNotificationPolicy(context.TODO(), notificationPolicyResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -125,7 +126,7 @@ func testAccCheckNotificationPolicyResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			_, err := client.Services().Get(context.TODO(), stateResource.Primary.ID)
+			_, err := client.Sdk.Signals.GetNotificationPolicy(context.TODO(), stateResource.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("Notification Policy %s still exists", stateResource.Primary.ID)
 			}
