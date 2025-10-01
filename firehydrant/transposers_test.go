@@ -16,7 +16,7 @@ func expectedTransposersResponse() *TransposersResponse {
 	t := Transposer{
 		Name:           "Valid Transposer",
 		Slug:           "valid-transposer",
-		ExamplePayload: "",
+		ExamplePayload: `{"message": "Example signal data", "severity": "high", "timestamp": "2023-12-18T07:20:50.52Z"}`,
 		Expression:     "",
 		Expected:       "",
 		Website:        "",
@@ -32,7 +32,7 @@ func expectedTransposersResponse() *TransposersResponse {
 func expectedTransposerResponseJSON() string {
 	return `{
 	"data":[
-		{"name": "Valid Transposer", "slug": "valid-transposer", "example_payload": "", "expression": "", "expected": "", 
+		{"name": "Valid Transposer", "slug": "valid-transposer", "example_payload": {"message": "Example signal data", "severity": "high", "timestamp": "2023-12-18T07:20:50.52Z"}, "expression": "", "expected": "", 
 			"website": "", "description": "", "tags": [""], "ingest_url": "https://signals.firehydrant.com/v1/transpose/valid-transposer/some-long-jwt"}
 	]
 }`
