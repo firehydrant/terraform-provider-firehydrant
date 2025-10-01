@@ -50,7 +50,7 @@ func TestAccCustomEventSourceResource_update(t *testing.T) {
 					testAccCheckCustomEventSourceResourceExistsWithAttributes_basic("firehydrant_custom_event_source.foo_transposer"),
 					resource.TestCheckResourceAttrSet("firehydrant_custom_event_source.foo_transposer", "id"),
 					resource.TestCheckResourceAttr(
-						"ffirehydrant_custom_event_source.foo_transposer", "name", "The Foo Transposer"),
+						"firehydrant_custom_event_source.foo_transposer", "name", "The Foo Transposer"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_custom_event_source.foo_transposer", "slug", "foo"),
 					resource.TestCheckResourceAttr(
@@ -65,7 +65,7 @@ func TestAccCustomEventSourceResource_update(t *testing.T) {
 					testAccCheckCustomEventSourceResourceExistsWithAttributes_basic("firehydrant_custom_event_source.foo_transposer"),
 					resource.TestCheckResourceAttrSet("firehydrant_custom_event_source.foo_transposer", "id"),
 					resource.TestCheckResourceAttr(
-						"ffirehydrant_custom_event_source.foo_transposer", "name", "The Foo Transposer"),
+						"firehydrant_custom_event_source.foo_transposer", "name", "The Foo Transposer"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_custom_event_source.foo_transposer", "slug", "foo"),
 					resource.TestCheckResourceAttr(
