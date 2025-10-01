@@ -161,3 +161,22 @@ resource "firehydrant_custom_event_source" "foo_transposer" {
 	javascript = "function transpose(input) {\n  return input.foo;\n}"
 }`
 }
+
+func TestAccCustomEventSourceResourceImport_basic(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		CheckDestroy:      testAccCheckCustomEventSourceResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCustomEventSourceResourceConfig_basic(),
+			},
+			{
+				ResourceName:      "firehydrant_custom_event_source.foo_transposer",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}

@@ -1,3 +1,10 @@
+## 0.14.4
+
+ENHANCEMENTS:
+
+* **New Resource**: `firehydrant_custom_event_source` ([#192](https://github.com/firehydrant/terraform-provider-firehydrant/pull/192))
+Documentation added for using `incident_type` in runbook action logic
+
 ## 0.14.3
 
 ENHANCEMENTS:
@@ -8,9 +15,9 @@ ENHANCEMENTS:
 
 ENHANCEMENTS:
 
-* **New Resource**: `fire_hydrant_role` ([#188](https://github.com/firehydrant/terraform-provider-firehydrant/pull/188))
-* **New Data Source**: `fire_hydrant_role` ([#188](https://github.com/firehydrant/terraform-provider-firehydrant/pull/188))
-* **New Data Source**: `fire_hydrant_permissions` ([#188](https://github.com/firehydrant/terraform-provider-firehydrant/pull/188))
+* **New Resource**: `firehydrant_role` ([#188](https://github.com/firehydrant/terraform-provider-firehydrant/pull/188))
+* **New Data Source**: `firehydrant_role` ([#188](https://github.com/firehydrant/terraform-provider-firehydrant/pull/188))
+* **New Data Source**: `firehydrant_permissions` ([#188](https://github.com/firehydrant/terraform-provider-firehydrant/pull/188))
 
 ## 0.14.1
 
