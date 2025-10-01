@@ -6,7 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	fhsdk "github.com/firehydrant/firehydrant-go-sdk"
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -135,23 +136,20 @@ func testAccCheckTeamResourceExistsWithAttributes_basic(resourceName string) res
 			return fmt.Errorf("No ID is set")
 		}
 
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client := fhsdk.New(fhsdk.WithSecurity(components.Security{APIKey: os.Getenv("FIREHYDRANT_API_KEY")}))
+
+		teamResponse, err := client.Teams.GetTeam(context.TODO(), teamResource.Primary.ID, nil)
 		if err != nil {
 			return err
 		}
 
-		teamResponse, err := client.Teams().Get(context.TODO(), teamResource.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		expected, got := teamResource.Primary.Attributes["name"], teamResponse.Name
+		expected, got := teamResource.Primary.Attributes["name"], *teamResponse.Name
 		if expected != got {
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
 		}
 
-		if teamResponse.Description != "" {
-			return fmt.Errorf("Unexpected description. Expected no description, got: %s", teamResponse.Description)
+		if *teamResponse.Description != "" {
+			return fmt.Errorf("Unexpected description. Expected no description, got: %s", *teamResponse.Description)
 		}
 
 		return nil
@@ -168,22 +166,19 @@ func testAccCheckTeamResourceExistsWithAttributes_update(resourceName string) re
 			return fmt.Errorf("No ID is set")
 		}
 
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client := fhsdk.New(fhsdk.WithSecurity(components.Security{APIKey: os.Getenv("FIREHYDRANT_API_KEY")}))
+
+		teamResponse, err := client.Teams.GetTeam(context.TODO(), teamResource.Primary.ID, nil)
 		if err != nil {
 			return err
 		}
 
-		teamResponse, err := client.Teams().Get(context.TODO(), teamResource.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		expected, got := teamResource.Primary.Attributes["name"], teamResponse.Name
+		expected, got := teamResource.Primary.Attributes["name"], *teamResponse.Name
 		if expected != got {
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = teamResource.Primary.Attributes["description"], teamResponse.Description
+		expected, got = teamResource.Primary.Attributes["description"], *teamResponse.Description
 		if expected != got {
 			return fmt.Errorf("Unexpected description. Expected: %s, got: %s", expected, got)
 		}
@@ -194,10 +189,7 @@ func testAccCheckTeamResourceExistsWithAttributes_update(resourceName string) re
 
 func testAccCheckTeamResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
-		if err != nil {
-			return err
-		}
+		client := fhsdk.New(fhsdk.WithSecurity(components.Security{APIKey: os.Getenv("FIREHYDRANT_API_KEY")}))
 
 		for _, teamResource := range s.RootModule().Resources {
 			if teamResource.Type != "firehydrant_team" {
@@ -208,7 +200,7 @@ func testAccCheckTeamResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			_, err := client.Teams().Get(context.TODO(), teamResource.Primary.ID)
+			_, err := client.Teams.GetTeam(context.TODO(), teamResource.Primary.ID, nil)
 			if err == nil {
 				return fmt.Errorf("Team %s still exists", teamResource.Primary.ID)
 			}
