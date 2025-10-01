@@ -1,6 +1,7 @@
 package firehydrant
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"sort"
@@ -340,4 +341,39 @@ type Transposer struct {
 	Description    string   `json:"description"`
 	Tags           []string `json:"tags"`
 	IngestURL      string   `json:"ingest_url"`
+}
+
+// Intercepts the JSON unmarshalling and ensures that example_payload is properly stringified
+func (t *Transposer) UnmarshalJSON(data []byte) error {
+	type tempTransposer struct {
+		Name           string          `json:"name"`
+		Slug           string          `json:"slug"`
+		ExamplePayload json.RawMessage `json:"example_payload"`
+		Expression     string          `json:"expression"`
+		Expected       string          `json:"expected"`
+		Website        string          `json:"website"`
+		Description    string          `json:"description"`
+		Tags           []string        `json:"tags"`
+		IngestURL      string          `json:"ingest_url"`
+	}
+
+	var temp tempTransposer
+	if err := json.Unmarshal(data, &temp); err != nil {
+		return err
+	}
+
+	t.Name = temp.Name
+	t.Slug = temp.Slug
+	t.Expression = temp.Expression
+	t.Expected = temp.Expected
+	t.Website = temp.Website
+	t.Description = temp.Description
+	t.Tags = temp.Tags
+	t.IngestURL = temp.IngestURL
+
+	if temp.ExamplePayload != nil {
+		t.ExamplePayload = string(temp.ExamplePayload)
+	}
+
+	return nil
 }

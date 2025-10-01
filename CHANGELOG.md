@@ -1,3 +1,7 @@
+## 0.14.5
+BUG FIXES: 
+**Fixes 500 on unmarshalling example_payload for transposers 
+
 ## 0.14.4
 
 ENHANCEMENTS:
