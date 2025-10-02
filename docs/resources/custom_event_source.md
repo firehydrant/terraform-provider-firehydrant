@@ -13,9 +13,9 @@ Basic usage:
 ```hcl
 resource "firehydrant_custom_event_source" "example_transposer" {
   name = "Example Transposer"
-	slug = "example-transposer"
-	description = "Maps alerts produced by the Example service to FireHydrant Signals"
-	javascript = "function transpose(input) {\n  return input.foo;\n}"
+  slug = "example-transposer"
+  description = "Maps alerts produced by the Example service to FireHydrant Signals"
+  javascript = "function transpose(input) {\n  return input.foo;\n}"
 }
 ```
 
