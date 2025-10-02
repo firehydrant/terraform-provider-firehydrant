@@ -1,3 +1,9 @@
+## Unreleased
+
+ENHANCEMENTS:
+
+* Added `ingest_url` as a computed attribute for `firehydrant_custom_event_source`
+
 ## 0.14.5
 BUG FIXES: 
 **Fixes 500 on unmarshalling example_payload for transposers 

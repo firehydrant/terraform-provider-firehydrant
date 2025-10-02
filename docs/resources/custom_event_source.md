@@ -28,6 +28,12 @@ The following arguments are supported:
 * `description` - (Optional) A description of the custom event source.
 * `javascript` - (Required) The javascript expression that handles the transposition to a Firehydrant Signal.  See https://docs.firehydrant.com/docs/custom-event-source#getting-started for details and example javascript.
 
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `ingest_url` - The ingest URL for the custom event source.
+
 
 ## Import
 

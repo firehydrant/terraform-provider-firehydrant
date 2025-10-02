@@ -38,6 +38,10 @@ func resourceCustomEventSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"ingest_url": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -83,6 +87,7 @@ func readResourceCustomEventSource(ctx context.Context, d *schema.ResourceData, 
 		"slug":        *response.Slug,
 		"description": *response.Description,
 		"javascript":  *response.Expression,
+		"ingest_url":  *response.IngestURL,
 	}
 
 	for key, value := range attributes {
