@@ -37,7 +37,7 @@ jobs:
         run: make build
 
       - name: Test
-        run: go test -v ./...
+        run: go test -v -parallel=1 ./...
         env:
           TF_ACC: 'true'
           FIREHYDRANT_API_KEY: ${{ secrets.FIREHYDRANT_API_KEY }}
