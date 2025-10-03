@@ -1,3 +1,9 @@
+## 0.14.7
+
+ENHANCEMENTS:
+
+* Added `memberships` as an attribute for `firehydrant_teams` data source
+
 ## 0.14.6
 
 ENHANCEMENTS:

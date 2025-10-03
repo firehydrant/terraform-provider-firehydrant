@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
@@ -93,6 +94,11 @@ func Provider() *schema.Provider {
 func setupFireHydrantContext(ctx context.Context, rd *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
 	apiKey := rd.Get(apiKeyName).(string)
 	fireHydrantBaseURL := rd.Get(firehydrantBaseURLName).(string)
+
+	// Add minimal delay between provider initializations in CI to avoid rate limiting
+	if os.Getenv("TF_ACC") == "true" {
+		time.Sleep(500 * time.Millisecond)
+	}
 
 	ac, err := firehydrant.NewRestClient(apiKey, firehydrant.WithBaseURL(fireHydrantBaseURL), firehydrant.WithUserAgentSuffix(fmt.Sprintf("terraform-%s", terraformVersion)))
 	if err != nil {
