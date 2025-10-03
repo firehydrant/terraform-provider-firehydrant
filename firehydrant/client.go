@@ -56,17 +56,13 @@ var _ Client = &APIClient{}
 type Client interface {
 	Ping(ctx context.Context) (*PingResponse, error)
 
-	Environments() EnvironmentsClient
-	Functionalities() FunctionalitiesClient
 	IncidentRoles() IncidentRolesClient
 	Priorities() PrioritiesClient
 	Runbooks() RunbooksClient
 	RunbookActions() RunbookActionsClient
 	ServiceDependencies() ServiceDependenciesClient
-	Services() ServicesClient
 	Severities() SeveritiesClient
 	TaskLists() TaskListsClient
-	Teams() TeamsClient
 	SlackChannels() SlackChannelsClient
 	StatusUpdateTemplates() StatusUpdateTemplates
 
@@ -186,16 +182,6 @@ func (c *APIClient) Ping(ctx context.Context) (*PingResponse, error) {
 	return pingResponse, nil
 }
 
-// Environments returns a EnvironmentsClient interface for interacting with environments in FireHydrant
-func (c *APIClient) Environments() EnvironmentsClient {
-	return &RESTEnvironmentsClient{client: c}
-}
-
-// Functionalities returns a FunctionalitiesClient interface for interacting with functionalities in FireHydrant
-func (c *APIClient) Functionalities() FunctionalitiesClient {
-	return &RESTFunctionalitiesClient{client: c}
-}
-
 // IncidentRoles returns a IncidentRolesClient interface for interacting with incident roles in FireHydrant
 func (c *APIClient) IncidentRoles() IncidentRolesClient {
 	return &RESTIncidentRolesClient{client: c}
@@ -221,11 +207,6 @@ func (c *APIClient) ServiceDependencies() ServiceDependenciesClient {
 	return &RESTServiceDependenciesClient{client: c}
 }
 
-// Services returns a ServicesClient interface for interacting with services in FireHydrant
-func (c *APIClient) Services() ServicesClient {
-	return &RESTServicesClient{client: c}
-}
-
 // Severities returns a SeveritiesClient interface for interacting with severities in FireHydrant
 func (c *APIClient) Severities() SeveritiesClient {
 	return &RESTSeveritiesClient{client: c}
@@ -234,11 +215,6 @@ func (c *APIClient) Severities() SeveritiesClient {
 // TaskLists returns a TaskListsClient interface for interacting with task lists in FireHydrant
 func (c *APIClient) TaskLists() TaskListsClient {
 	return &RESTTaskListsClient{client: c}
-}
-
-// Teams returns a TeamsClient interface for interacting with teams in FireHydrant
-func (c *APIClient) Teams() TeamsClient {
-	return &RESTTeamsClient{client: c}
 }
 
 // SignalsRules returns a SignalsRules interface for interacting with signals rules in FireHydrant
