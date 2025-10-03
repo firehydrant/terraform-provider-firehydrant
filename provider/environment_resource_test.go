@@ -126,18 +126,18 @@ func testAccCheckEnvironmentResourceExistsWithAttributes_basic(resourceName stri
 			return err
 		}
 
-		environmentResponse, err := client.Environments().Get(context.TODO(), environmentResource.Primary.ID)
+		environmentResponse, err := client.Sdk.CatalogEntries.GetEnvironment(context.TODO(), environmentResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		expected, got := environmentResource.Primary.Attributes["name"], environmentResponse.Name
+		expected, got := environmentResource.Primary.Attributes["name"], *environmentResponse.Name
 		if expected != got {
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
 		}
 
-		if environmentResponse.Description != "" {
-			return fmt.Errorf("Unexpected description. Expected no description, got: %s", environmentResponse.Description)
+		if environmentResponse.Description != nil && *environmentResponse.Description != "" {
+			return fmt.Errorf("Unexpected description. Expected no description, got: %s", *environmentResponse.Description)
 		}
 
 		return nil
@@ -159,17 +159,17 @@ func testAccCheckEnvironmentResourceExistsWithAttributes_update(resourceName str
 			return err
 		}
 
-		environmentResponse, err := client.Environments().Get(context.TODO(), environmentResource.Primary.ID)
+		environmentResponse, err := client.Sdk.CatalogEntries.GetEnvironment(context.TODO(), environmentResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		expected, got := environmentResource.Primary.Attributes["name"], environmentResponse.Name
+		expected, got := environmentResource.Primary.Attributes["name"], *environmentResponse.Name
 		if expected != got {
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = environmentResource.Primary.Attributes["description"], environmentResponse.Description
+		expected, got = environmentResource.Primary.Attributes["description"], *environmentResponse.Description
 		if expected != got {
 			return fmt.Errorf("Unexpected description. Expected: %s, got: %s", expected, got)
 		}
@@ -194,7 +194,7 @@ func testAccCheckEnvironmentResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			_, err := client.Environments().Get(context.TODO(), stateResource.Primary.ID)
+			_, err := client.Sdk.CatalogEntries.GetEnvironment(context.TODO(), stateResource.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("Environment %s still exists", stateResource.Primary.ID)
 			}
