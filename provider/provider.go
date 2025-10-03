@@ -96,7 +96,7 @@ func setupFireHydrantContext(ctx context.Context, rd *schema.ResourceData, terra
 	fireHydrantBaseURL := rd.Get(firehydrantBaseURLName).(string)
 
 	// Add minimal delay between provider initializations in CI to avoid rate limiting
-	if os.Getenv("TF_ACC") == "true" && os.Getenv("CI") == "true" {
+	if os.Getenv("TF_ACC") == "true" {
 		time.Sleep(500 * time.Millisecond)
 	}
 
