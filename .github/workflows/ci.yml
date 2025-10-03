@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Get User Permission
         id: checkAccess
@@ -37,7 +38,8 @@ jobs:
         run: make build
 
       - name: Test
-        run: go test -v ./...
+        run: go test -v -timeout=25m ./...
+        timeout-minutes: 25
         env:
           TF_ACC: 'true'
           FIREHYDRANT_API_KEY: ${{ secrets.FIREHYDRANT_API_KEY }}
