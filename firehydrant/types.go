@@ -184,17 +184,20 @@ type Pagination struct {
 	Next  int `json:"next,omitempty"`
 }
 
-// FunctionalityResponse is the payload for a single environment
+// FunctionalityResponse is the payload for a single functionality
 // URL: GET https://api.firehydrant.io/v1/functionalities/{id}
 type FunctionalityResponse struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	Slug        string                 `json:"slug"`
-	Services    []FunctionalityService `json:"services"`
-	Labels      map[string]string      `json:"labels"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt   time.Time              `json:"updated_at"`
+	ID                    string                 `json:"id"`
+	Name                  string                 `json:"name"`
+	Description           string                 `json:"description"`
+	Slug                  string                 `json:"slug"`
+	Services              []FunctionalityService `json:"services"`
+	Labels                map[string]string      `json:"labels"`
+	Owner                 *ServiceTeam           `json:"owner"`
+	Teams                 []ServiceTeam          `json:"teams"`
+	AutoAddRespondingTeam bool                   `json:"auto_add_responding_team"`
+	CreatedAt             time.Time              `json:"created_at"`
+	UpdatedAt             time.Time              `json:"updated_at"`
 }
 
 // FunctionalityService represents a service when creating a functionality
@@ -202,23 +205,31 @@ type FunctionalityService struct {
 	ID string `json:"id"`
 }
 
-// CreateFunctionalityRequest is the payload for creating a service
-// URL: POST https://api.firehydrant.io/v1/services
+// CreateFunctionalityRequest is the payload for creating a functionality
+// URL: POST https://api.firehydrant.io/v1/functionalities
 type CreateFunctionalityRequest struct {
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	Services    []FunctionalityService `json:"services,omitempty"`
-	Labels      map[string]string      `json:"labels"`
+	Name                  string                 `json:"name"`
+	Description           string                 `json:"description"`
+	Services              []FunctionalityService `json:"services,omitempty"`
+	Labels                map[string]string      `json:"labels"`
+	Owner                 *ServiceTeam           `json:"owner,omitempty"`
+	Teams                 []ServiceTeam          `json:"teams,omitempty"`
+	AutoAddRespondingTeam bool                   `json:"auto_add_responding_team,omitempty"`
 }
 
-// UpdateFunctionalityRequest is the payload for updating a environment
-// URL: PATCH https://api.firehydrant.io/v1/environments/{id}
+// UpdateFunctionalityRequest is the payload for updating a functionality
+// URL: PATCH https://api.firehydrant.io/v1/functionalities/{id}
 type UpdateFunctionalityRequest struct {
 	Name                    string                 `json:"name,omitempty"`
 	Description             string                 `json:"description"`
 	RemoveRemainingServices bool                   `json:"remove_remaining_services"`
 	Labels                  map[string]string      `json:"labels"`
 	Services                []FunctionalityService `json:"services"`
+	Owner                   *ServiceTeam           `json:"owner,omitempty"`
+	RemoveOwner             bool                   `json:"remove_owner,omitempty"`
+	Teams                   []ServiceTeam          `json:"teams,omitempty"`
+	RemoveRemainingTeams    bool                   `json:"remove_remaining_teams,omitempty"`
+	AutoAddRespondingTeam   bool                   `json:"auto_add_responding_team,omitempty"`
 }
 
 // SlackChannelResponse is the response for retrieving Slack channel information, including FireHydrant ID.
