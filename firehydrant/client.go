@@ -56,13 +56,10 @@ var _ Client = &APIClient{}
 type Client interface {
 	Ping(ctx context.Context) (*PingResponse, error)
 
-	Environments() EnvironmentsClient
-	Functionalities() FunctionalitiesClient
 	Priorities() PrioritiesClient
 	Runbooks() RunbooksClient
 	RunbookActions() RunbookActionsClient
 	ServiceDependencies() ServiceDependenciesClient
-	Services() ServicesClient
 	Severities() SeveritiesClient
 	TaskLists() TaskListsClient
 	SlackChannels() SlackChannelsClient
@@ -178,16 +175,6 @@ func (c *APIClient) Ping(ctx context.Context) (*PingResponse, error) {
 	return pingResponse, nil
 }
 
-// Environments returns a EnvironmentsClient interface for interacting with environments in FireHydrant
-func (c *APIClient) Environments() EnvironmentsClient {
-	return &RESTEnvironmentsClient{client: c}
-}
-
-// Functionalities returns a FunctionalitiesClient interface for interacting with functionalities in FireHydrant
-func (c *APIClient) Functionalities() FunctionalitiesClient {
-	return &RESTFunctionalitiesClient{client: c}
-}
-
 // Priorities returns a PrioritiesClient interface for interacting with priorities in FireHydrant
 func (c *APIClient) Priorities() PrioritiesClient {
 	return &RESTPrioritiesClient{client: c}
@@ -206,11 +193,6 @@ func (c *APIClient) RunbookActions() RunbookActionsClient {
 // ServiceDependencies returns a ServiceDependenciesClient interface for interacting with service dependencies in FireHydrant
 func (c *APIClient) ServiceDependencies() ServiceDependenciesClient {
 	return &RESTServiceDependenciesClient{client: c}
-}
-
-// Services returns a ServicesClient interface for interacting with services in FireHydrant
-func (c *APIClient) Services() ServicesClient {
-	return &RESTServicesClient{client: c}
 }
 
 // Severities returns a SeveritiesClient interface for interacting with severities in FireHydrant
