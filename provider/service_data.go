@@ -6,6 +6,7 @@ import (
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/sdkerrors"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -80,45 +81,56 @@ func dataSourceService() *schema.Resource {
 
 func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Get the service
 	serviceID := d.Get("id").(string)
 	tflog.Debug(ctx, fmt.Sprintf("Read service: %s", serviceID), map[string]interface{}{
 		"id": serviceID,
 	})
-	serviceResponse, err := firehydrantAPIClient.Services().Get(ctx, serviceID)
+	serviceResponse, err := client.Sdk.CatalogEntries.GetService(ctx, serviceID)
 	if err != nil {
+		if sdkErr, ok := err.(*sdkerrors.SDKError); ok && sdkErr.StatusCode == 404 {
+			return diag.Errorf("Service %s not found", serviceID)
+		}
 		return diag.Errorf("Error reading service %s: %v", serviceID, err)
 	}
 
 	// Set values in state
 	attributes := map[string]interface{}{
-		"alert_on_add":             serviceResponse.AlertOnAdd,
-		"auto_add_responding_team": serviceResponse.AutoAddRespondingTeam,
-		"description":              serviceResponse.Description,
-		"labels":                   serviceResponse.Labels,
-		"name":                     serviceResponse.Name,
-		"service_tier":             serviceResponse.ServiceTier,
+		"alert_on_add":             *serviceResponse.AlertOnAdd,
+		"auto_add_responding_team": *serviceResponse.AutoAddRespondingTeam,
+		"description":              *serviceResponse.Description,
+		"labels":                   make(map[string]interface{}), // Labels handling TBD - empty for now
+		"name":                     *serviceResponse.Name,
+		"service_tier":             *serviceResponse.ServiceTier,
 	}
 
-	// Process any attributes that could be nil
+		// Process any attributes that could be nil
+
+	// Process links
 	var links []interface{}
 	for _, currentLink := range serviceResponse.Links {
 		links = append(links, map[string]interface{}{
-			"href_url": currentLink.HrefURL,
-			"name":     currentLink.Name,
+			"href_url": *currentLink.HrefURL,
+			"name":     *currentLink.Name,
 		})
 	}
 	attributes["links"] = links
 
-	if serviceResponse.Owner != nil {
-		attributes["owner_id"] = serviceResponse.Owner.ID
+	// Process owner
+	var ownerID string
+	if serviceResponse.Owner != nil && serviceResponse.Owner.ID != nil {
+		ownerID = *serviceResponse.Owner.ID
 	}
+	attributes["owner_id"] = ownerID
 
+	// Process team IDs
 	var teamIDs []interface{}
 	for _, team := range serviceResponse.Teams {
-		teamIDs = append(teamIDs, team.ID)
+		if team.ID != nil {
+			teamIDs = append(teamIDs, *team.ID)
+		}
 	}
 	attributes["team_ids"] = teamIDs
 
@@ -130,7 +142,7 @@ func dataFireHydrantService(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	// Set the service's ID in state
-	d.SetId(serviceResponse.ID)
+	d.SetId(*serviceResponse.ID)
 
 	return diag.Diagnostics{}
 }
