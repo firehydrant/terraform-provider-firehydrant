@@ -267,7 +267,7 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	serviceTier := d.Get("service_tier").(int)
 	labels := convertStringMap(d.Get("labels").(map[string]interface{}))
 
-		// Process any optional attributes and add to the update request if necessary
+	// Process any optional attributes and add to the update request if necessary
 
 	updateRequest := components.UpdateService{
 		Name:                  &name,
