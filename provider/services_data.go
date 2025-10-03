@@ -88,7 +88,7 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 			"service_tier":             *service.ServiceTier,
 		}
 
-	// Process any attributes that could be nil
+		// Process any attributes that could be nil
 
 		// Process links
 		var links []interface{}
