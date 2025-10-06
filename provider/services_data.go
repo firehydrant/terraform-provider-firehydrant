@@ -78,12 +78,24 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 	// Set the data source attributes to the values we got from the API
 	services := make([]interface{}, 0)
 	for _, service := range servicesResponse.Data {
+		// Unmarshal labels from SDK struct to map[string]string
+		labelsMap, err := unmarshalLabels(service.Labels)
+		if err != nil {
+			return diag.Errorf("Error unmarshalling labels for service %s: %v", *service.ID, err)
+		}
+
+		// Safely dereference pointers with default values
+		description := ""
+		if service.Description != nil {
+			description = *service.Description
+		}
+
 		attributes := map[string]interface{}{
 			"id":                       *service.ID,
 			"alert_on_add":             *service.AlertOnAdd,
 			"auto_add_responding_team": *service.AutoAddRespondingTeam,
-			"description":              *service.Description,
-			"labels":                   make(map[string]interface{}), // Labels handling TBD - empty for now
+			"description":              description,
+			"labels":                   labelsMap,
 			"name":                     *service.Name,
 			"service_tier":             *service.ServiceTier,
 		}

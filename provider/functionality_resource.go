@@ -86,12 +86,18 @@ func readResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resourc
 		return diag.Errorf("Error reading functionality %s: %v", functionalityID, err)
 	}
 
+	// Ladder truck defines these types as `  expose :labels, documentation: {type: "object", desc: "An object of label key and values"} # rubocop:disable CustomCops/GrapeMissingType`
+	// Previous implementation suggests these are always strings, adding Unmarshall into map[string]string to be defensive	labelsMap, err := unmarshalLabels(functionalityResponse.Labels)
+	if err != nil {
+		return diag.Errorf("Error unmarshalling labels for functionality %s: %v", functionalityID, err)
+	}
+
 	// Gather values from API response
 	attributes := map[string]interface{}{
 		"name":                     *functionalityResponse.Name,
 		"description":              *functionalityResponse.Description,
 		"auto_add_responding_team": *functionalityResponse.AutoAddRespondingTeam,
-		"labels":                   make(map[string]interface{}),
+		"labels":                   labelsMap,
 	}
 
 	// Process service IDs
