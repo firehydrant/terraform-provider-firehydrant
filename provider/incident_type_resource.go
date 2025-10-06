@@ -303,10 +303,10 @@ func updateResourceIncidentType(ctx context.Context, d *schema.ResourceData, m i
 		},
 	}
 
-	tflog.Debug(ctx, "Create new Incident Type")
+	tflog.Debug(ctx, "Update Incident Type")
 	response, err := client.Sdk.IncidentSettings.UpdateIncidentType(ctx, id, request)
 	if err != nil {
-		return diag.Errorf("Error creating new Incident Type: %v", err)
+		return diag.Errorf("Error updating Incident Type: %v", err)
 	}
 
 	d.SetId(*response.ID)
