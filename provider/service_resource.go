@@ -130,14 +130,34 @@ func readResourceFireHydrantService(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Error unmarshalling labels for service %s: %v", serviceID, err)
 	}
 
+	description := ""
+	if serviceResponse.Description != nil {
+		description = *serviceResponse.Description
+	}
+
+	alertOnAdd := false
+	if serviceResponse.AlertOnAdd != nil {
+		alertOnAdd = *serviceResponse.AlertOnAdd
+	}
+
+	autoAddRespondingTeam := false
+	if serviceResponse.AutoAddRespondingTeam != nil {
+		autoAddRespondingTeam = *serviceResponse.AutoAddRespondingTeam
+	}
+
+	serviceTier := 0
+	if serviceResponse.ServiceTier != nil {
+		serviceTier = *serviceResponse.ServiceTier
+	}
+
 	// Set values in state
 	attributes := map[string]interface{}{
 		"name":                     *serviceResponse.Name,
-		"alert_on_add":             *serviceResponse.AlertOnAdd,
-		"auto_add_responding_team": *serviceResponse.AutoAddRespondingTeam,
-		"description":              *serviceResponse.Description,
+		"alert_on_add":             alertOnAdd,
+		"auto_add_responding_team": autoAddRespondingTeam,
+		"description":              description,
 		"labels":                   labelsMap,
-		"service_tier":             *serviceResponse.ServiceTier,
+		"service_tier":             serviceTier,
 	}
 
 	// Process links
