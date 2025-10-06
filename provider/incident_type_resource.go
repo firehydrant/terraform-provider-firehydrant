@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
+	"github.com/firehydrant/firehydrant-go-sdk/models/sdkerrors"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -55,10 +57,10 @@ func resourceIncidentType() *schema.Resource {
 							Type:     schema.TypeBool,
 							Optional: true,
 						},
-						"labels": {
-							Type:     schema.TypeMap,
-							Optional: true,
-						},
+						// "labels": {
+						// 	Type:     schema.TypeMap,
+						// 	Optional: true,
+						// },
 						"tags": {
 							Type:     schema.TypeSet,
 							Optional: true,
@@ -104,14 +106,80 @@ func resourceIncidentType() *schema.Resource {
 }
 
 func createResourceIncidentType(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	return nil
+	client := m.(*firehydrant.APIClient)
+
+	description := d.Get("description").(string)
+	templateDescription := d.Get("template.0.description").(string)
+	cis := d.Get("template.0.customer_impact_summary").(string)
+	severity_id := d.Get("template.0.severity_slug").(string)
+	priority_id := d.Get("template.0.priority_slug").(string)
+	//Seriously?!?  A pointer to a boolean?  The pointer takes up more space that the actual value.  Ugh.
+	is_private := d.Get("template.0.private_incident").(bool)
+
+	inputTags := d.Get("template.0.tags").([]interface{})
+	tags := []string{}
+	for _, tag := range inputTags {
+		if v, ok := tag.(string); ok && v != "" {
+			tags = append(tags, v)
+		}
+	}
+
+	inputRunbooks := d.Get("template.0.runbook_ids").([]interface{})
+	runbooks := []string{}
+	for _, runbook := range inputRunbooks {
+		if v, ok := runbook.(string); ok && v != "" {
+			runbooks = append(runbooks, v)
+		}
+	}
+
+	inputTeams := d.Get("template.0.team_ids").([]interface{})
+	teams := []string{}
+	for _, team := range inputTeams {
+		if v, ok := team.(string); ok && v != "" {
+			teams = append(teams, v)
+		}
+	}
+
+	inputImpacts := d.Get("template.0.impacts").([]interface{})
+	impacts := []components.CreateIncidentTypeImpact{}
+	for _, impact := range inputImpacts {
+		if v, ok := impact.(components.CreateIncidentTypeImpact); ok {
+			impacts = append(impacts, v)
+		}
+	}
+
+	request := components.CreateIncidentType{
+		Name:        d.Get("name").(string),
+		Description: &description,
+		Template: components.CreateIncidentTypeTemplate{
+			Description:           &templateDescription,
+			CustomerImpactSummary: &cis,
+			Severity:              &severity_id,
+			Priority:              &priority_id,
+			PrivateIncident:       &is_private,
+			TagList:               tags,
+			RunbookIds:            runbooks,
+			TeamIds:               teams,
+			Impacts:               impacts,
+		},
+	}
+
+	tflog.Debug(ctx, "Create new Incident Type")
+	response, err := client.Sdk.IncidentSettings.CreateIncidentType(ctx, request)
+	if err != nil {
+		return diag.Errorf("Error creating new Incident Type: %v", err)
+	}
+
+	d.SetId(*response.ID)
+
+	return readResourceIncidentType(ctx, d, m)
 }
 
 func readResourceIncidentType(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*firehydrant.APIClient)
 
 	id := d.Id()
-	tflog.Debug(ctx, fmt.Sprintf("Read custom event source: %s", id), map[string]interface{}{
+	tflog.Debug(ctx, fmt.Sprintf("Read incident type: %s", id), map[string]interface{}{
 		"id": id,
 	})
 
@@ -128,7 +196,9 @@ func readResourceIncidentType(ctx context.Context, d *schema.ResourceData, m int
 		"private_incident":        *response.Template.PrivateIncident,
 	}
 
-	//labels
+	// labels is in the sdk as an empty struct, which seems... wrong.  I'm going to implement the rest of this without it
+	// (because I can only hold so much complexity in my head), and then investigate this from the API side to see if
+	// this is being generated correctly.
 
 	var tags []interface{}
 	for _, tag := range response.Template.TagList {
@@ -166,7 +236,7 @@ func readResourceIncidentType(ctx context.Context, d *schema.ResourceData, m int
 
 	for key, value := range attributes {
 		if err := d.Set(key, value); err != nil {
-			return diag.Errorf("Error setting %s for custom_event_source %s: %v", key, id, err)
+			return diag.Errorf("Error setting %s for incident_type %s: %v", key, id, err)
 		}
 	}
 
@@ -174,9 +244,91 @@ func readResourceIncidentType(ctx context.Context, d *schema.ResourceData, m int
 }
 
 func updateResourceIncidentType(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	return nil
+	client := m.(*firehydrant.APIClient)
+
+	id := d.Id()
+	description := d.Get("description").(string)
+	templateDescription := d.Get("template.0.description").(string)
+	cis := d.Get("template.0.customer_impact_summary").(string)
+	severity_id := d.Get("template.0.severity_slug").(string)
+	priority_id := d.Get("template.0.priority_slug").(string)
+	//Seriously?!?  A pointer to a boolean?  The pointer takes up more space that the actual value.  Ugh.
+	is_private := d.Get("template.0.private_incident").(bool)
+
+	inputTags := d.Get("template.0.tags").([]interface{})
+	tags := []string{}
+	for _, tag := range inputTags {
+		if v, ok := tag.(string); ok && v != "" {
+			tags = append(tags, v)
+		}
+	}
+
+	inputRunbooks := d.Get("template.0.runbook_ids").([]interface{})
+	runbooks := []string{}
+	for _, runbook := range inputRunbooks {
+		if v, ok := runbook.(string); ok && v != "" {
+			runbooks = append(runbooks, v)
+		}
+	}
+
+	inputTeams := d.Get("template.0.team_ids").([]interface{})
+	teams := []string{}
+	for _, team := range inputTeams {
+		if v, ok := team.(string); ok && v != "" {
+			teams = append(teams, v)
+		}
+	}
+
+	inputImpacts := d.Get("template.0.impacts").([]interface{})
+	impacts := []components.UpdateIncidentTypeImpact{}
+	for _, impact := range inputImpacts {
+		if v, ok := impact.(components.UpdateIncidentTypeImpact); ok {
+			impacts = append(impacts, v)
+		}
+	}
+
+	request := components.UpdateIncidentType{
+		Name:        d.Get("name").(string),
+		Description: &description,
+		Template: components.UpdateIncidentTypeTemplate{
+			Description:           &templateDescription,
+			CustomerImpactSummary: &cis,
+			Severity:              &severity_id,
+			Priority:              &priority_id,
+			PrivateIncident:       &is_private,
+			TagList:               tags,
+			RunbookIds:            runbooks,
+			TeamIds:               teams,
+			Impacts:               impacts,
+		},
+	}
+
+	tflog.Debug(ctx, "Create new Incident Type")
+	response, err := client.Sdk.IncidentSettings.UpdateIncidentType(ctx, id, request)
+	if err != nil {
+		return diag.Errorf("Error creating new Incident Type: %v", err)
+	}
+
+	d.SetId(*response.ID)
+
+	return readResourceIncidentType(ctx, d, m)
 }
 
 func deleteResourceIncidentType(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	return nil
+	client := m.(*firehydrant.APIClient)
+
+	id := d.Id()
+	tflog.Debug(ctx, fmt.Sprintf("Delete incident type: %s", id), map[string]interface{}{
+		"ID": id,
+	})
+	err := client.Sdk.IncidentSettings.DeleteIncidentType(ctx, id)
+	if err != nil {
+		if err.(*sdkerrors.SDKError).StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+		return diag.Errorf("Error deleting incident type %s: %v", id, err)
+	}
+
+	return diag.Diagnostics{}
 }
