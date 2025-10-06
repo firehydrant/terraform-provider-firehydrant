@@ -360,12 +360,20 @@ func testAccCheckServiceResourceExistsWithAttributes_basic(resourceName string) 
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = serviceResource.Primary.Attributes["alert_on_add"], fmt.Sprintf("%t", *serviceResponse.AlertOnAdd)
+		alertOnAdd := false
+		if serviceResponse.AlertOnAdd != nil {
+			alertOnAdd = *serviceResponse.AlertOnAdd
+		}
+		expected, got = serviceResource.Primary.Attributes["alert_on_add"], fmt.Sprintf("%t", alertOnAdd)
 		if expected != got {
 			return fmt.Errorf("Unexpected alert_on_add. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = serviceResource.Primary.Attributes["auto_add_responding_team"], fmt.Sprintf("%t", *serviceResponse.AutoAddRespondingTeam)
+		autoAddRespondingTeam := false
+		if serviceResponse.AutoAddRespondingTeam != nil {
+			autoAddRespondingTeam = *serviceResponse.AutoAddRespondingTeam
+		}
+		expected, got = serviceResource.Primary.Attributes["auto_add_responding_team"], fmt.Sprintf("%t", autoAddRespondingTeam)
 		if expected != got {
 			return fmt.Errorf("Unexpected auto_add_responding_team. Expected: %s, got: %s", expected, got)
 		}
@@ -374,8 +382,8 @@ func testAccCheckServiceResourceExistsWithAttributes_basic(resourceName string) 
 			return fmt.Errorf("Unexpected description. Expected no description, got: %s", *serviceResponse.Description)
 		}
 
-		if serviceResponse.Labels != nil && len(serviceResponse.Labels) > 0 {
-			return fmt.Errorf("Unexpected labels. Expected no labels")
+		if labelsCount, ok := serviceResource.Primary.Attributes["labels.%"]; ok && labelsCount != "0" {
+			return fmt.Errorf("Unexpected labels in state. Expected no labels, got: %s labels", labelsCount)
 		}
 
 		if len(serviceResponse.Links) != 0 {
@@ -386,7 +394,11 @@ func testAccCheckServiceResourceExistsWithAttributes_basic(resourceName string) 
 			return fmt.Errorf("Unexpected owner. Expected no owner ID, got: %s", *serviceResponse.Owner.ID)
 		}
 
-		expected, got = serviceResource.Primary.Attributes["service_tier"], fmt.Sprintf("%d", *serviceResponse.ServiceTier)
+		serviceTier := 0
+		if serviceResponse.ServiceTier != nil {
+			serviceTier = *serviceResponse.ServiceTier
+		}
+		expected, got = serviceResource.Primary.Attributes["service_tier"], fmt.Sprintf("%d", serviceTier)
 		if expected != got {
 			return fmt.Errorf("Unexpected service_tier. Expected: %s, got: %s", expected, got)
 		}
@@ -425,12 +437,20 @@ func testAccCheckServiceResourceExistsWithAttributes_update(resourceName string)
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = serviceResource.Primary.Attributes["alert_on_add"], fmt.Sprintf("%t", *serviceResponse.AlertOnAdd)
+		alertOnAdd := false
+		if serviceResponse.AlertOnAdd != nil {
+			alertOnAdd = *serviceResponse.AlertOnAdd
+		}
+		expected, got = serviceResource.Primary.Attributes["alert_on_add"], fmt.Sprintf("%t", alertOnAdd)
 		if expected != got {
 			return fmt.Errorf("Unexpected alert_on_add. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = serviceResource.Primary.Attributes["auto_add_responding_team"], fmt.Sprintf("%t", *serviceResponse.AutoAddRespondingTeam)
+		autoAddRespondingTeam := false
+		if serviceResponse.AutoAddRespondingTeam != nil {
+			autoAddRespondingTeam = *serviceResponse.AutoAddRespondingTeam
+		}
+		expected, got = serviceResource.Primary.Attributes["auto_add_responding_team"], fmt.Sprintf("%t", autoAddRespondingTeam)
 		if expected != got {
 			return fmt.Errorf("Unexpected auto_add_responding_team. Expected: %s, got: %s", expected, got)
 		}
@@ -457,7 +477,11 @@ func testAccCheckServiceResourceExistsWithAttributes_update(resourceName string)
 			return fmt.Errorf("Unexpected owner ID. Expected:%s, got: %s", expected, got)
 		}
 
-		expected, got = serviceResource.Primary.Attributes["service_tier"], fmt.Sprintf("%d", *serviceResponse.ServiceTier)
+		serviceTier := 0
+		if serviceResponse.ServiceTier != nil {
+			serviceTier = *serviceResponse.ServiceTier
+		}
+		expected, got = serviceResource.Primary.Attributes["service_tier"], fmt.Sprintf("%d", serviceTier)
 		if expected != got {
 			return fmt.Errorf("Unexpected service_tier. Expected: %s, got: %s", expected, got)
 		}
