@@ -90,14 +90,29 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 			description = *service.Description
 		}
 
+		alertOnAdd := false
+		if service.AlertOnAdd != nil {
+			alertOnAdd = *service.AlertOnAdd
+		}
+
+		autoAddRespondingTeam := false
+		if service.AutoAddRespondingTeam != nil {
+			autoAddRespondingTeam = *service.AutoAddRespondingTeam
+		}
+
+		serviceTier := 0
+		if service.ServiceTier != nil {
+			serviceTier = *service.ServiceTier
+		}
+
 		attributes := map[string]interface{}{
 			"id":                       *service.ID,
-			"alert_on_add":             *service.AlertOnAdd,
-			"auto_add_responding_team": *service.AutoAddRespondingTeam,
+			"alert_on_add":             alertOnAdd,
+			"auto_add_responding_team": autoAddRespondingTeam,
 			"description":              description,
 			"labels":                   labelsMap,
 			"name":                     *service.Name,
-			"service_tier":             *service.ServiceTier,
+			"service_tier":             serviceTier,
 		}
 
 		// Process any attributes that could be nil
