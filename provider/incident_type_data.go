@@ -29,8 +29,6 @@ func dataSourceIncidentType() *schema.Resource {
 			"template": {
 				Type:     schema.TypeList, // Using TypeList to simulate a map
 				Computed: true,
-				ForceNew: true,
-				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"description": {
