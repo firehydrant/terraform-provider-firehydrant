@@ -56,21 +56,21 @@ func dataSourceIncidentType() *schema.Resource {
 						// 	Optional: true,
 						// },
 						"tags": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
 							Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
 						"runbook_ids": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
 							Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
 						"team_ids": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
 							Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
