@@ -374,7 +374,7 @@ func testAccCheckServiceResourceExistsWithAttributes_basic(resourceName string) 
 			return fmt.Errorf("Unexpected description. Expected no description, got: %s", *serviceResponse.Description)
 		}
 
-		if serviceResponse.Labels != nil {
+		if serviceResponse.Labels != nil && len(serviceResponse.Labels) > 0 {
 			return fmt.Errorf("Unexpected labels. Expected no labels")
 		}
 
@@ -440,7 +440,7 @@ func testAccCheckServiceResourceExistsWithAttributes_update(resourceName string)
 			return fmt.Errorf("Unexpected description. Expected: %s, got: %s", expected, got)
 		}
 
-		if serviceResponse.Labels == nil {
+		if serviceResponse.Labels == nil || len(serviceResponse.Labels) == 0 {
 			return fmt.Errorf("Unexpected labels. Expected labels to be set")
 		}
 
