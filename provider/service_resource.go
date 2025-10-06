@@ -294,6 +294,12 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	serviceTier := d.Get("service_tier").(int)
 	labels := convertStringMap(d.Get("labels").(map[string]interface{}))
 
+	// Work around SDK's omitempty tag on labels: if labels are empty, we need to send
+	// {"labels": {""}} to clear them, otherwise omitempty will omit the field entirely
+	if len(labels) == 0 {
+		labels = map[string]string{"": ""}
+	}
+
 	// Process any optional attributes and add to the update request if necessary
 
 	updateRequest := components.UpdateService{
