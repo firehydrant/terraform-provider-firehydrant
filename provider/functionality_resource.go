@@ -202,6 +202,12 @@ func updateResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 	autoAddRespondingTeam := d.Get("auto_add_responding_team").(bool)
 	labels := convertStringMap(d.Get("labels").(map[string]interface{}))
 
+	// Work around SDK's omitempty tag on labels: if labels are empty, we need to send
+	// {"labels": {"": ""}} to clear them, otherwise omitempty will omit the field entirely
+	if len(labels) == 0 {
+		labels = map[string]string{"": ""}
+	}
+
 	removeRemainingServices := true
 	updateRequest := components.UpdateFunctionality{
 		Name:                    &name,
