@@ -14,17 +14,21 @@ func dataSourceIncidentType() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: readDataIncidentType,
 		Schema: map[string]*schema.Schema{
-			"name": {
+			"id": {
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"name": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"description": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"template": {
 				Type:     schema.TypeList, // Using TypeList to simulate a map
-				Required: true,
+				Computed: true,
 				ForceNew: true,
 				MaxItems: 1,
 				Elem: &schema.Resource{
@@ -75,7 +79,7 @@ func dataSourceIncidentType() *schema.Resource {
 							},
 						},
 						"impacts": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{

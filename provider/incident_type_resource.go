@@ -83,7 +83,7 @@ func resourceIncidentType() *schema.Resource {
 							},
 						},
 						"impacts": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
