@@ -26,75 +26,75 @@ func dataSourceIncidentType() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"template": {
-				Type:     schema.TypeList, // Using TypeList to simulate a map
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"description": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"customer_impact_summary": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"severity_slug": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"priority_slug": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"private_incident": {
-							Type:     schema.TypeBool,
-							Optional: true,
-						},
-						// "labels": {
-						// 	Type:     schema.TypeMap,
-						// 	Optional: true,
-						// },
-						"tags": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"runbook_ids": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"team_ids": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"impacts": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"impact_id": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-									"condition_id": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-								},
-							},
-						},
-					},
-				},
-			},
+			// "template": {
+			// 	Type:     schema.TypeList, // Using TypeList to simulate a map
+			// 	Computed: true,
+			// 	Elem: &schema.Resource{
+			// 		Schema: map[string]*schema.Schema{
+			// 			"description": {
+			// 				Type:     schema.TypeString,
+			// 				Optional: true,
+			// 			},
+			// 			"customer_impact_summary": {
+			// 				Type:     schema.TypeString,
+			// 				Optional: true,
+			// 			},
+			// 			"severity_slug": {
+			// 				Type:     schema.TypeString,
+			// 				Optional: true,
+			// 			},
+			// 			"priority_slug": {
+			// 				Type:     schema.TypeString,
+			// 				Optional: true,
+			// 			},
+			// 			"private_incident": {
+			// 				Type:     schema.TypeBool,
+			// 				Optional: true,
+			// 			},
+			// 			// "labels": {
+			// 			// 	Type:     schema.TypeMap,
+			// 			// 	Optional: true,
+			// 			// },
+			// 			"tags": {
+			// 				Type:     schema.TypeList,
+			// 				Optional: true,
+			// 				Elem: &schema.Schema{
+			// 					Type: schema.TypeString,
+			// 				},
+			// 			},
+			// 			"runbook_ids": {
+			// 				Type:     schema.TypeList,
+			// 				Optional: true,
+			// 				Elem: &schema.Schema{
+			// 					Type: schema.TypeString,
+			// 				},
+			// 			},
+			// 			"team_ids": {
+			// 				Type:     schema.TypeList,
+			// 				Optional: true,
+			// 				Elem: &schema.Schema{
+			// 					Type: schema.TypeString,
+			// 				},
+			// 			},
+			// 			"impacts": {
+			// 				Type:     schema.TypeList,
+			// 				Optional: true,
+			// 				Elem: &schema.Resource{
+			// 					Schema: map[string]*schema.Schema{
+			// 						"impact_id": {
+			// 							Type:     schema.TypeString,
+			// 							Required: true,
+			// 						},
+			// 						"condition_id": {
+			// 							Type:     schema.TypeString,
+			// 							Required: true,
+			// 						},
+			// 					},
+			// 				},
+			// 			},
+			// 		},
+			// 	},
+			// },
 		},
 	}
 }
@@ -112,50 +112,52 @@ func readDataIncidentType(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	template := map[string]interface{}{
-		"description":             *response.Template.Description,
-		"customer_impact_summary": *response.Template.CustomerImpactSummary,
-		"severity_slug":           *response.Template.Severity,
-		"priority_slug":           *response.Template.Priority,
-		"private_incident":        *response.Template.PrivateIncident,
-	}
+	// template := map[string]interface{}{
+	// 	"description":             *response.Template.Description,
+	// 	"customer_impact_summary": *response.Template.CustomerImpactSummary,
+	// 	"severity_slug":           *response.Template.Severity,
+	// 	"priority_slug":           *response.Template.Priority,
+	// 	"private_incident":        *response.Template.PrivateIncident,
+	// }
 
-	// labels is in the sdk as an empty struct, which seems... wrong.  I'm going to implement the rest of this without it
-	// (because I can only hold so much complexity in my head), and then investigate this from the API side to see if
-	// this is being generated correctly.
+	// // labels is in the sdk as an empty struct, which seems... wrong.  I'm going to implement the rest of this without it
+	// // (because I can only hold so much complexity in my head), and then investigate this from the API side to see if
+	// // this is being generated correctly.
 
-	var tags []interface{}
-	for _, tag := range response.Template.TagList {
-		tags = append(tags, tag)
-	}
-	template["tags"] = tags
+	// var tags []interface{}
+	// for _, tag := range response.Template.TagList {
+	// 	tags = append(tags, tag)
+	// }
+	// template["tags"] = tags
 
-	var runbookIDs []interface{}
-	for _, r := range response.Template.RunbookIds {
-		runbookIDs = append(runbookIDs, r)
-	}
-	template["runbook_ids"] = runbookIDs
+	// var runbookIDs []interface{}
+	// for _, r := range response.Template.RunbookIds {
+	// 	runbookIDs = append(runbookIDs, r)
+	// }
+	// template["runbook_ids"] = runbookIDs
 
-	var teamIDs []interface{}
-	for _, team := range response.Template.TeamIds {
-		teamIDs = append(teamIDs, team)
-	}
-	template["team_ids"] = teamIDs
+	// var teamIDs []interface{}
+	// for _, team := range response.Template.TeamIds {
+	// 	teamIDs = append(teamIDs, team)
+	// }
+	// template["team_ids"] = teamIDs
 
-	var impacts []map[string]interface{}
-	for _, im := range response.Template.Impacts {
-		impact := map[string]interface{}{
-			"impact_id":    im.ID,
-			"condition_id": im.ConditionID,
-		}
-		impacts = append(impacts, impact)
-	}
-	template["impacts"] = impacts
+	// var impacts []map[string]interface{}
+	// for _, im := range response.Template.Impacts {
+	// 	impact := map[string]interface{}{
+	// 		"impact_id":    im.ID,
+	// 		"condition_id": im.ConditionID,
+	// 	}
+	// 	impacts = append(impacts, impact)
+	// }
+	// template["impacts"] = impacts
+
+	// templateSlice := []map[string]interface{}{template}
 
 	attributes := map[string]interface{}{
 		"name":        *response.Name,
 		"description": *response.Description,
-		"template":    template,
+		// "template":    templateSlice,
 	}
 
 	for key, value := range attributes {
