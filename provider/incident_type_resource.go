@@ -228,10 +228,12 @@ func readResourceIncidentType(ctx context.Context, d *schema.ResourceData, m int
 	}
 	template["impacts"] = impacts
 
+	templateSlice := []map[string]interface{}{template}
+
 	attributes := map[string]interface{}{
 		"name":        *response.Name,
 		"description": *response.Description,
-		"template":    template,
+		"template":    templateSlice,
 	}
 
 	for key, value := range attributes {
