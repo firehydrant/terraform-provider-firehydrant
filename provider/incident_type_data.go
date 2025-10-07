@@ -196,5 +196,7 @@ func readDataIncidentType(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 	}
 
+	d.SetId(*response.ID)
+
 	return diag.Diagnostics{}
 }
