@@ -287,9 +287,11 @@ func updateResourceIncidentType(ctx context.Context, d *schema.ResourceData, m i
 	inputImpacts := d.Get("template.0.impacts").([]interface{})
 	impacts := []components.UpdateIncidentTypeImpact{}
 	for _, impact := range inputImpacts {
-		if v, ok := impact.(components.UpdateIncidentTypeImpact); ok {
-			impacts = append(impacts, v)
-		}
+		impactMap := impact.(map[string]interface{})
+		impacts = append(impacts, components.UpdateIncidentTypeImpact{
+			ID:          impactMap["impact_id"].(string),
+			ConditionID: impactMap["condition_id"].(string),
+		})
 	}
 
 	request := components.UpdateIncidentType{
