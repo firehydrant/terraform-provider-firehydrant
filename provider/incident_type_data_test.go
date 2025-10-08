@@ -67,7 +67,7 @@ func TestAccIncidentTypeDataSource_allAttributes(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_incident_type.test_incident_type", "template.0.team_ids.1", "2af88e28-0205-4d39-b304-133bd2e19358"),
 					resource.TestCheckResourceAttr(
-						"data.firehydrant_incident_type.test_incident_type", "template.0.impacts.0.impact_id", "500d9e2e-ea7c-4834-a81f-e336de24dbb1"),
+						"data.firehydrant_incident_type.test_incident_type", "template.0.impacts.0.impact_id", "8c6731c8-a49a-415e-91c9-61378d526c58"),
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_incident_type.test_incident_type", "template.0.impacts.0.condition_id", "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"),
 				),
@@ -110,13 +110,13 @@ resource "firehydrant_incident_type" "test_incident_type" {
 		team_ids = [ "cd2b6d18-e616-4990-9065-ec0cab037680", "2af88e28-0205-4d39-b304-133bd2e19358" ]
 		
 		impacts {
-		    impact_id = "500d9e2e-ea7c-4834-a81f-e336de24dbb1"
-				condition_id = "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"
+		  impact_id = "8c6731c8-a49a-415e-91c9-61378d526c58"
+			condition_id = "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"
 		}
 		
 		impacts {
-			  condition_id = "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"
-				impact_id = "8c6731c8-a49a-415e-91c9-61378d526c58"
+		  impact_id = "500d9e2e-ea7c-4834-a81f-e336de24dbb1"
+			condition_id = "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"
     }
 	}
 }
