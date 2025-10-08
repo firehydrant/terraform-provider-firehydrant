@@ -143,9 +143,11 @@ func createResourceIncidentType(ctx context.Context, d *schema.ResourceData, m i
 	inputImpacts := d.Get("template.0.impacts").([]interface{})
 	impacts := []components.CreateIncidentTypeImpact{}
 	for _, impact := range inputImpacts {
-		if v, ok := impact.(components.CreateIncidentTypeImpact); ok {
-			impacts = append(impacts, v)
-		}
+		impactMap := impact.(map[string]interface{})
+		impacts = append(impacts, components.CreateIncidentTypeImpact{
+			ID:          impactMap["impact_id"].(string),
+			ConditionID: impactMap["condition_id"].(string),
+		})
 	}
 
 	request := components.CreateIncidentType{
@@ -218,7 +220,7 @@ func readResourceIncidentType(ctx context.Context, d *schema.ResourceData, m int
 	}
 	template["team_ids"] = teamIDs
 
-	impacts := make([]map[string]interface{}, 0)
+	var impacts []map[string]interface{}
 	for _, im := range response.Template.Impacts {
 		impacts = append(impacts, map[string]interface{}{
 			"impact_id":    im.ID,
