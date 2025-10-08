@@ -102,7 +102,7 @@ func dataSourceIncidentType() *schema.Resource {
 func readDataIncidentType(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*firehydrant.APIClient)
 
-	id := d.Id()
+	id := d.Get("id").(string)
 	tflog.Debug(ctx, fmt.Sprintf("Read incident type: %s", id), map[string]interface{}{
 		"id": id,
 	})
@@ -196,7 +196,7 @@ func readDataIncidentType(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 	}
 
-	d.SetId(id)
+	d.SetId(*response.ID)
 
 	return diag.Diagnostics{}
 }
