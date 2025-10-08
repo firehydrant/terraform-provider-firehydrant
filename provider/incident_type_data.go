@@ -196,9 +196,7 @@ func readDataIncidentType(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 	}
 
-	if response.ID != nil {
-		d.SetId(*response.ID)
-	}
+	d.SetId(id)
 
 	return diag.Diagnostics{}
 }

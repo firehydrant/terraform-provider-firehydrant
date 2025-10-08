@@ -218,13 +218,12 @@ func readResourceIncidentType(ctx context.Context, d *schema.ResourceData, m int
 	}
 	template["team_ids"] = teamIDs
 
-	var impacts []map[string]interface{}
+	impacts := make([]map[string]interface{}, 0)
 	for _, im := range response.Template.Impacts {
-		impact := map[string]interface{}{
+		impacts = append(impacts, map[string]interface{}{
 			"impact_id":    im.ID,
 			"condition_id": im.ConditionID,
-		}
-		impacts = append(impacts, impact)
+		})
 	}
 	template["impacts"] = impacts
 
@@ -241,6 +240,8 @@ func readResourceIncidentType(ctx context.Context, d *schema.ResourceData, m int
 			return diag.Errorf("Error setting %s for incident_type %s: %v", key, id, err)
 		}
 	}
+
+	d.SetId(*response.ID)
 
 	return diag.Diagnostics{}
 }
@@ -306,12 +307,10 @@ func updateResourceIncidentType(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	tflog.Debug(ctx, "Update Incident Type")
-	response, err := client.Sdk.IncidentSettings.UpdateIncidentType(ctx, id, request)
+	_, err := client.Sdk.IncidentSettings.UpdateIncidentType(ctx, id, request)
 	if err != nil {
 		return diag.Errorf("Error updating Incident Type: %v", err)
 	}
-
-	d.SetId(*response.ID)
 
 	return readResourceIncidentType(ctx, d, m)
 }
