@@ -13,23 +13,23 @@ runbooks, and other aspects of an incident based on a single setting.
 Basic usage:
 ```hcl
 resource "firehydrant_incident_type" "test_incident_type" {
-  name        = "Test incident type"
-  description = "This is a test"
+	name        = "Test incident type"
+	description = "This is a test"
 
 	template {
-    description = "The template for a test incident"
-  }
+		description = "The template for a test incident"
+	}
 }
 ```
 
 Advanced usage with full template:
 ```hcl
 resource "firehydrant_incident_type" "test_incident_type" {
-  name        = "Test incident type"
-  description = "This is a test"
+	name        = "Test incident type"
+	description = "This is a test"
 	
   template {
-	  description = "The template for a test incident"
+		description = "The template for a test incident"
 		customer_impact_summary = "This is a test.  Customers will be unaffected."
 		severity_slug = "SEV5"
 		priority_slug = "TESTPRIORITY"
@@ -40,14 +40,14 @@ resource "firehydrant_incident_type" "test_incident_type" {
 		team_ids = [ "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" ]
 		
 		impacts {
-		    impact_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+				impact_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 				condition_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 		}
 		
 		impacts {
-			  condition_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+				condition_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 				impact_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-    }
+		}
 	}
 }
 ```

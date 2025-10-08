@@ -114,79 +114,51 @@ func readDataIncidentType(ctx context.Context, d *schema.ResourceData, m interfa
 
 	var templateSlice []map[string]interface{}
 
-	if response.Template != nil {
-		var description, customerImpactSummary, severity, priority string
-		var privateIncident bool
-
-		if response.Template.Description != nil {
-			description = *response.Template.Description
-		}
-		if response.Template.CustomerImpactSummary != nil {
-			customerImpactSummary = *response.Template.CustomerImpactSummary
-		}
-		if response.Template.Severity != nil {
-			severity = *response.Template.Severity
-		}
-		if response.Template.Priority != nil {
-			priority = *response.Template.Priority
-		}
-		if response.Template.PrivateIncident != nil {
-			privateIncident = *response.Template.PrivateIncident
-		}
-
-		template := map[string]interface{}{
-			"description":             description,
-			"customer_impact_summary": customerImpactSummary,
-			"severity_slug":           severity,
-			"priority_slug":           priority,
-			"private_incident":        privateIncident,
-		}
-
-		// labels is in the sdk as an empty struct, which seems... wrong.  I'm going to implement the rest of this without it
-		// (because I can only hold so much complexity in my head), and then investigate this from the API side to see if
-		// this is being generated correctly.
-
-		var tags []interface{}
-		for _, tag := range response.Template.TagList {
-			tags = append(tags, tag)
-		}
-		template["tags"] = tags
-
-		var runbookIDs []interface{}
-		for _, r := range response.Template.RunbookIds {
-			runbookIDs = append(runbookIDs, r)
-		}
-		template["runbook_ids"] = runbookIDs
-
-		var teamIDs []interface{}
-		for _, team := range response.Template.TeamIds {
-			teamIDs = append(teamIDs, team)
-		}
-		template["team_ids"] = teamIDs
-
-		var impacts []map[string]interface{}
-		for _, im := range response.Template.Impacts {
-			impact := map[string]interface{}{
-				"impact_id":    im.ID,
-				"condition_id": im.ConditionID,
-			}
-			impacts = append(impacts, impact)
-		}
-		template["impacts"] = impacts
-
-		templateSlice = append(templateSlice, template)
+	template := map[string]interface{}{
+		"description":             *response.Template.Description,
+		"customer_impact_summary": *response.Template.CustomerImpactSummary,
+		"severity_slug":           *response.Template.Severity,
+		"priority_slug":           *response.Template.Priority,
+		"private_incident":        *response.Template.PrivateIncident,
 	}
-	var name, description string
-	if response.Name != nil {
-		name = *response.Name
+
+	// labels is in the sdk as an empty struct, which seems... wrong.  I'm going to implement the rest of this without it
+	// (because I can only hold so much complexity in my head), and then investigate this from the API side to see if
+	// this is being generated correctly.
+
+	var tags []interface{}
+	for _, tag := range response.Template.TagList {
+		tags = append(tags, tag)
 	}
-	if response.Description != nil {
-		description = *response.Description
+	template["tags"] = tags
+
+	var runbookIDs []interface{}
+	for _, r := range response.Template.RunbookIds {
+		runbookIDs = append(runbookIDs, r)
 	}
+	template["runbook_ids"] = runbookIDs
+
+	var teamIDs []interface{}
+	for _, team := range response.Template.TeamIds {
+		teamIDs = append(teamIDs, team)
+	}
+	template["team_ids"] = teamIDs
+
+	var impacts []map[string]interface{}
+	for _, im := range response.Template.Impacts {
+		impact := map[string]interface{}{
+			"impact_id":    im.ID,
+			"condition_id": im.ConditionID,
+		}
+		impacts = append(impacts, impact)
+	}
+	template["impacts"] = impacts
+
+	templateSlice = append(templateSlice, template)
 
 	attributes := map[string]interface{}{
-		"name":        name,
-		"description": description,
+		"name":        *response.Name,
+		"description": *response.Description,
 		"template":    templateSlice,
 	}
 
