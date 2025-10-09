@@ -6,7 +6,7 @@ require (
 	github.com/bxcodec/faker/v3 v3.5.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dghubble/sling v1.4.0
-	github.com/firehydrant/firehydrant-go-sdk v1.4.0
+	github.com/firehydrant/firehydrant-go-sdk v1.5.1
 	github.com/google/go-querystring v1.1.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-plugin-log v0.7.0
@@ -15,8 +15,6 @@ require (
 	github.com/senseyeio/duration v0.0.0-20180430131211-7c2a214ada46
 	github.com/stretchr/testify v1.11.1
 )
-
-require github.com/ericlagergren/decimal v0.0.0-20240411145413-00de7ca16731 // indirect
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
