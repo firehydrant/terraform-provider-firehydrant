@@ -1,3 +1,9 @@
+## 0.14.8
+
+ENHANCEMENTS:
+
+* **New Resource**: 'firehydrant_incident_type` ([#xxx](https://github.com/firehydrant/terraform-provider-firehydrant/pull/xxx))
+
 ## 0.14.7
 
 ENHANCEMENTS:
@@ -11,15 +17,17 @@ ENHANCEMENTS:
 * Added `ingest_url` as a computed attribute for `firehydrant_custom_event_source`
 
 ## 0.14.5
+
 BUG FIXES: 
-**Fixes 500 on unmarshalling example_payload for transposers 
+
+* Fixes 500 on unmarshalling example_payload for transposers 
 
 ## 0.14.4
 
 ENHANCEMENTS:
 
 * **New Resource**: `firehydrant_custom_event_source` ([#192](https://github.com/firehydrant/terraform-provider-firehydrant/pull/192))
-Documentation added for using `incident_type` in runbook action logic
+* Documentation added for using `incident_type` in runbook action logic
 
 ## 0.14.3
 
