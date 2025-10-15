@@ -61,6 +61,7 @@ func Provider() *schema.Provider {
 			"firehydrant_incident_role":     dataSourceIncidentRole(),
 			"firehydrant_incident_type":     dataSourceIncidentType(),
 			"firehydrant_ingest_url":        dataSourceIngestURL(),
+			"firehydrant_lifecycle_phase":   dataSourceLifecyclePhase(),
 			"firehydrant_on_call_schedule":  dataSourceOnCallSchedule(),
 			"firehydrant_on_call_schedules": dataSourceOnCallSchedules(),
 			"firehydrant_priority":          dataSourcePriority(),
