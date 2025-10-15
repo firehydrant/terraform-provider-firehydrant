@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/operations"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -34,41 +35,49 @@ func dataSourceTeams() *schema.Resource {
 
 func dataFireHydrantTeams(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Get the teams
 	query := d.Get("query").(string)
 	tflog.Debug(ctx, "Read teams", map[string]interface{}{
 		"query": query,
 	})
-	teamsResponse, err := firehydrantAPIClient.Teams().List(ctx, &firehydrant.TeamQuery{
-		Query: query,
-	})
+
+	request := operations.ListTeamsRequest{}
+	if query != "" {
+		request.Query = &query
+	}
+
+	teamsResponse, err := client.Sdk.Teams.ListTeams(ctx, request)
 	if err != nil {
 		return diag.Errorf("Error reading teams: %v", err)
 	}
 
 	// Set the data source attributes to the values we got from the API
 	teams := make([]interface{}, 0)
-	for _, team := range teamsResponse.Teams {
+	for _, team := range teamsResponse.GetData() {
 		attributes := map[string]interface{}{
-			"id":          team.ID,
-			"name":        team.Name,
-			"description": team.Description,
-			"slug":        team.Slug,
+			"id":          *team.GetID(),
+			"name":        *team.GetName(),
+			"description": *team.GetDescription(),
+			"slug":        *team.GetSlug(),
 		}
 
 		// Collect mapped service IDs
 		serviceIDs := make([]string, 0)
-		for _, service := range team.Services {
-			serviceIDs = append(serviceIDs, service.ID)
+		for _, service := range team.GetServices() {
+			if service.GetID() != nil {
+				serviceIDs = append(serviceIDs, *service.GetID())
+			}
 		}
 		attributes["service_ids"] = serviceIDs
 
 		// Collect mapped owned service IDs
 		ownedServiceIDs := make([]string, 0)
-		for _, ownedService := range team.OwnedServices {
-			ownedServiceIDs = append(ownedServiceIDs, ownedService.ID)
+		for _, ownedService := range team.GetOwnedServices() {
+			if ownedService.GetID() != nil {
+				ownedServiceIDs = append(ownedServiceIDs, *ownedService.GetID())
+			}
 		}
 		attributes["owned_service_ids"] = ownedServiceIDs
 

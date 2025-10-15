@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -32,41 +33,52 @@ func dataSourceSchedule() *schema.Resource {
 
 func dataFireHydrantSchedule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
-
-	// Get the user
+	client := m.(*firehydrant.APIClient)
+	var schedule *components.ScheduleEntity
+	// Get the schedule name
 	name := d.Get("name").(string)
 	tflog.Debug(ctx, fmt.Sprintf("Fetch schedule: %s", name), map[string]interface{}{
 		"id": name,
 	})
 
-	params := firehydrant.GetScheduleParams{Query: name}
-	scheduleResponse, err := firehydrantAPIClient.GetSchedules(ctx, params)
+	scheduleResponse, err := client.Sdk.Teams.ListSchedules(ctx, &name, nil, nil)
 	if err != nil {
 		return diag.Errorf("Error fetching schedule '%s': %v", name, err)
 	}
 
-	if len(scheduleResponse.Schedules) == 0 {
+	schedules := scheduleResponse.GetData()
+	if len(schedules) == 0 {
 		return diag.Errorf("Did not find schedule matching '%s'", name)
 	}
-	if len(scheduleResponse.Schedules) > 1 {
-		return diag.Errorf("Found multiple matching schedules for '%s'", name)
+	if len(schedules) > 1 {
+		for _, s := range schedules {
+			if s.GetName() != nil && *s.GetName() == name {
+				// we do not allow multiple schedules with the same name so we can return the first match
+				schedule = &s
+				break
+			}
+		}
+		if schedule == nil {
+			return diag.Errorf("Did not find schedule matching '%s'", name)
+		}
+	} else {
+		schedule = &schedules[0]
 	}
 
 	// Gather values from API response
 	attributes := map[string]interface{}{
-		"id": scheduleResponse.Schedules[0].ID,
+		"id": *schedule.GetID(),
 	}
 
 	// Set the data source attributes to the values we got from the API
 	for key, val := range attributes {
 		if err := d.Set(key, val); err != nil {
-			return diag.Errorf("Error setting %s for user %s: %v", key, name, err)
+			return diag.Errorf("Error setting %s for schedule %s: %v", key, name, err)
 		}
 	}
 
 	// Set the schedule's ID in state
-	d.SetId(scheduleResponse.Schedules[0].ID)
+	d.SetId(*schedule.GetID())
 
 	return diag.Diagnostics{}
 }
