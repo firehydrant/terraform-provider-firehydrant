@@ -295,3 +295,43 @@ func (t *Transposer) UnmarshalJSON(data []byte) error {
 
 	return nil
 }
+
+// NotificationPriority represents the priority levels for notifications
+type NotificationPriority string
+
+const (
+	NotificationPriorityLow    NotificationPriority = "LOW"
+	NotificationPriorityMedium NotificationPriority = "MEDIUM"
+	NotificationPriorityHigh   NotificationPriority = "HIGH"
+)
+
+// CreateIncidentConditionWhen represents when an incident should be created
+type CreateIncidentConditionWhen string
+
+const (
+	CreateIncidentConditionWhenAlways           CreateIncidentConditionWhen = "ALWAYS"
+	CreateIncidentConditionWhenNever            CreateIncidentConditionWhen = "NEVER"
+	CreateIncidentConditionWhenOnAcknowledgment CreateIncidentConditionWhen = "ON_ACKNOWLEDGMENT"
+	CreateIncidentConditionWhenOnResolution     CreateIncidentConditionWhen = "ON_RESOLUTION"
+)
+
+// IsValidNotificationPriority checks if a string is a valid notification priority
+func IsValidNotificationPriority(priority string) bool {
+	switch NotificationPriority(priority) {
+	case NotificationPriorityLow, NotificationPriorityMedium, NotificationPriorityHigh:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsValidCreateIncidentConditionWhen checks if a string is a valid create incident condition
+func IsValidCreateIncidentConditionWhen(condition string) bool {
+	switch CreateIncidentConditionWhen(condition) {
+	case CreateIncidentConditionWhenAlways, CreateIncidentConditionWhenNever,
+		CreateIncidentConditionWhenOnAcknowledgment, CreateIncidentConditionWhenOnResolution:
+		return true
+	default:
+		return false
+	}
+}
