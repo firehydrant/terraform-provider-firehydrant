@@ -60,17 +60,20 @@ func createResourceLifecycleMilestone(ctx context.Context, d *schema.ResourceDat
 	slug := d.Get("slug").(string)
 	position := d.Get("position").(int)
 
-	var assign_timestamp operations.CreateLifecycleMilestoneAutoAssignTimestampOnCreate
+	var assign_timestamp *operations.CreateLifecycleMilestoneAutoAssignTimestampOnCreate
 	desired_assign_timestamp := d.Get("auto_assign_timestamp_on_create").(string)
-	switch desired_assign_timestamp {
-	case "always_set_on_create":
-		fallthrough
-	case "only_set_on_manual_create":
-		fallthrough
-	case "never_set_on_create":
-		assign_timestamp = operations.CreateLifecycleMilestoneAutoAssignTimestampOnCreate(desired_assign_timestamp)
-	default:
-		return diag.Errorf("invalid value for auto_assign_timestamp_on_create: %v", desired_assign_timestamp)
+	if desired_assign_timestamp != "" {
+		switch desired_assign_timestamp {
+		case "always_set_on_create":
+			fallthrough
+		case "only_set_on_manual_create":
+			fallthrough
+		case "never_set_on_create":
+			at := operations.CreateLifecycleMilestoneAutoAssignTimestampOnCreate(desired_assign_timestamp)
+			assign_timestamp = &at
+		default:
+			return diag.Errorf("invalid value for auto_assign_timestamp_on_create: %v", desired_assign_timestamp)
+		}
 	}
 
 	request := operations.CreateLifecycleMilestoneRequest{
@@ -79,7 +82,7 @@ func createResourceLifecycleMilestone(ctx context.Context, d *schema.ResourceDat
 		PhaseID:                     phase_id,
 		Slug:                        &slug,
 		Position:                    &position,
-		AutoAssignTimestampOnCreate: &assign_timestamp,
+		AutoAssignTimestampOnCreate: assign_timestamp,
 	}
 
 	tflog.Debug(ctx, "Create new Lifecycle Milestone")
@@ -165,17 +168,20 @@ func updateResourceLifecycleMilestone(ctx context.Context, d *schema.ResourceDat
 	slug := d.Get("slug").(string)
 	position := d.Get("position").(int)
 
-	var assign_timestamp operations.UpdateLifecycleMilestoneAutoAssignTimestampOnCreate
+	var assign_timestamp *operations.UpdateLifecycleMilestoneAutoAssignTimestampOnCreate
 	desired_assign_timestamp := d.Get("auto_assign_timestamp_on_create").(string)
-	switch desired_assign_timestamp {
-	case "always_set_on_create":
-		fallthrough
-	case "only_set_on_manual_create":
-		fallthrough
-	case "never_set_on_create":
-		assign_timestamp = operations.UpdateLifecycleMilestoneAutoAssignTimestampOnCreate(desired_assign_timestamp)
-	default:
-		return diag.Errorf("invalid value for auto_assign_timestamp_on_create: %v", desired_assign_timestamp)
+	if desired_assign_timestamp != "" {
+		switch desired_assign_timestamp {
+		case "always_set_on_create":
+			fallthrough
+		case "only_set_on_manual_create":
+			fallthrough
+		case "never_set_on_create":
+			at := operations.UpdateLifecycleMilestoneAutoAssignTimestampOnCreate(desired_assign_timestamp)
+			assign_timestamp = &at
+		default:
+			return diag.Errorf("invalid value for auto_assign_timestamp_on_create: %v", desired_assign_timestamp)
+		}
 	}
 
 	request := operations.UpdateLifecycleMilestoneRequestBody{
@@ -183,7 +189,7 @@ func updateResourceLifecycleMilestone(ctx context.Context, d *schema.ResourceDat
 		Description:                 &description,
 		Slug:                        &slug,
 		Position:                    &position,
-		AutoAssignTimestampOnCreate: &assign_timestamp,
+		AutoAssignTimestampOnCreate: assign_timestamp,
 	}
 
 	tflog.Debug(ctx, "Update Lifecycle Milestone")
