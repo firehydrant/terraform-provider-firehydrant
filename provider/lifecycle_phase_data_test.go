@@ -30,7 +30,7 @@ func TestAccLifecyclePhaseDataSource_invalid(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccLifecyclePhaseDataSourceConfig_invalid(),
-				ExpectError: regexp.MustCompile(`Lifecycle phase foo is invalid.  Valid lifecycle phases are`),
+				ExpectError: regexp.MustCompile(`Lifecycle phase foo is invalid.  Valid lifecycle phases are.*`),
 			},
 		},
 	})
