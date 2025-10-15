@@ -31,6 +31,8 @@ func TestAccOnCallScheduleResource_basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_on_call_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule", "name", fmt.Sprintf("test-on-call-schedule-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule", "description", fmt.Sprintf("test-description-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule", "time_zone", "America/New_York"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule", "strategy.0.type", "weekly"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule", "strategy.0.handoff_time", "10:00:00"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule", "strategy.0.handoff_day", "thursday"),
@@ -54,6 +56,16 @@ func TestAccOnCallScheduleResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule_with_restrictions", "restrictions.1.end_time", "18:00:00"),
 				),
 			},
+			{
+				Config: testAccOnCallScheduleConfig_customStrategy(rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_custom_schedule", "id"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_custom_schedule", "name", fmt.Sprintf("test-custom-schedule-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_custom_schedule", "strategy.0.type", "custom"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_custom_schedule", "strategy.0.shift_duration", "PT8H"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_custom_schedule", "start_time", "2024-01-01T00:00:00Z"),
+				),
+			},
 		},
 	})
 }
@@ -74,6 +86,27 @@ func testAccOnCallScheduleConfig_basic(rName string) string {
 			type         = "weekly"
 			handoff_time = "10:00:00"
 			handoff_day  = "thursday"
+		}
+	}
+	`, rName, rName, rName)
+}
+
+func testAccOnCallScheduleConfig_customStrategy(rName string) string {
+	return fmt.Sprintf(`
+	resource "firehydrant_team" "team_team" {
+		name = "test-team-%s"
+	}
+
+	resource "firehydrant_on_call_schedule" "test_custom_schedule" {
+		team_id = firehydrant_team.team_team.id
+		name = "test-custom-schedule-%s"
+		description = "test-description-%s"
+		time_zone = "America/New_York"
+		start_time = "2024-01-01T00:00:00Z"
+
+		strategy {
+			type           = "custom"
+			shift_duration = "PT8H"
 		}
 	}
 	`, rName, rName, rName)
@@ -135,7 +168,7 @@ func testAccCheckOnCallScheduleResourceDestroy() resource.TestCheckFunc {
 			// that has been deleted. However, the incident role API will still return deleted/archived incident
 			// roles instead of returning 404. So, to check for incident roles that are deleted, we have to check
 			// for incident roles that have a DiscardedAt timestamp
-			_, err := client.OnCallSchedules().Get(context.TODO(), stateResource.Primary.Attributes["team_id"], stateResource.Primary.ID)
+			_, err := client.Sdk.Signals.GetTeamOnCallSchedule(context.TODO(), stateResource.Primary.Attributes["team_id"], stateResource.Primary.ID, nil, nil)
 			if err != nil && !errors.Is(err, firehydrant.ErrorNotFound) {
 				return fmt.Errorf("On-call schedule %s still exists", stateResource.Primary.ID)
 			}
