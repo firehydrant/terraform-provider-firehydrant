@@ -38,6 +38,7 @@ func Provider() *schema.Provider {
 			"firehydrant_functionality":          resourceFunctionality(),
 			"firehydrant_incident_role":          resourceIncidentRole(),
 			"firehydrant_incident_type":          resourceIncidentType(),
+			"firehydrant_lifecycle_milestone":    resourceLifecycleMilestone(),
 			"firehydrant_priority":               resourcePriority(),
 			"firehydrant_role":                   resourceRole(),
 			"firehydrant_rotation":               resourceRotation(),
