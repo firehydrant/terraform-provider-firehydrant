@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -47,7 +48,7 @@ func dataSourceOnCallSchedule() *schema.Resource {
 
 func dataFireHydrantOnCallSchedule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Get the team
 	id := d.Get("id").(string)
@@ -56,13 +57,13 @@ func dataFireHydrantOnCallSchedule(ctx context.Context, d *schema.ResourceData, 
 		"id":      id,
 		"team_id": teamID,
 	})
-	schedule, err := firehydrantAPIClient.OnCallSchedules().Get(ctx, teamID, id)
+	schedule, err := client.Sdk.Signals.GetTeamOnCallSchedule(ctx, teamID, id, nil, nil)
 	if err != nil {
 		return diag.Errorf("Error reading on-call schedule %s for team %s: %v", id, teamID, err)
 	}
 
 	// Gather values from API response
-	attributes := dataFireHydrantOnCallScheduleToAttributesMap(teamID, schedule)
+	attributes := dataFireHydrantOnCallScheduleToAttributesMap(teamID, *schedule)
 
 	// Set the data source attributes to the values we got from the API
 	for key, value := range attributes {
@@ -72,18 +73,18 @@ func dataFireHydrantOnCallSchedule(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	// Set the schedule's ID in state
-	d.SetId(schedule.ID)
+	d.SetId(*schedule.GetID())
 
 	return diag.Diagnostics{}
 }
 
-func dataFireHydrantOnCallScheduleToAttributesMap(teamID string, schedule *firehydrant.OnCallScheduleResponse) map[string]interface{} {
+func dataFireHydrantOnCallScheduleToAttributesMap(teamID string, schedule components.SignalsAPIOnCallScheduleEntity) map[string]interface{} {
 	return map[string]interface{}{
-		"id":                  schedule.ID,
+		"id":                  *schedule.GetID(),
 		"team_id":             teamID,
-		"name":                schedule.Name,
-		"description":         schedule.Description,
-		"time_zone":           schedule.TimeZone,
-		"slack_user_group_id": schedule.SlackUserGroupID,
+		"name":                *schedule.GetName(),
+		"description":         *schedule.GetDescription(),
+		"time_zone":           *schedule.GetTimeZone(),
+		"slack_user_group_id": *schedule.GetSlackUserGroupID(),
 	}
 }
