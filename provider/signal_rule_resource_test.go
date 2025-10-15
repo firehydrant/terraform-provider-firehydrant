@@ -20,6 +20,9 @@ func TestAccFireHydrantSignalRule_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "MEDIUM"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_name"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_team_id"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_is_pageable"),
 				),
 			},
 			{
@@ -27,6 +30,9 @@ func TestAccFireHydrantSignalRule_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "LOW"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_name"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_team_id"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_is_pageable"),
 				),
 			},
 			{
@@ -34,6 +40,9 @@ func TestAccFireHydrantSignalRule_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "HIGH"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_name"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_team_id"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_is_pageable"),
 				),
 			},
 		},
@@ -48,6 +57,26 @@ func TestAccFireHydrantSignalRule_invalidPriority(t *testing.T) {
 			{
 				Config:      testAccFireHydrantSignalRuleConfigBasic("INVALID"),
 				ExpectError: regexp.MustCompile(`expected notification_priority_override to be one of \[LOW MEDIUM HIGH\], got INVALID`),
+			},
+		},
+	})
+}
+
+func TestAccFireHydrantSignalRule_createIncidentConditionWhen(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: defaultProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFireHydrantSignalRuleConfigWithIncidentCondition("ALWAYS", "PT30M"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
+					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "create_incident_condition_when", "ALWAYS"),
+					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "deduplication_expiry", "PT30M"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_name"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_team_id"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_is_pageable"),
+				),
 			},
 		},
 	})
@@ -173,6 +202,28 @@ func testAccFireHydrantSignalRuleConfigIncidentTypeIDMissing() string {
 		target_id = data.firehydrant_user.test_user.id
 	}
 	`, os.Getenv("EXISTING_USER_EMAIL"))
+}
+
+func testAccFireHydrantSignalRuleConfigWithIncidentCondition(condition, expiry string) string {
+	return fmt.Sprintf(`
+	data "firehydrant_user" "test_user" {
+		email = "%s"
+	}
+
+	resource "firehydrant_team" "test" {
+		name = "test-team"
+	}
+
+	resource "firehydrant_signal_rule" "test" {
+		team_id = firehydrant_team.test.id
+		name = "test-signal-rule"
+		expression = "signal.summary == 'test-signal-summary'"
+		target_type = "User"
+		target_id = data.firehydrant_user.test_user.id
+		create_incident_condition_when = "%s"
+		deduplication_expiry = "%s"
+	}
+	`, os.Getenv("EXISTING_USER_EMAIL"), condition, expiry)
 }
 
 func testAccCheckFireHydrantSignalRuleExists(resourceName string) resource.TestCheckFunc {
