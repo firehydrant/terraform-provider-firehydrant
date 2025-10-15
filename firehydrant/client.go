@@ -66,15 +66,11 @@ type Client interface {
 	Services() ServicesClient
 	Severities() SeveritiesClient
 	TaskLists() TaskListsClient
-	Teams() TeamsClient
 	SlackChannels() SlackChannelsClient
 	StatusUpdateTemplates() StatusUpdateTemplates
 
 	// Users
 	GetUsers(ctx context.Context, params GetUserParams) (*UserResponse, error)
-
-	// Schedules
-	GetSchedules(ctx context.Context, params GetScheduleParams) (*ScheduleResponse, error)
 
 	// Signals
 	SignalsRules() SignalsRules
@@ -236,11 +232,6 @@ func (c *APIClient) TaskLists() TaskListsClient {
 	return &RESTTaskListsClient{client: c}
 }
 
-// Teams returns a TeamsClient interface for interacting with teams in FireHydrant
-func (c *APIClient) Teams() TeamsClient {
-	return &RESTTeamsClient{client: c}
-}
-
 // SignalsRules returns a SignalsRules interface for interacting with signals rules in FireHydrant
 func (c *APIClient) SignalsRules() SignalsRules {
 	return &RESTSignalsRulesClient{client: c}
@@ -300,21 +291,4 @@ func (c *APIClient) GetUsers(ctx context.Context, params GetUserParams) (*UserRe
 	}
 
 	return userResponse, nil
-}
-
-// GetSchedules gets matching schedules in FireHydrant
-func (c *APIClient) GetSchedules(ctx context.Context, params GetScheduleParams) (*ScheduleResponse, error) {
-	scheduleResponse := &ScheduleResponse{}
-	apiError := &APIError{}
-	response, err := c.client().Get("schedules").QueryStruct(params).Receive(scheduleResponse, apiError)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get schedules")
-	}
-
-	err = checkResponseStatusCode(response, apiError)
-	if err != nil {
-		return nil, err
-	}
-
-	return scheduleResponse, nil
 }
