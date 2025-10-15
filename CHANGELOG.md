@@ -1,3 +1,9 @@
+## 0.14.9
+
+BUG FIXES:
+
+* Fixes error on retrieving schedules when schedule names have a common substring, if an exact match is possible
+
 ## 0.14.8
 
 ENHANCEMENTS:
