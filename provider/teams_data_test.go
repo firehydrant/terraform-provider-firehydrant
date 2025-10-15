@@ -16,8 +16,8 @@ import (
 
 func TestAccTeamsDataSource_QueryMatch(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !strings.HasPrefix(r.URL.Path, "/ping") && !strings.HasPrefix(r.URL.Path, "/v1/ping") && !strings.HasPrefix(r.URL.Path, "/teams") {
-			t.Errorf("Expected to request '/ping' or '/teams', got: %s", r.URL.Path)
+		if !strings.HasPrefix(r.URL.Path, "/ping") && !strings.HasPrefix(r.URL.Path, "/v1/ping") && !strings.HasPrefix(r.URL.Path, "/v1/teams") {
+			t.Errorf("Expected to request '/ping', '/v1/ping', or '/v1/teams', got: %s", r.URL.Path)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
