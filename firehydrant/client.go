@@ -73,9 +73,6 @@ type Client interface {
 	GetUsers(ctx context.Context, params GetUserParams) (*UserResponse, error)
 
 	// Signals
-	SignalsRules() SignalsRules
-	OnCallSchedules() OnCallSchedules
-	EscalationPolicies() EscalationPolicies
 	IngestURL() IngestURLClient
 	Transposers() TransposersClient
 	InboundEmails() InboundEmailsClient
@@ -230,19 +227,6 @@ func (c *APIClient) Severities() SeveritiesClient {
 // TaskLists returns a TaskListsClient interface for interacting with task lists in FireHydrant
 func (c *APIClient) TaskLists() TaskListsClient {
 	return &RESTTaskListsClient{client: c}
-}
-
-// SignalsRules returns a SignalsRules interface for interacting with signals rules in FireHydrant
-func (c *APIClient) SignalsRules() SignalsRules {
-	return &RESTSignalsRulesClient{client: c}
-}
-
-func (c *APIClient) OnCallSchedules() OnCallSchedules {
-	return &RESTOnCallSchedulesClient{client: c}
-}
-
-func (c *APIClient) EscalationPolicies() EscalationPolicies {
-	return &RESTEscalationPoliciesClient{client: c}
 }
 
 // SlackChannels returns a SlackChannelsClient interface for interacting with slack channels in FireHydrant
