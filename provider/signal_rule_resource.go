@@ -65,9 +65,6 @@ func resourceSignalRule() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					string(firehydrant.CreateIncidentConditionWhenUnspecified),
 					string(firehydrant.CreateIncidentConditionWhenAlways),
-					string(firehydrant.CreateIncidentConditionWhenNever),
-					string(firehydrant.CreateIncidentConditionWhenOnAcknowledgment),
-					string(firehydrant.CreateIncidentConditionWhenOnResolution),
 				}, false),
 			},
 			"deduplication_expiry": {

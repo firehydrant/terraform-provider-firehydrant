@@ -27,6 +27,7 @@ func TestAccEscalationPolicyResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("firehydrant_escalation_policy.test_escalation_policy", "id"),
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "name", fmt.Sprintf("test-escalation-policy-%s", rName)),
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "description", fmt.Sprintf("test-description-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "step_strategy", "static"),
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "step.0.timeout", "PT1M"),
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "step.0.targets.0.type", "OnCallSchedule"),
 					resource.TestCheckResourceAttrSet("firehydrant_escalation_policy.test_escalation_policy", "step.0.targets.0.id"),
@@ -82,7 +83,8 @@ func testAccEscalationPolicyConfig_basic(rName string) string {
 		name = "test-escalation-policy-%s"
 		description = "test-description-%s"
 		repetitions = 1
-
+		step_strategy = "static"
+		
 		step {
 			timeout     = "PT1M"
 

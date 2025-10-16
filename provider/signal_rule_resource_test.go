@@ -20,6 +20,7 @@ func TestAccFireHydrantSignalRule_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "MEDIUM"),
+					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "create_incident_condition_when", "WHEN_UNSPECIFIED"),
 					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_name"),
 					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_is_pageable"),
 				),
@@ -29,6 +30,7 @@ func TestAccFireHydrantSignalRule_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "LOW"),
+					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "create_incident_condition_when", "WHEN_UNSPECIFIED"),
 					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_name"),
 					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_is_pageable"),
 				),
@@ -38,6 +40,7 @@ func TestAccFireHydrantSignalRule_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "HIGH"),
+					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "create_incident_condition_when", "WHEN_UNSPECIFIED"),
 					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_name"),
 					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_is_pageable"),
 				),
@@ -89,12 +92,13 @@ func testAccFireHydrantSignalRuleConfigBasic(priority string) string {
 	}
 
 	resource "firehydrant_signal_rule" "test" {
-			team_id = firehydrant_team.test.id
-			name = "test-signal-rule"
-			expression = "signal.summary == 'test-signal-summary'"
-			target_type = "User"
-			target_id = data.firehydrant_user.test_user.id
-			notification_priority_override = "%s"
+		team_id = firehydrant_team.test.id
+		name = "test-signal-rule"
+		expression = "signal.summary == 'test-signal-summary'"
+		target_type = "User"
+		target_id = data.firehydrant_user.test_user.id
+		notification_priority_override = "%s"
+		create_incident_condition_when = "WHEN_UNSPECIFIED"
 	}
 	`, os.Getenv("EXISTING_USER_EMAIL"), priority)
 }
@@ -125,6 +129,7 @@ func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "HIGH"),
+					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "create_incident_condition_when", "WHEN_UNSPECIFIED"),
 				),
 			},
 			{
@@ -156,6 +161,7 @@ func testAccFireHydrantSignalRuleConfigWithPriority(priority string) string {
 		target_type = "User"
 		target_id = data.firehydrant_user.test_user.id
 		notification_priority_override = "%s"
+		create_incident_condition_when = "WHEN_UNSPECIFIED"
 	}
 	`, os.Getenv("EXISTING_USER_EMAIL"), priority)
 }

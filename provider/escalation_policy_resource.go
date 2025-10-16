@@ -179,8 +179,8 @@ func readResourceFireHydrantEscalationPolicy(ctx context.Context, d *schema.Reso
 	}
 
 	// Set notification priority policies
+	var policies []map[string]interface{}
 	if priorityPolicies := escalationPolicy.GetNotificationPriorityPolicies(); priorityPolicies != nil {
-		var policies []map[string]interface{}
 		for _, policy := range priorityPolicies {
 			policyMap := map[string]interface{}{
 				"priority": *policy.GetNotificationPriority(),
@@ -204,8 +204,8 @@ func readResourceFireHydrantEscalationPolicy(ctx context.Context, d *schema.Reso
 
 			policies = append(policies, policyMap)
 		}
-		d.Set("notification_priority_policies", policies)
 	}
+	d.Set("notification_priority_policies", policies)
 
 	// Set the steps
 	var steps []map[string]interface{}
