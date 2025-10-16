@@ -309,10 +309,11 @@ const (
 type CreateIncidentConditionWhen string
 
 const (
-	CreateIncidentConditionWhenAlways           CreateIncidentConditionWhen = "ALWAYS"
-	CreateIncidentConditionWhenNever            CreateIncidentConditionWhen = "NEVER"
-	CreateIncidentConditionWhenOnAcknowledgment CreateIncidentConditionWhen = "ON_ACKNOWLEDGMENT"
-	CreateIncidentConditionWhenOnResolution     CreateIncidentConditionWhen = "ON_RESOLUTION"
+	CreateIncidentConditionWhenUnspecified      CreateIncidentConditionWhen = "WHEN_UNSPECIFIED"
+	CreateIncidentConditionWhenAlways           CreateIncidentConditionWhen = "WHEN_ALWAYS"
+	CreateIncidentConditionWhenNever            CreateIncidentConditionWhen = "WHEN_NEVER"
+	CreateIncidentConditionWhenOnAcknowledgment CreateIncidentConditionWhen = "WHEN_ON_ACKNOWLEDGMENT"
+	CreateIncidentConditionWhenOnResolution     CreateIncidentConditionWhen = "WHEN_ON_RESOLUTION"
 )
 
 // IsValidNotificationPriority checks if a string is a valid notification priority
@@ -328,7 +329,7 @@ func IsValidNotificationPriority(priority string) bool {
 // IsValidCreateIncidentConditionWhen checks if a string is a valid create incident condition
 func IsValidCreateIncidentConditionWhen(condition string) bool {
 	switch CreateIncidentConditionWhen(condition) {
-	case CreateIncidentConditionWhenAlways, CreateIncidentConditionWhenNever,
+	case CreateIncidentConditionWhenUnspecified, CreateIncidentConditionWhenAlways, CreateIncidentConditionWhenNever,
 		CreateIncidentConditionWhenOnAcknowledgment, CreateIncidentConditionWhenOnResolution:
 		return true
 	default:

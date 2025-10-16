@@ -40,7 +40,7 @@ func TestSignalRuleDataSource_OneMatch(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"data":[{"id": "123", "name":"My Signal Rule", "expression": "severity == 'high'", "target": {"type": "escalation_policy", "id": "ep-123", "name": "Test Target", "team_id": "t-123", "is_pageable": true}, "incident_type": {"id": "it-123"}, "notification_priority_override": "HIGH", "create_incident_condition_when": "ALWAYS", "deduplication_expiry": "PT30M"}]}`))
+		w.Write([]byte(`{"data":[{"id": "123", "name":"My Signal Rule", "expression": "severity == 'high'", "target": {"type": "escalation_policy", "id": "ep-123", "name": "Test Target", "team_id": "t-123", "is_pageable": true}, "incident_type": {"id": "it-123"}, "notification_priority_override": "HIGH", "create_incident_condition_when": "WHEN_ALWAYS", "deduplication_expiry": "PT30M"}]}`))
 	}))
 
 	defer server.Close()
@@ -79,7 +79,7 @@ func TestSignalRuleDataSource_MultipleMatches(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"data":[{"id": "456", "name":"My Signal Rule 2", "expression": "severity == 'medium'", "target": {"type": "escalation_policy", "id": "ep-456", "name": "Test Target 2", "team_id": "t-456", "is_pageable": false}, "incident_type": {"id": "it-456"}, "notification_priority_override": "MEDIUM", "create_incident_condition_when": "NEVER", "deduplication_expiry": "PT1H"}, {"id": "123", "name":"My Signal Rule", "expression": "severity == 'high'", "target": {"type": "escalation_policy", "id": "ep-123", "name": "Test Target", "team_id": "t-123", "is_pageable": true}, "incident_type": {"id": "it-123"}, "notification_priority_override": "HIGH", "create_incident_condition_when": "ALWAYS", "deduplication_expiry": "PT30M"}, {"id": "789", "name":"My Signal Rule 3", "expression": "severity == 'low'", "target": {"type": "escalation_policy", "id": "ep-789", "name": "Test Target 3", "team_id": "t-789", "is_pageable": true}, "incident_type": {"id": "it-789"}, "notification_priority_override": "LOW", "create_incident_condition_when": "ON_ACKNOWLEDGMENT", "deduplication_expiry": "PT2H"}]}`))
+		w.Write([]byte(`{"data":[{"id": "456", "name":"My Signal Rule 2", "expression": "severity == 'medium'", "target": {"type": "escalation_policy", "id": "ep-456", "name": "Test Target 2", "team_id": "t-456", "is_pageable": false}, "incident_type": {"id": "it-456"}, "notification_priority_override": "MEDIUM", "create_incident_condition_when": "WHEN_NEVER", "deduplication_expiry": "PT1H"}, {"id": "123", "name":"My Signal Rule", "expression": "severity == 'high'", "target": {"type": "escalation_policy", "id": "ep-123", "name": "Test Target", "team_id": "t-123", "is_pageable": true}, "incident_type": {"id": "it-123"}, "notification_priority_override": "HIGH", "create_incident_condition_when": "WHEN_ALWAYS", "deduplication_expiry": "PT30M"}, {"id": "789", "name":"My Signal Rule 3", "expression": "severity == 'low'", "target": {"type": "escalation_policy", "id": "ep-789", "name": "Test Target 3", "team_id": "t-789", "is_pageable": true}, "incident_type": {"id": "it-789"}, "notification_priority_override": "LOW", "create_incident_condition_when": "WHEN_ON_ACKNOWLEDGMENT", "deduplication_expiry": "PT2H"}]}`))
 	}))
 
 	defer server.Close()
@@ -118,7 +118,7 @@ func TestSignalRuleDataSource_MultipleMatchesNoExactMatch(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"data":[{"id": "456", "name":"My Signal Rule 2", "expression": "severity == 'medium'", "target": {"type": "escalation_policy", "id": "ep-456", "name": "Test Target 2", "team_id": "t-456", "is_pageable": false}, "incident_type": {"id": "it-456"}, "notification_priority_override": "MEDIUM", "create_incident_condition_when": "NEVER", "deduplication_expiry": "PT1H"}, {"id": "789", "name":"My Signal Rule 3", "expression": "severity == 'low'", "target": {"type": "escalation_policy", "id": "ep-789", "name": "Test Target 3", "team_id": "t-789", "is_pageable": true}, "incident_type": {"id": "it-789"}, "notification_priority_override": "LOW", "create_incident_condition_when": "ON_ACKNOWLEDGMENT", "deduplication_expiry": "PT2H"}]}`))
+		w.Write([]byte(`{"data":[{"id": "456", "name":"My Signal Rule 2", "expression": "severity == 'medium'", "target": {"type": "escalation_policy", "id": "ep-456", "name": "Test Target 2", "team_id": "t-456", "is_pageable": false}, "incident_type": {"id": "it-456"}, "notification_priority_override": "MEDIUM", "create_incident_condition_when": "WHEN_NEVER", "deduplication_expiry": "PT1H"}, {"id": "789", "name":"My Signal Rule 3", "expression": "severity == 'low'", "target": {"type": "escalation_policy", "id": "ep-789", "name": "Test Target 3", "team_id": "t-789", "is_pageable": true}, "incident_type": {"id": "it-789"}, "notification_priority_override": "LOW", "create_incident_condition_when": "WHEN_ON_ACKNOWLEDGMENT", "deduplication_expiry": "PT2H"}]}`))
 	}))
 
 	defer server.Close()

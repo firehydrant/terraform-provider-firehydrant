@@ -63,6 +63,7 @@ func resourceSignalRule() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				ValidateFunc: validation.StringInSlice([]string{
+					string(firehydrant.CreateIncidentConditionWhenUnspecified),
 					string(firehydrant.CreateIncidentConditionWhenAlways),
 					string(firehydrant.CreateIncidentConditionWhenNever),
 					string(firehydrant.CreateIncidentConditionWhenOnAcknowledgment),
@@ -134,8 +135,12 @@ func readResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceDa
 		if target.GetName() != nil {
 			attributes["target_name"] = *target.GetName()
 		}
-		if target.GetTeamID() != nil {
-			attributes["target_team_id"] = *target.GetTeamID()
+		// Only set target_team_id for certain target types (escalation policies, teams)
+		if target.GetTeamID() != nil && target.GetType() != nil {
+			targetType := *target.GetType()
+			if targetType == "escalation_policy" || targetType == "team" {
+				attributes["target_team_id"] = *target.GetTeamID()
+			}
 		}
 		if target.GetIsPageable() != nil {
 			attributes["target_is_pageable"] = *target.GetIsPageable()
@@ -148,7 +153,7 @@ func readResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// Handle notification priority override
-	if priority := signalRule.GetNotificationPriorityOverride(); priority != nil {
+	if priority := signalRule.GetNotificationPriorityOverride(); priority != nil && string(*priority) != "" {
 		attributes["notification_priority_override"] = string(*priority)
 	}
 
