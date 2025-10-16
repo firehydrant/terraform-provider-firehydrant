@@ -137,6 +137,8 @@ func updateResourceFireHydrantIncidentRole(ctx context.Context, d *schema.Resour
 	updateReq.Summary = &summary
 
 	// Handle optional description field
+	// TODO: The Go SDK uses omitempty, so we cannot send empty strings to clear fields.
+	// This isn't a big deal since it's just the description field, but we should fix this in the future
 	if desc := d.Get("description").(string); desc != "" {
 		updateReq.Description = &desc
 	}

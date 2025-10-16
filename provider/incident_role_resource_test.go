@@ -29,6 +29,8 @@ func TestAccIncidentRoleResource_basic(t *testing.T) {
 						"firehydrant_incident_role.test_incident_role", "name", fmt.Sprintf("test-incident-role-%s", rName)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_incident_role.test_incident_role", "summary", fmt.Sprintf("test-summary-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_incident_role.test_incident_role", "description", fmt.Sprintf("test-description-%s", rName)),
 				),
 			},
 		},
@@ -53,6 +55,8 @@ func TestAccIncidentRoleResource_update(t *testing.T) {
 						"firehydrant_incident_role.test_incident_role", "name", fmt.Sprintf("test-incident-role-%s", rName)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_incident_role.test_incident_role", "summary", fmt.Sprintf("test-summary-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_incident_role.test_incident_role", "description", fmt.Sprintf("test-description-%s", rName)),
 				),
 			},
 			{
@@ -77,6 +81,8 @@ func TestAccIncidentRoleResource_update(t *testing.T) {
 						"firehydrant_incident_role.test_incident_role", "name", fmt.Sprintf("test-incident-role-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_incident_role.test_incident_role", "summary", fmt.Sprintf("test-summary-%s", rNameUpdated)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_incident_role.test_incident_role", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
 				),
 			},
 		},
@@ -151,8 +157,9 @@ func testAccCheckIncidentRoleResourceExistsWithAttributes_basic(resourceName str
 			return fmt.Errorf("Unexpected summary. Expected: %s, got: %s", expected, got)
 		}
 
-		if incidentRole.GetDescription() != nil && *incidentRole.GetDescription() != "" {
-			return fmt.Errorf("Unexpected description. Expected no description, got: %s", *incidentRole.GetDescription())
+		expected, got = incidentRoleResource.Primary.Attributes["description"], *incidentRole.GetDescription()
+		if expected != got {
+			return fmt.Errorf("Unexpected description. Expected: %s, got: %s", expected, got)
 		}
 
 		return nil
@@ -231,9 +238,10 @@ func testAccCheckIncidentRoleResourceDestroy() resource.TestCheckFunc {
 func testAccIncidentRoleResourceConfig_basic(rName string) string {
 	return fmt.Sprintf(`
 resource "firehydrant_incident_role" "test_incident_role" {
-  name    = "test-incident-role-%s"
-  summary = "test-summary-%s"
-}`, rName, rName)
+  name        = "test-incident-role-%s"
+  summary     = "test-summary-%s"
+  description = "test-description-%s"
+}`, rName, rName, rName)
 }
 
 func testAccIncidentRoleResourceConfig_update(rName string) string {
