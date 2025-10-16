@@ -331,29 +331,37 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 		updateRequest.SlackUserGroupID = &slackUserGroupID
 	}
 
-	// Check if effective_at exists in raw config rather than state
+	// Handle effective_at - always set it to ensure API gets a valid timestamp
 	if raw := d.GetRawConfig().GetAttr("effective_at"); !raw.IsNull() {
 		effectiveAtStr := raw.AsString()
 		if effectiveAtStr != "" {
-			effectiveAt, err := time.Parse(time.RFC3339, effectiveAtStr)
+			// Validate the timestamp format
+			_, err := time.Parse(time.RFC3339, effectiveAtStr)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-
-			// Only set effective_at if it's in the future
-			if effectiveAt.After(time.Now()) {
-				effectiveAtStr := effectiveAt.Format(time.RFC3339)
-				updateRequest.EffectiveAt = &effectiveAtStr
-				tflog.Debug(ctx, "Schedule update will take effect at: "+effectiveAtStr, map[string]interface{}{
-					"effective_at": effectiveAtStr,
-				})
-			} else {
-				tflog.Debug(ctx, "Provided effective_at is in the past, update will take effect immediately", map[string]interface{}{
-					"effective_at": effectiveAtStr,
-					"now":          time.Now().Format(time.RFC3339),
-				})
-			}
+			// Send the timestamp as-is to the API
+			updateRequest.EffectiveAt = &effectiveAtStr
+			tflog.Debug(ctx, "Schedule update will take effect at: "+effectiveAtStr, map[string]interface{}{
+				"effective_at": effectiveAtStr,
+			})
+		} else {
+			// If effective_at is provided but empty, use current time
+			now := time.Now()
+			effectiveAtStr := now.Format(time.RFC3339)
+			updateRequest.EffectiveAt = &effectiveAtStr
+			tflog.Debug(ctx, "effective_at is empty, using current time for immediate effect", map[string]interface{}{
+				"current_time": effectiveAtStr,
+			})
 		}
+	} else {
+		// If effective_at is not provided at all, use current time for immediate effect
+		now := time.Now()
+		effectiveAtStr := now.Format(time.RFC3339)
+		updateRequest.EffectiveAt = &effectiveAtStr
+		tflog.Debug(ctx, "effective_at not provided, using current time for immediate effect", map[string]interface{}{
+			"current_time": effectiveAtStr,
+		})
 	}
 
 	// Get member IDs
