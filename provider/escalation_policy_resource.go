@@ -181,6 +181,9 @@ func readResourceFireHydrantEscalationPolicy(ctx context.Context, d *schema.Reso
 	// Set notification priority policies
 	var policies []map[string]interface{}
 	if priorityPolicies := escalationPolicy.GetNotificationPriorityPolicies(); priorityPolicies != nil {
+		tflog.Debug(ctx, fmt.Sprintf("Found %d notification priority policies", len(priorityPolicies)), map[string]interface{}{
+			"count": len(priorityPolicies),
+		})
 		for _, policy := range priorityPolicies {
 			policyMap := map[string]interface{}{
 				"priority": *policy.GetNotificationPriority(),
@@ -204,7 +207,13 @@ func readResourceFireHydrantEscalationPolicy(ctx context.Context, d *schema.Reso
 
 			policies = append(policies, policyMap)
 		}
+	} else {
+		tflog.Debug(ctx, "No notification priority policies found in API response", map[string]interface{}{})
 	}
+	// Always set notification_priority_policies, even if empty, to prevent "attribute not found" errors
+	tflog.Debug(ctx, fmt.Sprintf("Setting notification_priority_policies with %d policies", len(policies)), map[string]interface{}{
+		"policies": policies,
+	})
 	d.Set("notification_priority_policies", policies)
 
 	// Set the steps
