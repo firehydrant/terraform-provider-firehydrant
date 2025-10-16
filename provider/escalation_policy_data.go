@@ -74,7 +74,6 @@ func dataSourceEscalationPolicy() *schema.Resource {
 			"handoff_step": {
 				Type:     schema.TypeList,
 				Computed: true,
-				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"target_type": {
@@ -108,7 +107,6 @@ func dataSourceEscalationPolicy() *schema.Resource {
 						"handoff_step": {
 							Type:     schema.TypeList,
 							Computed: true,
-							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"target_type": {
