@@ -58,7 +58,6 @@ type Client interface {
 
 	Environments() EnvironmentsClient
 	Functionalities() FunctionalitiesClient
-	IncidentRoles() IncidentRolesClient
 	Priorities() PrioritiesClient
 	Runbooks() RunbooksClient
 	RunbookActions() RunbookActionsClient
@@ -187,11 +186,6 @@ func (c *APIClient) Environments() EnvironmentsClient {
 // Functionalities returns a FunctionalitiesClient interface for interacting with functionalities in FireHydrant
 func (c *APIClient) Functionalities() FunctionalitiesClient {
 	return &RESTFunctionalitiesClient{client: c}
-}
-
-// IncidentRoles returns a IncidentRolesClient interface for interacting with incident roles in FireHydrant
-func (c *APIClient) IncidentRoles() IncidentRolesClient {
-	return &RESTIncidentRolesClient{client: c}
 }
 
 // Priorities returns a PrioritiesClient interface for interacting with priorities in FireHydrant

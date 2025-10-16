@@ -41,29 +41,33 @@ func dataSourceIncidentRole() *schema.Resource {
 
 func dataFireHydrantIncidentRole(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Get the incident role
 	incidentRoleID := d.Get("id").(string)
 	tflog.Debug(ctx, fmt.Sprintf("Read incident role: %s", incidentRoleID), map[string]interface{}{
 		"id": incidentRoleID,
 	})
-	incidentRoleResponse, err := firehydrantAPIClient.IncidentRoles().Get(ctx, incidentRoleID)
+	incidentRole, err := client.Sdk.IncidentSettings.GetIncidentRole(ctx, incidentRoleID)
 	if err != nil {
 		return diag.Errorf("Error reading incident role %s: %v", incidentRoleID, err)
 	}
 	// Currently, the incident role API will still return deleted/archived incident roles instead of returning
 	// 404. So, to check for incident roles that are deleted, we have to check for incident roles that have
 	// a DiscardedAt timestamp
-	if !incidentRoleResponse.DiscardedAt.IsZero() {
+	if incidentRole.GetDiscardedAt() != nil && !incidentRole.GetDiscardedAt().IsZero() {
 		return diag.Errorf("Error reading incident role %s: Incident role has been archived", incidentRoleID)
 	}
 
 	// Gather values from API response
 	attributes := map[string]interface{}{
-		"description": incidentRoleResponse.Description,
-		"name":        incidentRoleResponse.Name,
-		"summary":     incidentRoleResponse.Summary,
+		"name":    *incidentRole.GetName(),
+		"summary": *incidentRole.GetSummary(),
+	}
+
+	// Handle optional description field
+	if description := incidentRole.GetDescription(); description != nil {
+		attributes["description"] = *description
 	}
 
 	// Set the resource attributes to the values we got from the API
@@ -74,7 +78,7 @@ func dataFireHydrantIncidentRole(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	// Set the incident role's ID in state
-	d.SetId(incidentRoleResponse.ID)
+	d.SetId(*incidentRole.GetID())
 
 	return diag.Diagnostics{}
 }
