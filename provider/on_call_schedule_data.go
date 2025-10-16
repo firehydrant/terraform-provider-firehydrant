@@ -42,6 +42,54 @@ func dataSourceOnCallSchedule() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"strategy": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"handoff_time": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"handoff_day": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"shift_duration": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"restrictions": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"start_day": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"start_time": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"end_day": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"end_time": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -79,7 +127,7 @@ func dataFireHydrantOnCallSchedule(ctx context.Context, d *schema.ResourceData, 
 }
 
 func dataFireHydrantOnCallScheduleToAttributesMap(teamID string, schedule components.SignalsAPIOnCallScheduleEntity) map[string]interface{} {
-	return map[string]interface{}{
+	attributes := map[string]interface{}{
 		"id":                  *schedule.GetID(),
 		"team_id":             teamID,
 		"name":                *schedule.GetName(),
@@ -87,4 +135,14 @@ func dataFireHydrantOnCallScheduleToAttributesMap(teamID string, schedule compon
 		"time_zone":           *schedule.GetTimeZone(),
 		"slack_user_group_id": *schedule.GetSlackUserGroupID(),
 	}
+
+	// Add strategy if available
+	if strategy := schedule.GetStrategy(); strategy != nil {
+		attributes["strategy"] = strategyToMapSDK(*strategy)
+	}
+
+	// Add restrictions if available
+	attributes["restrictions"] = restrictionsToDataSDK(schedule.GetRestrictions())
+
+	return attributes
 }

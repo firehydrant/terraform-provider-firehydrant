@@ -280,9 +280,13 @@ func readResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Resour
 		"name":         *onCallSchedule.GetName(),
 		"description":  *onCallSchedule.GetDescription(),
 		"time_zone":    *onCallSchedule.GetTimeZone(),
-		"strategy":     strategyToMapSDK(*onCallSchedule.GetStrategy()),
 		"member_ids":   memberIDs,
 		"restrictions": restrictionsToDataSDK(onCallSchedule.GetRestrictions()),
+	}
+
+	// Handle strategy if it exists
+	if strategy := onCallSchedule.GetStrategy(); strategy != nil {
+		attributes["strategy"] = strategyToMapSDK(*strategy)
 	}
 	if slackUserGroupID := onCallSchedule.GetSlackUserGroupID(); slackUserGroupID != nil && *slackUserGroupID != "" {
 		attributes["slack_user_group_id"] = *slackUserGroupID
@@ -330,23 +334,25 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 	// Check if effective_at exists in raw config rather than state
 	if raw := d.GetRawConfig().GetAttr("effective_at"); !raw.IsNull() {
 		effectiveAtStr := raw.AsString()
-		effectiveAt, err := time.Parse(time.RFC3339, effectiveAtStr)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		if effectiveAtStr != "" {
+			effectiveAt, err := time.Parse(time.RFC3339, effectiveAtStr)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
-		// Only set effective_at if it's in the future
-		if effectiveAt.After(time.Now()) {
-			effectiveAtStr := effectiveAt.Format(time.RFC3339)
-			updateRequest.EffectiveAt = &effectiveAtStr
-			tflog.Debug(ctx, "Schedule update will take effect at: "+effectiveAtStr, map[string]interface{}{
-				"effective_at": effectiveAtStr,
-			})
-		} else {
-			tflog.Debug(ctx, "Provided effective_at is in the past, update will take effect immediately", map[string]interface{}{
-				"effective_at": effectiveAtStr,
-				"now":          time.Now().Format(time.RFC3339),
-			})
+			// Only set effective_at if it's in the future
+			if effectiveAt.After(time.Now()) {
+				effectiveAtStr := effectiveAt.Format(time.RFC3339)
+				updateRequest.EffectiveAt = &effectiveAtStr
+				tflog.Debug(ctx, "Schedule update will take effect at: "+effectiveAtStr, map[string]interface{}{
+					"effective_at": effectiveAtStr,
+				})
+			} else {
+				tflog.Debug(ctx, "Provided effective_at is in the past, update will take effect immediately", map[string]interface{}{
+					"effective_at": effectiveAtStr,
+					"now":          time.Now().Format(time.RFC3339),
+				})
+			}
 		}
 	}
 
