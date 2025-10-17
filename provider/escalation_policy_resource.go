@@ -402,6 +402,14 @@ func getStepsFromResourceData(d *schema.ResourceData) []components.CreateTeamEsc
 
 	if v, ok := d.GetOk("step"); ok {
 		stepList := v.([]interface{})
+		stepStrategy := d.Get("step_strategy").(string)
+
+		// For dynamic policies, we need to determine which priorities each step applies to
+		var priorities []string
+		if stepStrategy == "dynamic_by_priority" {
+			priorities = getPrioritiesFromNotificationPriorityPolicies(d)
+		}
+
 		for _, stepItem := range stepList {
 			stepMap := stepItem.(map[string]interface{})
 			targets := stepMap["targets"].([]interface{})
@@ -422,11 +430,31 @@ func getStepsFromResourceData(d *schema.ResourceData) []components.CreateTeamEsc
 				Targets: stepTargets,
 			}
 
+			// For dynamic policies, set the priorities on each step
+			if stepStrategy == "dynamic_by_priority" && len(priorities) > 0 {
+				step.Priorities = priorities
+			}
+
 			steps = append(steps, step)
 		}
 	}
 
 	return steps
+}
+
+// getPrioritiesFromNotificationPriorityPolicies extracts the priority values from notification_priority_policies
+func getPrioritiesFromNotificationPriorityPolicies(d *schema.ResourceData) []string {
+	var priorities []string
+	priorityPolicies := d.Get("notification_priority_policies").([]interface{})
+
+	for _, policyItem := range priorityPolicies {
+		policyMap := policyItem.(map[string]interface{})
+		if priority, ok := policyMap["priority"].(string); ok {
+			priorities = append(priorities, priority)
+		}
+	}
+
+	return priorities
 }
 
 func getNotificationPriorityPoliciesFromResourceDataUpdate(d *schema.ResourceData) *components.UpdateTeamEscalationPolicyPrioritizedSettings {
@@ -590,6 +618,14 @@ func getStepsFromResourceDataUpdateSDK(d *schema.ResourceData) []components.Upda
 
 	if v, ok := d.GetOk("step"); ok {
 		stepList := v.([]interface{})
+		stepStrategy := d.Get("step_strategy").(string)
+
+		// For dynamic policies, we need to determine which priorities each step applies to
+		var priorities []string
+		if stepStrategy == "dynamic_by_priority" {
+			priorities = getPrioritiesFromNotificationPriorityPolicies(d)
+		}
+
 		for _, stepItem := range stepList {
 			stepMap := stepItem.(map[string]interface{})
 			targets := stepMap["targets"].([]interface{})
@@ -608,6 +644,11 @@ func getStepsFromResourceDataUpdateSDK(d *schema.ResourceData) []components.Upda
 			step := components.UpdateTeamEscalationPolicyStep{
 				Timeout: stepMap["timeout"].(string),
 				Targets: stepTargets,
+			}
+
+			// For dynamic policies, set the priorities on each step
+			if stepStrategy == "dynamic_by_priority" && len(priorities) > 0 {
+				step.Priorities = priorities
 			}
 
 			steps = append(steps, step)
