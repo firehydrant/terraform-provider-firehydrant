@@ -73,6 +73,13 @@ func (s *testOnCallScheduleDataSuite) TestSuccess() {
 			resource.TestCheckResourceAttr("data.firehydrant_on_call_schedule.test_on_call_schedule_data", "description", "test-description"),
 			resource.TestCheckResourceAttr("data.firehydrant_on_call_schedule.test_on_call_schedule_data", "time_zone", "America/Los_Angeles"),
 			resource.TestCheckResourceAttr("data.firehydrant_on_call_schedule.test_on_call_schedule_data", "slack_user_group_id", "test-slack-user-group-id"),
+			resource.TestCheckResourceAttr("data.firehydrant_on_call_schedule.test_on_call_schedule_data", "strategy.0.type", "weekly"),
+			resource.TestCheckResourceAttr("data.firehydrant_on_call_schedule.test_on_call_schedule_data", "strategy.0.handoff_time", "10:00:00"),
+			resource.TestCheckResourceAttr("data.firehydrant_on_call_schedule.test_on_call_schedule_data", "strategy.0.handoff_day", "thursday"),
+			resource.TestCheckResourceAttr("data.firehydrant_on_call_schedule.test_on_call_schedule_data", "restrictions.0.start_day", "monday"),
+			resource.TestCheckResourceAttr("data.firehydrant_on_call_schedule.test_on_call_schedule_data", "restrictions.0.start_time", "14:00:00"),
+			resource.TestCheckResourceAttr("data.firehydrant_on_call_schedule.test_on_call_schedule_data", "restrictions.0.end_day", "friday"),
+			resource.TestCheckResourceAttr("data.firehydrant_on_call_schedule.test_on_call_schedule_data", "restrictions.0.end_time", "17:00:00"),
 		),
 	})
 }

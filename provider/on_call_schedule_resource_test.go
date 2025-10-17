@@ -2,15 +2,17 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
+	fhsdk "github.com/firehydrant/firehydrant-go-sdk"
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -31,6 +33,8 @@ func TestAccOnCallScheduleResource_basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_on_call_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule", "name", fmt.Sprintf("test-on-call-schedule-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule", "description", fmt.Sprintf("test-description-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule", "time_zone", "America/New_York"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule", "strategy.0.type", "weekly"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule", "strategy.0.handoff_time", "10:00:00"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule", "strategy.0.handoff_day", "thursday"),
@@ -52,6 +56,16 @@ func TestAccOnCallScheduleResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule_with_restrictions", "restrictions.1.start_time", "12:00:00"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule_with_restrictions", "restrictions.1.end_day", "tuesday"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule_with_restrictions", "restrictions.1.end_time", "18:00:00"),
+				),
+			},
+			{
+				Config: testAccOnCallScheduleConfig_customStrategy(rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_custom_schedule", "id"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_custom_schedule", "name", fmt.Sprintf("test-custom-schedule-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_custom_schedule", "strategy.0.type", "custom"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_custom_schedule", "strategy.0.shift_duration", "PT8H"),
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_custom_schedule", "start_time"),
 				),
 			},
 		},
@@ -77,6 +91,27 @@ func testAccOnCallScheduleConfig_basic(rName string) string {
 		}
 	}
 	`, rName, rName, rName)
+}
+
+func testAccOnCallScheduleConfig_customStrategy(rName string) string {
+	return fmt.Sprintf(`
+	resource "firehydrant_team" "team_team" {
+		name = "test-team-%s"
+	}
+
+	resource "firehydrant_on_call_schedule" "test_custom_schedule" {
+		team_id = firehydrant_team.team_team.id
+		name = "test-custom-schedule-%s"
+		description = "test-description-%s"
+		time_zone = "America/New_York"
+		start_time = "%s"
+
+		strategy {
+			type           = "custom"
+			shift_duration = "PT8H"
+		}
+	}
+	`, rName, rName, rName, time.Now().Add(24*time.Hour).Format(time.RFC3339))
 }
 
 func testAccOnCallScheduleConfig_restrictions(rName string) string {
@@ -131,13 +166,14 @@ func testAccCheckOnCallScheduleResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			// Normally we'd check if err == nil here, because we'd expect a 404 if we try to get a resource
-			// that has been deleted. However, the incident role API will still return deleted/archived incident
-			// roles instead of returning 404. So, to check for incident roles that are deleted, we have to check
-			// for incident roles that have a DiscardedAt timestamp
-			_, err := client.OnCallSchedules().Get(context.TODO(), stateResource.Primary.Attributes["team_id"], stateResource.Primary.ID)
-			if err != nil && !errors.Is(err, firehydrant.ErrorNotFound) {
+			// Check if the on-call schedule still exists
+			_, err := client.Sdk.Signals.GetTeamOnCallSchedule(context.TODO(), stateResource.Primary.Attributes["team_id"], stateResource.Primary.ID, nil, nil)
+			if err == nil {
 				return fmt.Errorf("On-call schedule %s still exists", stateResource.Primary.ID)
+			}
+			errStr := err.Error()
+			if !strings.Contains(errStr, "404") && !strings.Contains(errStr, "record not found") {
+				return fmt.Errorf("Error checking on-call schedule %s: %v", stateResource.Primary.ID, err)
 			}
 		}
 
@@ -147,7 +183,13 @@ func testAccCheckOnCallScheduleResourceDestroy() resource.TestCheckFunc {
 
 func offlineOnCallScheduleMockServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.Write([]byte(`{
+		w.Header().Set("Content-Type", "application/json")
+
+		// Handle different endpoints
+		if req.Method == "GET" {
+			// GET request for reading
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{
   "id": "schedule-id",
   "name": "A pleasant on-call schedule",
   "description": "Managed by Terraform. Contact @platform-eng for changes.",
@@ -163,6 +205,28 @@ func offlineOnCallScheduleMockServer() *httptest.Server {
   },
   "time_zone": "America/New_York"
 }`))
+		} else if req.Method == "POST" {
+			// POST request for creating
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(`{
+  "id": "schedule-id",
+  "name": "A pleasant on-call schedule",
+  "description": "Managed by Terraform. Contact @platform-eng for changes.",
+  "members": [
+    {
+      "id": "member-1",
+      "name": "Frederick Graff"
+    }
+  ],
+  "team": {
+    "id": "team-1",
+    "name": "Philadelphia"
+  },
+  "time_zone": "America/New_York"
+}`))
+		} else {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
 	}))
 }
 
@@ -170,11 +234,14 @@ func TestOfflineOnCallScheduleReadMemberID(t *testing.T) {
 	ts := offlineOnCallScheduleMockServer()
 	defer ts.Close()
 
-	c, err := firehydrant.NewRestClient("test-token-very-authorized", firehydrant.WithBaseURL(ts.URL))
-	if err != nil {
-		t.Fatalf("Received error initializing API client: %s", err.Error())
-		return
-	}
+	client := &firehydrant.APIClient{}
+	client.Sdk = fhsdk.New(
+		fhsdk.WithServerURL(ts.URL),
+		fhsdk.WithSecurity(components.Security{
+			APIKey: "test-token-very-authorized",
+		}),
+	)
+
 	r := schema.TestResourceDataRaw(t, resourceOnCallSchedule().Schema, map[string]interface{}{
 		"team_id":     "team-1",
 		"name":        "test-on-call-schedule",
@@ -183,7 +250,7 @@ func TestOfflineOnCallScheduleReadMemberID(t *testing.T) {
 		"member_ids":  []interface{}{"member-1"},
 	})
 
-	d := readResourceFireHydrantOnCallSchedule(context.Background(), r, c)
+	d := readResourceFireHydrantOnCallSchedule(context.Background(), r, client)
 	if d.HasError() {
 		t.Fatalf("error reading on-call schedule: %v", d)
 	}
@@ -206,11 +273,14 @@ func TestOfflineOnCallScheduleCreate(t *testing.T) {
 	ts := offlineOnCallScheduleMockServer()
 	defer ts.Close()
 
-	c, err := firehydrant.NewRestClient("test-token-very-authorized", firehydrant.WithBaseURL(ts.URL))
-	if err != nil {
-		t.Fatalf("Received error initializing API client: %s", err.Error())
-		return
-	}
+	client := &firehydrant.APIClient{}
+	client.Sdk = fhsdk.New(
+		fhsdk.WithServerURL(ts.URL),
+		fhsdk.WithSecurity(components.Security{
+			APIKey: "test-token-very-authorized",
+		}),
+	)
+
 	r := schema.TestResourceDataRaw(t, resourceOnCallSchedule().Schema, map[string]interface{}{
 		"team_id":     "team-1",
 		"name":        "test-on-call-schedule",
@@ -219,7 +289,7 @@ func TestOfflineOnCallScheduleCreate(t *testing.T) {
 		"member_ids":  []interface{}{"member-1"},
 	})
 
-	d := createResourceFireHydrantOnCallSchedule(context.Background(), r, c)
+	d := createResourceFireHydrantOnCallSchedule(context.Background(), r, client)
 	if d.HasError() {
 		t.Fatalf("error creating on-call schedule: %v", d)
 	}
@@ -243,11 +313,14 @@ func TestOfflineOnCallScheduleCreateDeprecated(t *testing.T) {
 	ts := offlineOnCallScheduleMockServer()
 	defer ts.Close()
 
-	c, err := firehydrant.NewRestClient("test-token-very-authorized", firehydrant.WithBaseURL(ts.URL))
-	if err != nil {
-		t.Fatalf("Received error initializing API client: %s", err.Error())
-		return
-	}
+	client := &firehydrant.APIClient{}
+	client.Sdk = fhsdk.New(
+		fhsdk.WithServerURL(ts.URL),
+		fhsdk.WithSecurity(components.Security{
+			APIKey: "test-token-very-authorized",
+		}),
+	)
+
 	r := schema.TestResourceDataRaw(t, resourceOnCallSchedule().Schema, map[string]interface{}{
 		"team_id":     "team-1",
 		"name":        "test-on-call-schedule",
@@ -256,7 +329,7 @@ func TestOfflineOnCallScheduleCreateDeprecated(t *testing.T) {
 		"members":     []interface{}{"member-1"},
 	})
 
-	d := createResourceFireHydrantOnCallSchedule(context.Background(), r, c)
+	d := createResourceFireHydrantOnCallSchedule(context.Background(), r, client)
 	if d.HasError() {
 		t.Fatalf("error creating on-call schedule: %v", d)
 	}
