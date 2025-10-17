@@ -127,7 +127,6 @@ func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
 		ProviderFactories: defaultProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				// First create with a priority set
 				Config: testAccFireHydrantSignalRuleConfigWithPriority("HIGH"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
@@ -136,8 +135,15 @@ func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
 				),
 			},
 			{
-				// Then update to remove the priority
-				Config: testAccFireHydrantSignalRuleConfigWithoutPriority(),
+				Config: testAccFireHydrantSignalRuleConfigWithPriority("MEDIUM"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
+					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "MEDIUM"),
+					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "create_incident_condition_when", "WHEN_UNSPECIFIED"),
+				),
+			},
+			{
+				Config: testAccFireHydrantSignalRuleConfigWithPriority("HIGH"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "HIGH"),
@@ -148,6 +154,8 @@ func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
 	})
 }
 
+// TODO: After the Go SDK omitempty limitation is fixed, add a test to verify that
+// notification_priority_override can be properly cleared
 func testAccFireHydrantSignalRuleConfigWithPriority(priority string) string {
 	return fmt.Sprintf(`
 	data "firehydrant_user" "test_user" {
