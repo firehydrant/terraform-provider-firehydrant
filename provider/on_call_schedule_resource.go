@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -156,7 +157,7 @@ func resourceOnCallSchedule() *schema.Resource {
 
 func createResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Create the on-call schedule
 	teamID := d.Get("team_id").(string)
@@ -176,78 +177,87 @@ func createResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 	}
 
 	// Gather values from API response
-	onCallSchedule := firehydrant.CreateOnCallScheduleRequest{
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
-		TimeZone:    d.Get("time_zone").(string),
-		Strategy: firehydrant.OnCallScheduleStrategy{
-			Type:          d.Get("strategy.0.type").(string),
-			HandoffTime:   d.Get("strategy.0.handoff_time").(string),
-			HandoffDay:    d.Get("strategy.0.handoff_day").(string),
-			ShiftDuration: d.Get("strategy.0.shift_duration").(string),
+	name := d.Get("name").(string)
+	description := d.Get("description").(string)
+	timeZone := d.Get("time_zone").(string)
+	startTime := d.Get("start_time").(string)
+	handoffTime := d.Get("strategy.0.handoff_time").(string)
+	handoffDay := d.Get("strategy.0.handoff_day").(string)
+	shiftDuration := d.Get("strategy.0.shift_duration").(string)
+
+	onCallSchedule := components.CreateTeamOnCallSchedule{
+		Name:        name,
+		Description: &description,
+		TimeZone:    &timeZone,
+		Strategy: &components.CreateTeamOnCallScheduleStrategy{
+			Type:          components.CreateTeamOnCallScheduleType(d.Get("strategy.0.type").(string)),
+			HandoffTime:   &handoffTime,
+			HandoffDay:    (*components.CreateTeamOnCallScheduleHandoffDay)(&handoffDay),
+			ShiftDuration: &shiftDuration,
 		},
-		StartTime:    d.Get("start_time").(string),
-		MemberIDs:    memberIDs,
-		Restrictions: oncallRestrictionsFromData(d),
+		StartTime:    &startTime,
+		MemberIds:    memberIDs,
+		Restrictions: oncallRestrictionsFromDataSDK(d),
 	}
 
 	// Get slack_user_group_id if set and non-empty
 	if v, ok := d.GetOk("slack_user_group_id"); ok && v.(string) != "" {
-		onCallSchedule.SlackUserGroupID = v.(string)
+		slackUserGroupID := v.(string)
+		onCallSchedule.SlackUserGroupID = &slackUserGroupID
 	}
 
 	if onCallSchedule.Strategy.Type != "" {
 		isCustomStrategy := onCallSchedule.Strategy.Type == "custom"
 		if isCustomStrategy {
-			if onCallSchedule.Strategy.ShiftDuration == "" {
+			if onCallSchedule.Strategy.ShiftDuration == nil || *onCallSchedule.Strategy.ShiftDuration == "" {
 				return diag.Errorf("firehydrant_on_call_schedule.strategy.shift_duration is required when strategy type is 'custom'")
 			}
-			if onCallSchedule.StartTime == "" {
+			if onCallSchedule.StartTime == nil || *onCallSchedule.StartTime == "" {
 				return diag.Errorf("firehydrant_on_call_schedule.start_time is required when strategy type is 'custom'")
 			}
 
 			// Discard unused values to avoid ambiguity.
-			onCallSchedule.Strategy.HandoffTime = ""
-			onCallSchedule.Strategy.HandoffDay = ""
+			onCallSchedule.Strategy.HandoffTime = nil
+			onCallSchedule.Strategy.HandoffDay = nil
 		} else {
-			if onCallSchedule.Strategy.HandoffTime == "" {
+			if onCallSchedule.Strategy.HandoffTime == nil || *onCallSchedule.Strategy.HandoffTime == "" {
 				return diag.Errorf("firehydrant_on_call_schedule.strategy.handoff_time is required when strategy type is '%s'", onCallSchedule.Strategy.Type)
 			}
-			if onCallSchedule.Strategy.Type == "weekly" && onCallSchedule.Strategy.HandoffDay == "" {
+			if onCallSchedule.Strategy.Type == "weekly" && (onCallSchedule.Strategy.HandoffDay == nil || *onCallSchedule.Strategy.HandoffDay == "") {
 				return diag.Errorf("firehydrant_on_call_schedule.strategy.handoff_day is required when strategy type is '%s'", onCallSchedule.Strategy.Type)
 			}
 
 			// Discard unused values to avoid ambiguity.
-			onCallSchedule.Strategy.ShiftDuration = ""
-			onCallSchedule.StartTime = ""
+			onCallSchedule.Strategy.ShiftDuration = nil
+			onCallSchedule.StartTime = nil
 		}
 	}
 
 	// Create the on-call schedule
-	createdOnCallSchedule, err := firehydrantAPIClient.OnCallSchedules().Create(ctx, teamID, onCallSchedule)
+	createdOnCallSchedule, err := client.Sdk.Signals.CreateTeamOnCallSchedule(ctx, teamID, onCallSchedule)
 	if err != nil {
 		return diag.Errorf("Error creating on-call schedule %s: %v", teamID, err)
 	}
 
 	// Set the on-call schedule's ID in state
-	d.SetId(createdOnCallSchedule.ID)
+	d.SetId(*createdOnCallSchedule.GetID())
 
 	return readResourceFireHydrantOnCallSchedule(ctx, d, m)
 }
 
 func readResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
-	// Get the signal rule
+	// Get the on-call schedule
 	id := d.Id()
 	teamID := d.Get("team_id").(string)
-	tflog.Debug(ctx, fmt.Sprintf("Read signal rule: %s", id), map[string]interface{}{
+	tflog.Debug(ctx, fmt.Sprintf("Read on-call schedule: %s", id), map[string]interface{}{
 		"id":      id,
 		"team_id": teamID,
 	})
 
-	onCallSchedule, err := firehydrantAPIClient.OnCallSchedules().Get(ctx, teamID, id)
+	onCallSchedule, err := client.Sdk.Signals.GetTeamOnCallSchedule(ctx, teamID, id, nil, nil)
 	if err != nil {
 		if errors.Is(err, firehydrant.ErrorNotFound) {
 			tflog.Debug(ctx, fmt.Sprintf("On-call schedule %s no longer exists", id), map[string]interface{}{
@@ -261,21 +271,25 @@ func readResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Resour
 	}
 
 	// Gather values from API response
-	memberIDs := make([]string, len(onCallSchedule.Members))
-	for i, member := range onCallSchedule.Members {
-		memberIDs[i] = member.ID
+	memberIDs := make([]string, len(onCallSchedule.GetMembers()))
+	for i, member := range onCallSchedule.GetMembers() {
+		memberIDs[i] = *member.GetID()
 	}
 
 	attributes := map[string]interface{}{
-		"name":         onCallSchedule.Name,
-		"description":  onCallSchedule.Description,
-		"time_zone":    onCallSchedule.TimeZone,
-		"strategy":     strategyToMap(onCallSchedule.Strategy),
+		"name":         *onCallSchedule.GetName(),
+		"description":  *onCallSchedule.GetDescription(),
+		"time_zone":    *onCallSchedule.GetTimeZone(),
 		"member_ids":   memberIDs,
-		"restrictions": restrictionsToData(onCallSchedule.Restrictions),
+		"restrictions": restrictionsToDataSDK(onCallSchedule.GetRestrictions()),
 	}
-	if onCallSchedule.SlackUserGroupID != "" {
-		attributes["slack_user_group_id"] = onCallSchedule.SlackUserGroupID
+
+	// Handle strategy if it exists
+	if strategy := onCallSchedule.GetStrategy(); strategy != nil {
+		attributes["strategy"] = strategyToMapSDK(*strategy)
+	}
+	if slackUserGroupID := onCallSchedule.GetSlackUserGroupID(); slackUserGroupID != nil && *slackUserGroupID != "" {
+		attributes["slack_user_group_id"] = *slackUserGroupID
 	}
 
 	// Set the data source attributes to the values we got from the API
@@ -286,14 +300,14 @@ func readResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Resour
 	}
 
 	// Set the on-call schedule's ID in state
-	d.SetId(onCallSchedule.ID)
+	d.SetId(*onCallSchedule.GetID())
 
 	return diag.Diagnostics{}
 }
 
 func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	id := d.Id()
 	teamID := d.Get("team_id").(string)
@@ -303,36 +317,51 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 	})
 
 	// Initialize updateRequest with basic fields
-	updateRequest := firehydrant.UpdateOnCallScheduleRequest{
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
+	name := d.Get("name").(string)
+	description := d.Get("description").(string)
+
+	updateRequest := components.UpdateTeamOnCallSchedule{
+		Name:        &name,
+		Description: &description,
 	}
 
 	// Get slack_user_group_id if set
 	if v, ok := d.GetOk("slack_user_group_id"); ok {
-		updateRequest.SlackUserGroupID = v.(string)
+		slackUserGroupID := v.(string)
+		updateRequest.SlackUserGroupID = &slackUserGroupID
 	}
 
-	// Check if effective_at exists in raw config rather than state
+	// Handle effective_at - always set it to ensure API gets a valid timestamp
 	if raw := d.GetRawConfig().GetAttr("effective_at"); !raw.IsNull() {
 		effectiveAtStr := raw.AsString()
-		effectiveAt, err := time.Parse(time.RFC3339, effectiveAtStr)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		// Only set effective_at if it's in the future
-		if effectiveAt.After(time.Now()) {
-			updateRequest.EffectiveAt = effectiveAt.Format(time.RFC3339)
-			tflog.Debug(ctx, "Schedule update will take effect at: "+updateRequest.EffectiveAt, map[string]interface{}{
-				"effective_at": updateRequest.EffectiveAt,
+		if effectiveAtStr != "" {
+			// Validate the timestamp format
+			_, err := time.Parse(time.RFC3339, effectiveAtStr)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			// Send the timestamp as-is to the API
+			updateRequest.EffectiveAt = &effectiveAtStr
+			tflog.Debug(ctx, "Schedule update will take effect at: "+effectiveAtStr, map[string]interface{}{
+				"effective_at": effectiveAtStr,
 			})
 		} else {
-			tflog.Debug(ctx, "Provided effective_at is in the past, update will take effect immediately", map[string]interface{}{
-				"effective_at": effectiveAtStr,
-				"now":          time.Now().Format(time.RFC3339),
+			// If effective_at is provided but empty, use current time
+			now := time.Now()
+			effectiveAtStr := now.Format(time.RFC3339)
+			updateRequest.EffectiveAt = &effectiveAtStr
+			tflog.Debug(ctx, "effective_at is empty, using current time for immediate effect", map[string]interface{}{
+				"current_time": effectiveAtStr,
 			})
 		}
+	} else {
+		// If effective_at is not provided at all, use current time for immediate effect
+		now := time.Now()
+		effectiveAtStr := now.Format(time.RFC3339)
+		updateRequest.EffectiveAt = &effectiveAtStr
+		tflog.Debug(ctx, "effective_at not provided, using current time for immediate effect", map[string]interface{}{
+			"current_time": effectiveAtStr,
+		})
 	}
 
 	// Get member IDs
@@ -346,21 +375,26 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 			memberIDs = append(memberIDs, v)
 		}
 	}
-	updateRequest.MemberIDs = memberIDs
+	updateRequest.MemberIds = memberIDs
 
 	// Get strategy configuration
 	if v, ok := d.GetOk("strategy"); ok {
 		if strategies := v.([]interface{}); len(strategies) > 0 {
 			strategy := strategies[0].(map[string]interface{})
-			updateRequest.Strategy = &firehydrant.OnCallScheduleStrategy{
-				Type:        strategy["type"].(string),
-				HandoffTime: strategy["handoff_time"].(string),
-				HandoffDay:  strategy["handoff_day"].(string),
+			strategyType := strategy["type"].(string)
+			handoffTime := strategy["handoff_time"].(string)
+			handoffDay := strategy["handoff_day"].(string)
+
+			updateRequest.Strategy = &components.UpdateTeamOnCallScheduleStrategy{
+				Type:        components.UpdateTeamOnCallScheduleType(strategyType),
+				HandoffTime: &handoffTime,
+				HandoffDay:  (*components.UpdateTeamOnCallScheduleHandoffDay)(&handoffDay),
 			}
 
 			// Set shift duration for custom strategy
-			if strategy["type"].(string) == "custom" {
-				updateRequest.Strategy.ShiftDuration = strategy["shift_duration"].(string)
+			if strategyType == "custom" {
+				shiftDuration := strategy["shift_duration"].(string)
+				updateRequest.Strategy.ShiftDuration = &shiftDuration
 			}
 		}
 	}
@@ -369,16 +403,21 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 	restrictions := d.Get("restrictions").([]interface{})
 	for _, r := range restrictions {
 		restriction := r.(map[string]interface{})
-		updateRequest.Restrictions = append(updateRequest.Restrictions, firehydrant.OnCallScheduleRestriction{
-			StartDay:  restriction["start_day"].(string),
-			StartTime: restriction["start_time"].(string),
-			EndDay:    restriction["end_day"].(string),
-			EndTime:   restriction["end_time"].(string),
+		startDay := restriction["start_day"].(string)
+		startTime := restriction["start_time"].(string)
+		endDay := restriction["end_day"].(string)
+		endTime := restriction["end_time"].(string)
+
+		updateRequest.Restrictions = append(updateRequest.Restrictions, components.UpdateTeamOnCallScheduleRestriction{
+			StartDay:  components.UpdateTeamOnCallScheduleStartDay(startDay),
+			StartTime: startTime,
+			EndDay:    components.UpdateTeamOnCallScheduleEndDay(endDay),
+			EndTime:   endTime,
 		})
 	}
 
 	// Update the on-call schedule
-	_, err := firehydrantAPIClient.OnCallSchedules().Update(ctx, teamID, id, updateRequest)
+	_, err := client.Sdk.Signals.UpdateTeamOnCallSchedule(ctx, teamID, id, updateRequest)
 	if err != nil {
 		return diag.Errorf("Error updating on-call schedule %s: %v", id, err)
 	}
@@ -388,7 +427,7 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 
 func deleteResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	id := d.Id()
 	teamID := d.Get("team_id").(string)
@@ -398,7 +437,7 @@ func deleteResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 	})
 
 	// Delete the on-call schedule
-	err := firehydrantAPIClient.OnCallSchedules().Delete(ctx, teamID, id)
+	err := client.Sdk.Signals.DeleteTeamOnCallSchedule(ctx, teamID, id)
 	if err != nil {
 		return diag.Errorf("Error deleting on-call schedule %s: %v", id, err)
 	}
@@ -431,41 +470,52 @@ func resourceFireHydrantOnCallScheduleParseId(id string) (string, string, error)
 	return parts[0], parts[1], nil
 }
 
-func strategyToMap(strategy firehydrant.OnCallScheduleStrategy) []map[string]interface{} {
-	m := map[string]interface{}{"type": strategy.Type}
-	if strategy.Type == "custom" {
-		m["shift_duration"] = strategy.ShiftDuration
+func strategyToMapSDK(strategy components.NullableSignalsAPIOnCallStrategyEntity) []map[string]interface{} {
+	m := map[string]interface{}{"type": *strategy.GetType()}
+	if *strategy.GetType() == "custom" {
+		if shiftDuration := strategy.GetShiftDuration(); shiftDuration != nil {
+			m["shift_duration"] = *shiftDuration
+		}
 	} else {
-		m["handoff_time"] = strategy.HandoffTime
+		if handoffTime := strategy.GetHandoffTime(); handoffTime != nil {
+			m["handoff_time"] = *handoffTime
+		}
 	}
-	if strategy.Type == "weekly" {
-		m["handoff_day"] = strategy.HandoffDay
+	if *strategy.GetType() == "weekly" {
+		if handoffDay := strategy.GetHandoffDay(); handoffDay != nil {
+			m["handoff_day"] = *handoffDay
+		}
 	}
 	return []map[string]interface{}{m}
 }
 
-func oncallRestrictionsFromData(d *schema.ResourceData) []firehydrant.OnCallScheduleRestriction {
-	restrictions := make([]firehydrant.OnCallScheduleRestriction, 0)
+func oncallRestrictionsFromDataSDK(d *schema.ResourceData) []components.CreateTeamOnCallScheduleRestriction {
+	restrictions := make([]components.CreateTeamOnCallScheduleRestriction, 0)
 	for _, restriction := range d.Get("restrictions").([]interface{}) {
 		restrictionMap := restriction.(map[string]interface{})
-		restrictions = append(restrictions, firehydrant.OnCallScheduleRestriction{
-			StartDay:  restrictionMap["start_day"].(string),
-			StartTime: restrictionMap["start_time"].(string),
-			EndDay:    restrictionMap["end_day"].(string),
-			EndTime:   restrictionMap["end_time"].(string),
+		startDay := restrictionMap["start_day"].(string)
+		startTime := restrictionMap["start_time"].(string)
+		endDay := restrictionMap["end_day"].(string)
+		endTime := restrictionMap["end_time"].(string)
+
+		restrictions = append(restrictions, components.CreateTeamOnCallScheduleRestriction{
+			StartDay:  components.CreateTeamOnCallScheduleStartDay(startDay),
+			StartTime: startTime,
+			EndDay:    components.CreateTeamOnCallScheduleEndDay(endDay),
+			EndTime:   endTime,
 		})
 	}
 	return restrictions
 }
 
-func restrictionsToData(restrictions []firehydrant.OnCallScheduleRestriction) []map[string]interface{} {
+func restrictionsToDataSDK(restrictions []components.SignalsAPIOnCallRestrictionEntity) []map[string]interface{} {
 	restrictionMaps := make([]map[string]interface{}, 0)
 	for _, restriction := range restrictions {
 		restrictionMaps = append(restrictionMaps, map[string]interface{}{
-			"start_day":  restriction.StartDay,
-			"start_time": restriction.StartTime,
-			"end_day":    restriction.EndDay,
-			"end_time":   restriction.EndTime,
+			"start_day":  *restriction.GetStartDay(),
+			"start_time": *restriction.GetStartTime(),
+			"end_day":    *restriction.GetEndDay(),
+			"end_time":   *restriction.GetEndTime(),
 		})
 	}
 	return restrictionMaps
