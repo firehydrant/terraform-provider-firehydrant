@@ -9,14 +9,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-type NotificationPriority string
-
-const (
-	NotificationPriorityLow    NotificationPriority = "LOW"
-	NotificationPriorityMedium NotificationPriority = "MEDIUM"
-	NotificationPriorityHigh   NotificationPriority = "HIGH"
-)
-
 type SignalsRules interface {
 	Get(ctx context.Context, teamID, id string) (*SignalsRuleResponse, error)
 	Create(ctx context.Context, teamID string, createReq CreateSignalsRuleRequest) (*SignalsRuleResponse, error)
