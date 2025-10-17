@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -58,13 +59,39 @@ func resourceSignalRule() *schema.Resource {
 					string(firehydrant.NotificationPriorityHigh),
 				}, false),
 			},
+			"create_incident_condition_when": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					string(firehydrant.CreateIncidentConditionWhenUnspecified),
+					string(firehydrant.CreateIncidentConditionWhenAlways),
+				}, false),
+			},
+			"deduplication_expiry": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Duration for deduplicating similar alerts (ISO8601 duration format e.g., 'PT30M', 'PT2H', 'P1D')",
+			},
+			// Target fields for additional information
+			"target_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"target_team_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"target_is_pageable": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 		},
 	}
 }
 
 func readResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Get the signal rule
 	id := d.Id()
@@ -74,7 +101,7 @@ func readResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceDa
 		"team_id": teamID,
 	})
 
-	signalRule, err := firehydrantAPIClient.SignalsRules().Get(ctx, teamID, id)
+	signalRule, err := client.Sdk.Signals.GetTeamSignalRule(ctx, teamID, id)
 	if err != nil {
 		if errors.Is(err, firehydrant.ErrorNotFound) {
 			tflog.Debug(ctx, fmt.Sprintf("Signal rule %s no longer exists", id), map[string]interface{}{
@@ -89,17 +116,52 @@ func readResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceDa
 
 	tflog.Debug(ctx, fmt.Sprintf("Read signal rule %s", id), map[string]interface{}{
 		"id":                             id,
-		"notification_priority_override": signalRule.NotificationPriorityOverride,
+		"notification_priority_override": signalRule.GetNotificationPriorityOverride(),
 	})
 
 	// Gather values from API response
 	attributes := map[string]interface{}{
-		"name":                           signalRule.Name,
-		"expression":                     signalRule.Expression,
-		"target_type":                    signalRule.Target.Type,
-		"target_id":                      signalRule.Target.ID,
-		"incident_type_id":               signalRule.IncidentType.ID,
-		"notification_priority_override": string(signalRule.NotificationPriorityOverride),
+		"name":        *signalRule.GetName(),
+		"expression":  *signalRule.GetExpression(),
+		"target_type": *signalRule.GetTarget().GetType(),
+		"target_id":   *signalRule.GetTarget().GetID(),
+	}
+
+	// Handle target additional fields
+	if target := signalRule.GetTarget(); target != nil {
+		if target.GetName() != nil {
+			attributes["target_name"] = *target.GetName()
+		}
+		// Only set target_team_id for certain target types (escalation policies, teams)
+		if target.GetTeamID() != nil && target.GetType() != nil {
+			targetType := *target.GetType()
+			if targetType == "escalation_policy" || targetType == "team" {
+				attributes["target_team_id"] = *target.GetTeamID()
+			}
+		}
+		if target.GetIsPageable() != nil {
+			attributes["target_is_pageable"] = *target.GetIsPageable()
+		}
+	}
+
+	// Handle incident type
+	if incidentType := signalRule.GetIncidentType(); incidentType != nil && incidentType.GetID() != nil {
+		attributes["incident_type_id"] = *incidentType.GetID()
+	}
+
+	// Handle notification priority override
+	if priority := signalRule.GetNotificationPriorityOverride(); priority != nil && string(*priority) != "" {
+		attributes["notification_priority_override"] = string(*priority)
+	}
+
+	// Handle create incident condition when
+	if condition := signalRule.GetCreateIncidentConditionWhen(); condition != nil {
+		attributes["create_incident_condition_when"] = string(*condition)
+	}
+
+	// Handle deduplication expiry
+	if expiry := signalRule.GetDeduplicationExpiry(); expiry != nil {
+		attributes["deduplication_expiry"] = *expiry
 	}
 
 	// Set the resource attributes to the values we got from the API
@@ -114,29 +176,51 @@ func readResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceDa
 
 func createResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Construct the create request
-	createRequest := firehydrant.CreateSignalsRuleRequest{
-		Name:                         d.Get("name").(string),
-		Expression:                   d.Get("expression").(string),
-		TargetType:                   d.Get("target_type").(string),
-		TargetID:                     d.Get("target_id").(string),
-		IncidentTypeID:               d.Get("incident_type_id").(string),
-		NotificationPriorityOverride: firehydrant.NotificationPriority(d.Get("notification_priority_override").(string)),
+	name := d.Get("name").(string)
+	expression := d.Get("expression").(string)
+	targetType := d.Get("target_type").(string)
+	targetID := d.Get("target_id").(string)
+
+	createRequest := components.CreateTeamSignalRule{
+		Name:       name,
+		Expression: expression,
+		TargetType: components.CreateTeamSignalRuleTargetType(targetType),
+		TargetID:   targetID,
+	}
+
+	// Handle optional fields
+	if incidentTypeID := d.Get("incident_type_id").(string); incidentTypeID != "" {
+		createRequest.IncidentTypeID = &incidentTypeID
+	}
+
+	if priority := d.Get("notification_priority_override").(string); priority != "" {
+		priorityEnum := components.CreateTeamSignalRuleNotificationPriorityOverride(priority)
+		createRequest.NotificationPriorityOverride = &priorityEnum
+	}
+
+	if condition := d.Get("create_incident_condition_when").(string); condition != "" {
+		conditionEnum := components.CreateTeamSignalRuleCreateIncidentConditionWhen(condition)
+		createRequest.CreateIncidentConditionWhen = &conditionEnum
+	}
+
+	if expiry := d.Get("deduplication_expiry").(string); expiry != "" {
+		createRequest.DeduplicationExpiry = &expiry
 	}
 
 	// Create the signal rule
 	tflog.Debug(ctx, fmt.Sprintf("Create signal rule: %s", d.Id()), map[string]interface{}{
 		"id": d.Id(),
 	})
-	signalRuleResponse, err := firehydrantAPIClient.SignalsRules().Create(ctx, d.Get("team_id").(string), createRequest)
+	signalRuleResponse, err := client.Sdk.Signals.CreateTeamSignalRule(ctx, d.Get("team_id").(string), createRequest)
 	if err != nil {
 		return diag.Errorf("Error creating signal rule %s: %v", d.Id(), err)
 	}
 
 	// Set the ID of the resource to the ID of the newly created signal rule
-	d.SetId(signalRuleResponse.ID)
+	d.SetId(*signalRuleResponse.GetID())
 
 	// Update state with the latest information from the API
 	return readResourceFireHydrantSignalRule(ctx, d, m)
@@ -144,16 +228,38 @@ func createResourceFireHydrantSignalRule(ctx context.Context, d *schema.Resource
 
 func updateResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Construct the update request
-	updateRequest := firehydrant.UpdateSignalsRuleRequest{
-		Name:                         d.Get("name").(string),
-		Expression:                   d.Get("expression").(string),
-		TargetType:                   d.Get("target_type").(string),
-		TargetID:                     d.Get("target_id").(string),
-		IncidentTypeID:               d.Get("incident_type_id").(string),
-		NotificationPriorityOverride: firehydrant.NotificationPriority(d.Get("notification_priority_override").(string)),
+	name := d.Get("name").(string)
+	expression := d.Get("expression").(string)
+	targetType := d.Get("target_type").(string)
+	targetID := d.Get("target_id").(string)
+
+	updateRequest := components.UpdateTeamSignalRule{
+		Name:       &name,
+		Expression: &expression,
+		TargetType: (*components.UpdateTeamSignalRuleTargetType)(&targetType),
+		TargetID:   &targetID,
+	}
+
+	// Handle optional fields
+	if incidentTypeID := d.Get("incident_type_id").(string); incidentTypeID != "" {
+		updateRequest.IncidentTypeID = &incidentTypeID
+	}
+
+	if priority := d.Get("notification_priority_override").(string); priority != "" {
+		priorityEnum := components.UpdateTeamSignalRuleNotificationPriorityOverride(priority)
+		updateRequest.NotificationPriorityOverride = &priorityEnum
+	}
+
+	if condition := d.Get("create_incident_condition_when").(string); condition != "" {
+		conditionEnum := components.UpdateTeamSignalRuleCreateIncidentConditionWhen(condition)
+		updateRequest.CreateIncidentConditionWhen = &conditionEnum
+	}
+
+	if expiry := d.Get("deduplication_expiry").(string); expiry != "" {
+		updateRequest.DeduplicationExpiry = &expiry
 	}
 
 	// Update the signal rule
@@ -161,7 +267,7 @@ func updateResourceFireHydrantSignalRule(ctx context.Context, d *schema.Resource
 		"id":                             d.Id(),
 		"notification_priority_override": d.Get("notification_priority_override"),
 	})
-	_, err := firehydrantAPIClient.SignalsRules().Update(ctx, d.Get("team_id").(string), d.Id(), updateRequest)
+	_, err := client.Sdk.Signals.UpdateTeamSignalRule(ctx, d.Get("team_id").(string), d.Id(), updateRequest)
 	if err != nil {
 		return diag.Errorf("Error updating signal rule %s: %v", d.Id(), err)
 	}
@@ -172,13 +278,13 @@ func updateResourceFireHydrantSignalRule(ctx context.Context, d *schema.Resource
 
 func deleteResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Delete the signal rule
 	tflog.Debug(ctx, fmt.Sprintf("Delete signal rule: %s", d.Id()), map[string]interface{}{
 		"id": d.Id(),
 	})
-	err := firehydrantAPIClient.SignalsRules().Delete(ctx, d.Get("team_id").(string), d.Id())
+	err := client.Sdk.Signals.DeleteTeamSignalRule(ctx, d.Get("team_id").(string), d.Id())
 	if err != nil {
 		return diag.Errorf("Error deleting signal rule %s: %v", d.Id(), err)
 	}
