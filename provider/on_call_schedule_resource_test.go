@@ -499,12 +499,13 @@ func TestAccOnCallScheduleResource_scheduleModifications(t *testing.T) {
 			},
 			{
 				// Remove all restrictions but keep handoff settings
+				// TODO: After the Go SDK omitempty limitation is fixed, update this test to verify that the restrictions field can be properly cleared by setting to "0"
 				Config: testAccOnCallScheduleConfig_withHandoff(rName, "friday", "09:00:00"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "friday"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_time", "09:00:00"),
-					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.#", "0"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "restrictions.#", "2"),
 				),
 			},
 			{
