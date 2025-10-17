@@ -20,18 +20,15 @@ func TestOnCallScheduleData(t *testing.T) {
 
 func (s *testOnCallScheduleDataSuite) terraform(rName string) string {
 	return fmt.Sprintf(`
-resource "firehydrant_team" "test_on_call_schedule_data_team" {
+resource "firehydrant_team" "team_team" {
 	name = "test-team-%s"
 }
 
 resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
   name        = "test-on-call-schedule-%s"
   description = "test-description"
-  team_id     = firehydrant_team.test_on_call_schedule_data_team.id
+	team_id     = firehydrant_team.team_team.id
   time_zone   = "America/Los_Angeles"
-  
-  member_ids = ["test-user-id"]
-  slack_user_group_id = "test-slack-user-group-id"
 
   strategy {
 	type         = "weekly"
@@ -49,26 +46,22 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
 
 data "firehydrant_on_call_schedule" "test_on_call_schedule_data" {
 	id = firehydrant_on_call_schedule.test_on_call_schedule_data_1.id
-	team_id = firehydrant_team.test_on_call_schedule_data_team.id
+	team_id = firehydrant_team.team_team.id
 }`, rName, rName)
 }
 
 func (s *testOnCallScheduleDataSuite) terraformWithCustomStrategy(rName string) string {
 	return fmt.Sprintf(`
-resource "firehydrant_team" "test_on_call_schedule_data_team" {
+resource "firehydrant_team" "team_team" {
 	name = "test-team-%s"
 }
 
 resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
   name        = "test-on-call-schedule-%s"
   description = "test-description"
-  team_id     = firehydrant_team.test_on_call_schedule_data_team.id
+	team_id     = firehydrant_team.team_team.id
   time_zone   = "America/Los_Angeles"
   start_time  = "2024-01-01T10:00:00-08:00"
-  
-  member_ids = ["test-user-id"]
-  slack_user_group_id = "test-slack-user-group-id"
-
   strategy {
 	type           = "custom"
 	shift_duration = "PT8H"
@@ -77,24 +70,21 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
 
 data "firehydrant_on_call_schedule" "test_on_call_schedule_data" {
 	id = firehydrant_on_call_schedule.test_on_call_schedule_data_1.id
-	team_id = firehydrant_team.test_on_call_schedule_data_team.id
+	team_id = firehydrant_team.team_team.id
 }`, rName, rName)
 }
 
 func (s *testOnCallScheduleDataSuite) terraformWithoutRestrictions(rName string) string {
 	return fmt.Sprintf(`
-resource "firehydrant_team" "test_on_call_schedule_data_team" {
+resource "firehydrant_team" "team_team" {
 	name = "test-team-%s"
 }
 
 resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
   name        = "test-on-call-schedule-%s"
   description = "test-description"
-  team_id     = firehydrant_team.test_on_call_schedule_data_team.id
+	team_id     = firehydrant_team.team_team.id
   time_zone   = "America/Los_Angeles"
-  
-  member_ids = ["test-user-id"]
-  slack_user_group_id = "test-slack-user-group-id"
 
   strategy {
 	type         = "weekly"
@@ -105,7 +95,7 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
 
 data "firehydrant_on_call_schedule" "test_on_call_schedule_data" {
 	id = firehydrant_on_call_schedule.test_on_call_schedule_data_1.id
-	team_id = firehydrant_team.test_on_call_schedule_data_team.id
+	team_id = firehydrant_team.team_team.id
 }`, rName, rName)
 }
 
@@ -123,6 +113,10 @@ func TestAccOnCallScheduleDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckOnCallScheduleResourceDestroy(),
+			testAccCheckTeamResourceDestroy(),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOnCallScheduleDataSourceConfig_basic(),
@@ -143,18 +137,20 @@ func TestAccOnCallScheduleDataSource_basic(t *testing.T) {
 
 func testAccOnCallScheduleDataSourceConfig_basic() string {
 	return `
-resource "firehydrant_team" "test_team" {
-	name = "test-team-acc"
+provider "firehydrant" {
+	api_key = "fhb-03a365902b5b5bcffa6c1363fe81a840"
+	firehydrant_base_url = "https://api.staging.firehydrant.io/v1/"
+}
+
+resource "firehydrant_team" "team_team" {
+	name = "test-team-acc-data-source"
 }
 
 resource "firehydrant_on_call_schedule" "test_schedule" {
-	name        = "test-on-call-schedule-acc"
+	name        = "test-on-call-schedule-acc-data-source"
 	description = "test-description"
-	team_id     = firehydrant_team.test_team.id
+	team_id     = firehydrant_team.team_team.id
 	time_zone   = "America/New_York"
-	
-	member_ids = ["test-user-id"]
-	slack_user_group_id = "test-slack-user-group-id"
 
 	strategy {
 		type         = "weekly"
@@ -172,7 +168,7 @@ resource "firehydrant_on_call_schedule" "test_schedule" {
 
 data "firehydrant_on_call_schedule" "test_on_call_schedule" {
 	id = firehydrant_on_call_schedule.test_schedule.id
-	team_id = firehydrant_team.test_team.id
+	team_id = firehydrant_team.team_team.id
 }`
 }
 

@@ -128,12 +128,16 @@ func dataFireHydrantOnCallSchedule(ctx context.Context, d *schema.ResourceData, 
 
 func dataFireHydrantOnCallScheduleToAttributesMap(teamID string, schedule components.SignalsAPIOnCallScheduleEntity) map[string]interface{} {
 	attributes := map[string]interface{}{
-		"id":                  *schedule.GetID(),
-		"team_id":             teamID,
-		"name":                *schedule.GetName(),
-		"description":         *schedule.GetDescription(),
-		"time_zone":           *schedule.GetTimeZone(),
-		"slack_user_group_id": *schedule.GetSlackUserGroupID(),
+		"id":          *schedule.GetID(),
+		"team_id":     teamID,
+		"name":        *schedule.GetName(),
+		"description": *schedule.GetDescription(),
+		"time_zone":   *schedule.GetTimeZone(),
+	}
+
+	// Add slack_user_group_id if available
+	if slackUserGroupID := schedule.GetSlackUserGroupID(); slackUserGroupID != nil {
+		attributes["slack_user_group_id"] = *slackUserGroupID
 	}
 
 	// Add strategy if available
