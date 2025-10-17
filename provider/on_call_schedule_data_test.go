@@ -30,6 +30,7 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
   team_id     = firehydrant_team.test_on_call_schedule_data_team.id
   time_zone   = "America/Los_Angeles"
   
+  member_ids = ["test-user-id"]
   slack_user_group_id = "test-slack-user-group-id"
 
   strategy {
@@ -63,14 +64,14 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
   description = "test-description"
   team_id     = firehydrant_team.test_on_call_schedule_data_team.id
   time_zone   = "America/Los_Angeles"
+  start_time  = "2024-01-01T10:00:00-08:00"
   
+  member_ids = ["test-user-id"]
   slack_user_group_id = "test-slack-user-group-id"
 
   strategy {
-	type            = "custom"
-	handoff_time    = "10:00:00"
-	handoff_day     = "thursday"
-	shift_duration  = "PT8H"
+	type           = "custom"
+	shift_duration = "PT8H"
   }
 }
 
@@ -92,6 +93,7 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
   team_id     = firehydrant_team.test_on_call_schedule_data_team.id
   time_zone   = "America/Los_Angeles"
   
+  member_ids = ["test-user-id"]
   slack_user_group_id = "test-slack-user-group-id"
 
   strategy {
@@ -151,6 +153,7 @@ resource "firehydrant_on_call_schedule" "test_schedule" {
 	team_id     = firehydrant_team.test_team.id
 	time_zone   = "America/New_York"
 	
+	member_ids = ["test-user-id"]
 	slack_user_group_id = "test-slack-user-group-id"
 
 	strategy {
