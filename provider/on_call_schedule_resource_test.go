@@ -2,12 +2,12 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -171,7 +171,8 @@ func testAccCheckOnCallScheduleResourceDestroy() resource.TestCheckFunc {
 			if err == nil {
 				return fmt.Errorf("On-call schedule %s still exists", stateResource.Primary.ID)
 			}
-			if !errors.Is(err, firehydrant.ErrorNotFound) {
+			errStr := err.Error()
+			if !strings.Contains(errStr, "404") && !strings.Contains(errStr, "record not found") {
 				return fmt.Errorf("Error checking on-call schedule %s: %v", stateResource.Primary.ID, err)
 			}
 		}

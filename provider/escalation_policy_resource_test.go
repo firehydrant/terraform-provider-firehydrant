@@ -2,9 +2,9 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -161,13 +161,14 @@ func testAccCheckEscalationPolicyResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			// Normally we'd check if err == nil here, because we'd expect a 404 if we try to get a resource
-			// that has been deleted. However, the incident role API will still return deleted/archived incident
-			// roles instead of returning 404. So, to check for incident roles that are deleted, we have to check
-			// for incident roles that have a DiscardedAt timestamp
+			// Check if the escalation policy still exists
 			_, err := client.Sdk.Signals.GetTeamEscalationPolicy(context.TODO(), stateResource.Primary.Attributes["team_id"], stateResource.Primary.ID)
-			if err != nil && !errors.Is(err, firehydrant.ErrorNotFound) {
+			if err == nil {
 				return fmt.Errorf("Escalation policy %s still exists", stateResource.Primary.ID)
+			}
+			errStr := err.Error()
+			if !strings.Contains(errStr, "404") && !strings.Contains(errStr, "record not found") {
+				return fmt.Errorf("Error checking escalation policy %s: %v", stateResource.Primary.ID, err)
 			}
 		}
 
