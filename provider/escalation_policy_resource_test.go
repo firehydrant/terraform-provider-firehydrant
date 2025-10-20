@@ -198,6 +198,11 @@ func testAccEscalationPolicyConfig_dynamicPriority(rName string) string {
 			priority = "HIGH"
 			repetitions = 2
 		}
+
+		notification_priority_policies {
+			priority = "LOW"
+			repetitions = 1
+		}
 	}
 	`, rName, rName, rName, rName)
 }
@@ -230,6 +235,7 @@ func testAccEscalationPolicyConfig_dynamicPriorityUpdated(rName string) string {
 
 		step {
 			timeout     = "PT1M"
+			priorities  = ["HIGH", "MEDIUM"]
 
 			targets {
 				type = "OnCallSchedule"
@@ -278,6 +284,7 @@ func testAccEscalationPolicyConfig_dynamicWithHandoffSteps(rName string) string 
 
 		step {
 			timeout     = "PT1M"
+			priorities  = ["HIGH"]
 
 			targets {
 				type = "OnCallSchedule"

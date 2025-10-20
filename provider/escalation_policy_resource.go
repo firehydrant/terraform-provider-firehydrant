@@ -239,7 +239,6 @@ func readResourceFireHydrantEscalationPolicy(ctx context.Context, d *schema.Reso
 			"targets": targets,
 		}
 
-		// Add priorities if available
 		if priorities := step.GetPriorities(); priorities != nil && len(priorities) > 0 {
 			stepMap["priorities"] = priorities
 		}
@@ -412,13 +411,6 @@ func getStepsFromResourceData(d *schema.ResourceData) []components.CreateTeamEsc
 
 	if v, ok := d.GetOk("step"); ok {
 		stepList := v.([]interface{})
-		stepStrategy := d.Get("step_strategy").(string)
-
-		// Get all priorities from notification_priority_policies as fallback
-		var defaultPriorities []string
-		if stepStrategy == "dynamic_by_priority" {
-			defaultPriorities = getPrioritiesFromNotificationPriorityPolicies(d)
-		}
 
 		for _, stepItem := range stepList {
 			stepMap := stepItem.(map[string]interface{})
@@ -440,7 +432,7 @@ func getStepsFromResourceData(d *schema.ResourceData) []components.CreateTeamEsc
 				Targets: stepTargets,
 			}
 
-			// Check if step has its own priorities
+			// Only set priorities if explicitly defined on the step
 			if stepPriorities, ok := stepMap["priorities"].([]interface{}); ok && len(stepPriorities) > 0 {
 				// Use step-specific priorities
 				var priorities []string
@@ -448,9 +440,6 @@ func getStepsFromResourceData(d *schema.ResourceData) []components.CreateTeamEsc
 					priorities = append(priorities, p.(string))
 				}
 				step.Priorities = priorities
-			} else if stepStrategy == "dynamic_by_priority" && len(defaultPriorities) > 0 {
-				// Apply all priorities from notification_priority_policies
-				step.Priorities = defaultPriorities
 			}
 
 			steps = append(steps, step)
@@ -638,7 +627,8 @@ func getStepsFromResourceDataUpdateSDK(d *schema.ResourceData) []components.Upda
 		stepList := v.([]interface{})
 		stepStrategy := d.Get("step_strategy").(string)
 
-		// Get all priorities from notification_priority_policies as fallback
+		// Get all priorities from notification_priority_policies as fallback for updates
+		// This is required to preserve notification_priority_policies during updates
 		var defaultPriorities []string
 		if stepStrategy == "dynamic_by_priority" {
 			defaultPriorities = getPrioritiesFromNotificationPriorityPolicies(d)
@@ -673,7 +663,8 @@ func getStepsFromResourceDataUpdateSDK(d *schema.ResourceData) []components.Upda
 				}
 				step.Priorities = priorities
 			} else if stepStrategy == "dynamic_by_priority" && len(defaultPriorities) > 0 {
-				// Apply all priorities from notification_priority_policies
+				// For updates, apply all priorities from notification_priority_policies
+				// This is required to preserve notification_priority_policies
 				step.Priorities = defaultPriorities
 			}
 
