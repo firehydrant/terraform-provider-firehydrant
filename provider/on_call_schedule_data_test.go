@@ -3,6 +3,7 @@ package provider
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -52,6 +53,8 @@ data "firehydrant_on_call_schedule" "test_on_call_schedule_data" {
 }
 
 func (s *testOnCallScheduleDataSuite) terraformWithCustomStrategy(rName string) string {
+	// Use a future time to avoid API validation errors
+	futureTime := time.Now().Add(24 * time.Hour).Format(time.RFC3339)
 	return fmt.Sprintf(`
 resource "firehydrant_team" "team_team" {
 	name = "test-team-%s"
@@ -62,7 +65,7 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
   description = "test-description"
 	team_id     = firehydrant_team.team_team.id
   time_zone   = "America/Los_Angeles"
-  start_time  = "2024-01-01T10:00:00-08:00"
+  start_time  = "%s"
   slack_user_group_id = "test-slack-user-group-id"
   strategy {
 	type           = "custom"
@@ -73,7 +76,7 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
 data "firehydrant_on_call_schedule" "test_on_call_schedule_data" {
 	id = firehydrant_on_call_schedule.test_on_call_schedule_data_1.id
 	team_id = firehydrant_team.team_team.id
-}`, rName, rName)
+}`, rName, rName, futureTime)
 }
 
 func (s *testOnCallScheduleDataSuite) terraformWithoutRestrictions(rName string) string {
