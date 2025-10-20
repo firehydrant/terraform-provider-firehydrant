@@ -68,12 +68,14 @@ func TestAccFireHydrantSignalRule_invalidPriority(t *testing.T) {
 }
 
 func TestAccFireHydrantSignalRule_createIncidentConditionWhen(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFireHydrantSignalRuleConfigWithIncidentCondition("WHEN_ALWAYS", "PT30M"),
+				Config: testAccFireHydrantSignalRuleConfigWithIncidentCondition(rName, "WHEN_ALWAYS", "PT30M"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "create_incident_condition_when", "WHEN_ALWAYS"),
@@ -232,14 +234,14 @@ func testAccFireHydrantSignalRuleConfigIncidentTypeIDMissing(name string) string
 	`, os.Getenv("EXISTING_USER_EMAIL"), name)
 }
 
-func testAccFireHydrantSignalRuleConfigWithIncidentCondition(condition, expiry string) string {
+func testAccFireHydrantSignalRuleConfigWithIncidentCondition(name, condition, expiry string) string {
 	return fmt.Sprintf(`
 	data "firehydrant_user" "test_user" {
 		email = "%s"
 	}
 
 	resource "firehydrant_team" "test" {
-		name = "test-team"
+		name = "test-team-%s"
 	}
 
 	resource "firehydrant_signal_rule" "test" {
@@ -252,7 +254,7 @@ func testAccFireHydrantSignalRuleConfigWithIncidentCondition(condition, expiry s
 		deduplication_expiry = "%s"
 		notification_priority_override = "MEDIUM"
 	}
-	`, os.Getenv("EXISTING_USER_EMAIL"), condition, expiry)
+	`, os.Getenv("EXISTING_USER_EMAIL"), name, condition, expiry)
 }
 
 func testAccCheckFireHydrantSignalRuleExists(resourceName string) resource.TestCheckFunc {
