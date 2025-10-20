@@ -6,17 +6,20 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccFireHydrantSignalRule_basic(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFireHydrantSignalRuleConfigBasic("MEDIUM"),
+				Config: testAccFireHydrantSignalRuleConfigBasic(rName, "MEDIUM"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "MEDIUM"),
@@ -26,7 +29,7 @@ func TestAccFireHydrantSignalRule_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccFireHydrantSignalRuleConfigBasic("LOW"),
+				Config: testAccFireHydrantSignalRuleConfigBasic(rName, "LOW"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "LOW"),
@@ -36,7 +39,7 @@ func TestAccFireHydrantSignalRule_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccFireHydrantSignalRuleConfigBasic("HIGH"),
+				Config: testAccFireHydrantSignalRuleConfigBasic(rName, "HIGH"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "HIGH"),
@@ -50,12 +53,14 @@ func TestAccFireHydrantSignalRule_basic(t *testing.T) {
 }
 
 func TestAccFireHydrantSignalRule_invalidPriority(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccFireHydrantSignalRuleConfigBasic("INVALID"),
+				Config:      testAccFireHydrantSignalRuleConfigBasic(rName, "INVALID"),
 				ExpectError: regexp.MustCompile(`expected notification_priority_override to be one of \[LOW MEDIUM HIGH\], got INVALID`),
 			},
 		},
@@ -82,14 +87,14 @@ func TestAccFireHydrantSignalRule_createIncidentConditionWhen(t *testing.T) {
 	})
 }
 
-func testAccFireHydrantSignalRuleConfigBasic(priority string) string {
+func testAccFireHydrantSignalRuleConfigBasic(name, priority string) string {
 	return fmt.Sprintf(`
 	data "firehydrant_user" "test_user" {
 			email = "%s"
 	}
 
 	resource "firehydrant_team" "test" {
-			name = "test-team"
+			name = "test-team-%s"
 	}
 
 	resource "firehydrant_signal_rule" "test" {
@@ -101,16 +106,18 @@ func testAccFireHydrantSignalRuleConfigBasic(priority string) string {
 		notification_priority_override = "%s"
 		create_incident_condition_when = "WHEN_UNSPECIFIED"
 	}
-	`, os.Getenv("EXISTING_USER_EMAIL"), priority)
+	`, os.Getenv("EXISTING_USER_EMAIL"), name, priority)
 }
 
 func TestAccFireHydrantSignalRule_IncidentTypeIDMissing(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFireHydrantSignalRuleConfigIncidentTypeIDMissing(),
+				Config: testAccFireHydrantSignalRuleConfigIncidentTypeIDMissing(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "LOW"),
@@ -122,12 +129,15 @@ func TestAccFireHydrantSignalRule_IncidentTypeIDMissing(t *testing.T) {
 }
 
 func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccFireHydrantSignalRuleConfigWithPriority("HIGH"),
+				// First create with a priority set
+				Config: testAccFireHydrantSignalRuleConfigWithPriority(rName, "HIGH"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "HIGH"),
@@ -135,7 +145,8 @@ func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccFireHydrantSignalRuleConfigWithPriority("MEDIUM"),
+				// Then update to remove the priority
+				Config: testAccFireHydrantSignalRuleConfigWithoutPriority(rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "MEDIUM"),
@@ -143,7 +154,7 @@ func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccFireHydrantSignalRuleConfigWithPriority("HIGH"),
+				Config: testAccFireHydrantSignalRuleConfigWithPriority(rName, "HIGH"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "HIGH"),
@@ -156,14 +167,14 @@ func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
 
 // TODO: After the Go SDK omitempty limitation is fixed, add a test to verify that
 // notification_priority_override can be properly cleared
-func testAccFireHydrantSignalRuleConfigWithPriority(priority string) string {
+func testAccFireHydrantSignalRuleConfigWithPriority(name, priority string) string {
 	return fmt.Sprintf(`
 	data "firehydrant_user" "test_user" {
 		email = "%s"
 	}
 
 	resource "firehydrant_team" "test" {
-		name = "test-team"
+		name = "test-team-%s"
 	}
 
 	resource "firehydrant_signal_rule" "test" {
@@ -175,17 +186,17 @@ func testAccFireHydrantSignalRuleConfigWithPriority(priority string) string {
 		notification_priority_override = "%s"
 		create_incident_condition_when = "WHEN_UNSPECIFIED"
 	}
-	`, os.Getenv("EXISTING_USER_EMAIL"), priority)
+	`, os.Getenv("EXISTING_USER_EMAIL"), name, priority)
 }
 
-func testAccFireHydrantSignalRuleConfigWithoutPriority() string {
+func testAccFireHydrantSignalRuleConfigWithoutPriority(name string) string {
 	return fmt.Sprintf(`
 	data "firehydrant_user" "test_user" {
 		email = "%s"
 	}
 
 	resource "firehydrant_team" "test" {
-		name = "test-team"
+		name = "test-team-%s"
 	}
 
 	resource "firehydrant_signal_rule" "test" {
@@ -196,17 +207,17 @@ func testAccFireHydrantSignalRuleConfigWithoutPriority() string {
 		target_id = data.firehydrant_user.test_user.id
 		create_incident_condition_when = "WHEN_UNSPECIFIED"
 	}
-	`, os.Getenv("EXISTING_USER_EMAIL"))
+	`, os.Getenv("EXISTING_USER_EMAIL"), name)
 }
 
-func testAccFireHydrantSignalRuleConfigIncidentTypeIDMissing() string {
+func testAccFireHydrantSignalRuleConfigIncidentTypeIDMissing(name string) string {
 	return fmt.Sprintf(`
 	data "firehydrant_user" "test_user" {
 		email = "%s"
 	}
 
 	resource "firehydrant_team" "test" {
-		name = "test-team"
+		name = "test-team-%s"
 	}
 
 	resource "firehydrant_signal_rule" "test" {
@@ -218,7 +229,7 @@ func testAccFireHydrantSignalRuleConfigIncidentTypeIDMissing() string {
 		notification_priority_override = "LOW"
 		create_incident_condition_when = "WHEN_UNSPECIFIED"
 	}
-	`, os.Getenv("EXISTING_USER_EMAIL"))
+	`, os.Getenv("EXISTING_USER_EMAIL"), name)
 }
 
 func testAccFireHydrantSignalRuleConfigWithIncidentCondition(condition, expiry string) string {
