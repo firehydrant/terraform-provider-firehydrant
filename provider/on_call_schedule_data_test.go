@@ -29,6 +29,7 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
   description = "test-description"
 	team_id     = firehydrant_team.team_team.id
   time_zone   = "America/Los_Angeles"
+  slack_user_group_id = "test-slack-user-group-id"
 
   strategy {
 	type         = "weekly"
@@ -62,6 +63,7 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
 	team_id     = firehydrant_team.team_team.id
   time_zone   = "America/Los_Angeles"
   start_time  = "2024-01-01T10:00:00-08:00"
+  slack_user_group_id = "test-slack-user-group-id"
   strategy {
 	type           = "custom"
 	shift_duration = "PT8H"
@@ -85,6 +87,7 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule_data_1" {
   description = "test-description"
 	team_id     = firehydrant_team.team_team.id
   time_zone   = "America/Los_Angeles"
+  slack_user_group_id = "test-slack-user-group-id"
 
   strategy {
 	type         = "weekly"

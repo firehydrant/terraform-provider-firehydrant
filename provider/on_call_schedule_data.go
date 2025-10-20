@@ -136,7 +136,7 @@ func dataFireHydrantOnCallScheduleToAttributesMap(teamID string, schedule compon
 	}
 
 	// Add slack_user_group_id if available
-	if slackUserGroupID := schedule.GetSlackUserGroupID(); slackUserGroupID != nil {
+	if slackUserGroupID := schedule.GetSlackUserGroupID(); slackUserGroupID != nil && *slackUserGroupID != "" {
 		attributes["slack_user_group_id"] = *slackUserGroupID
 	}
 
