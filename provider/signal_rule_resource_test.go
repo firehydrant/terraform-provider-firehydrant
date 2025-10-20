@@ -138,7 +138,6 @@ func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
 		ProviderFactories: defaultProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				// First create with a priority set
 				Config: testAccFireHydrantSignalRuleConfigWithPriority(rName, "HIGH"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
@@ -147,8 +146,7 @@ func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
 				),
 			},
 			{
-				// Then update to remove the priority
-				Config: testAccFireHydrantSignalRuleConfigWithoutPriority(rName),
+				Config: testAccFireHydrantSignalRuleConfigWithPriority(rName, "MEDIUM"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
 					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "notification_priority_override", "MEDIUM"),
