@@ -176,6 +176,17 @@ func testAccEscalationPolicyConfig_dynamicPriority(rName string) string {
 
 		step {
 			timeout     = "PT1M"
+			priorities  = ["HIGH"]
+
+			targets {
+				type = "OnCallSchedule"
+				id   = firehydrant_on_call_schedule.test_on_call_schedule.id
+			}
+		}
+
+		step {
+			timeout     = "PT2M"
+			priorities  = ["LOW"]
 
 			targets {
 				type = "OnCallSchedule"

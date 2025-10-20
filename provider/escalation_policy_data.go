@@ -68,6 +68,11 @@ func dataSourceEscalationPolicy() *schema.Resource {
 								},
 							},
 						},
+						"priorities": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
 					},
 				},
 			},
@@ -218,6 +223,11 @@ func dataFireHydrantEscalationPolicy(ctx context.Context, d *schema.ResourceData
 		stepMap := map[string]interface{}{
 			"timeout": *step.GetTimeout(),
 			"targets": targets,
+		}
+
+		// Add priorities if available
+		if priorities := step.GetPriorities(); priorities != nil {
+			stepMap["priorities"] = priorities
 		}
 		steps = append(steps, stepMap)
 	}

@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -21,8 +22,25 @@ data "firehydrant_escalation_policy" "test_escalation_policy" {
 
 func testAccEscalationPolicyDataSourceConfig_basic() string {
 	return `
+provider "firehydrant" {
+	api_key = "fhb-03a365902b5b5bcffa6c1363fe81a840"
+	firehydrant_base_url = "https://api.staging.firehydrant.io/v1/"
+}
+
 resource "firehydrant_team" "test_team" {
-	name = "test-team-acc"
+	name = "test-team-acc-escalation"
+}
+
+resource "firehydrant_on_call_schedule" "test_on_call_schedule" {
+	team_id = firehydrant_team.test_team.id
+	name = "test-on-call-schedule-escalation"
+	time_zone = "America/New_York"
+
+	strategy {
+		type         = "weekly"
+		handoff_time = "10:00:00"
+		handoff_day  = "thursday"
+	}
 }
 
 resource "firehydrant_escalation_policy" "test_escalation_policy" {
@@ -30,12 +48,13 @@ resource "firehydrant_escalation_policy" "test_escalation_policy" {
 	description = "Test escalation policy for acceptance testing"
 	team_id = firehydrant_team.test_team.id
 	repetitions = 1
+	step_strategy = "static"
 	
 	step {
 		timeout = "PT5M"
 		targets {
-			type = "user"
-			id = "test-user-id"
+			type = "OnCallSchedule"
+			id = firehydrant_on_call_schedule.test_on_call_schedule.id
 		}
 	}
 }
@@ -46,17 +65,21 @@ data "firehydrant_escalation_policy" "test_escalation_policy" {
 }`
 }
 
-func testAccEscalationPolicyDataSourceConfig_dynamic() string {
-	return `
+func testAccEscalationPolicyDataSourceConfig_dynamic(rName string) string {
+	return fmt.Sprintf(`
+provider "firehydrant" {
+	api_key = "fhb-03a365902b5b5bcffa6c1363fe81a840"
+	firehydrant_base_url = "https://api.staging.firehydrant.io/v1/"
+}
+
 resource "firehydrant_team" "test_team" {
-	name = "test-team-acc-dynamic"
+	name = "test-team-acc-dynamic-%s"
 }
 
 resource "firehydrant_on_call_schedule" "test_on_call_schedule" {
 	team_id = firehydrant_team.test_team.id
-	name = "test-on-call-schedule-dynamic"
+	name = "test-on-call-schedule-dynamic-%s"
 	time_zone = "America/New_York"
-	slack_user_group_id = "test-group-dynamic"
 
 	strategy {
 		type         = "weekly"
@@ -66,7 +89,7 @@ resource "firehydrant_on_call_schedule" "test_on_call_schedule" {
 }
 
 resource "firehydrant_escalation_policy" "test_escalation_policy" {
-	name = "My Dynamic Escalation Policy"
+	name = "My Dynamic Escalation Policy %s"
 	description = "Test dynamic escalation policy for acceptance testing"
 	team_id = firehydrant_team.test_team.id
 	repetitions = 1
@@ -74,6 +97,16 @@ resource "firehydrant_escalation_policy" "test_escalation_policy" {
 
 	step {
 		timeout = "PT1M"
+		priorities = ["HIGH"]
+		targets {
+			type = "OnCallSchedule"
+			id   = firehydrant_on_call_schedule.test_on_call_schedule.id
+		}
+	}
+
+	step {
+		timeout = "PT2M"
+		priorities = ["LOW"]
 		targets {
 			type = "OnCallSchedule"
 			id   = firehydrant_on_call_schedule.test_on_call_schedule.id
@@ -84,14 +117,6 @@ resource "firehydrant_escalation_policy" "test_escalation_policy" {
 		priority = "HIGH"
 		repetitions = 2
 		
-		step {
-			timeout = "PT2M"
-			targets {
-				type = "OnCallSchedule"
-				id   = firehydrant_on_call_schedule.test_on_call_schedule.id
-			}
-		}
-		
 		handoff_step {
 			target_type = "Team"
 			target_id   = firehydrant_team.test_team.id
@@ -101,21 +126,13 @@ resource "firehydrant_escalation_policy" "test_escalation_policy" {
 	notification_priority_policies {
 		priority = "LOW"
 		repetitions = 1
-		
-		step {
-			timeout = "PT5M"
-			targets {
-				type = "OnCallSchedule"
-				id   = firehydrant_on_call_schedule.test_on_call_schedule.id
-			}
-		}
 	}
 }
 
 data "firehydrant_escalation_policy" "test_escalation_policy" {
 	team_id = firehydrant_team.test_team.id
 	name = firehydrant_escalation_policy.test_escalation_policy.name
-}`
+}`, rName, rName, rName)
 }
 
 func testEscalationPolicyDataSourceConfig_exactMatch() string {
@@ -130,6 +147,11 @@ func TestAccEscalationPolicyDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckEscalationPolicyResourceDestroy(),
+			testAccCheckOnCallScheduleResourceDestroy(),
+			testAccCheckTeamResourceDestroy(),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccEscalationPolicyDataSourceConfig_basic(),
@@ -149,40 +171,42 @@ func TestAccEscalationPolicyDataSource_basic(t *testing.T) {
 }
 
 func TestAccEscalationPolicyDataSource_dynamic(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckEscalationPolicyResourceDestroy(),
+			testAccCheckOnCallScheduleResourceDestroy(),
+			testAccCheckTeamResourceDestroy(),
+		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccEscalationPolicyDataSourceConfig_dynamic(),
+				Config: testAccEscalationPolicyDataSourceConfig_dynamic(rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.firehydrant_escalation_policy.test_escalation_policy", "id"),
 					resource.TestCheckResourceAttrSet("data.firehydrant_escalation_policy.test_escalation_policy", "team_id"),
 					resource.TestCheckResourceAttrSet("data.firehydrant_escalation_policy.test_escalation_policy", "name"),
 					resource.TestCheckResourceAttrSet("data.firehydrant_escalation_policy.test_escalation_policy", "description"),
-					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "name", "My Dynamic Escalation Policy"),
+					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "name", fmt.Sprintf("My Dynamic Escalation Policy %s", rName)),
 					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "description", "Test dynamic escalation policy for acceptance testing"),
 					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "step_strategy", "dynamic_by_priority"),
 					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "repetitions", "1"),
-					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "step.#", "1"),
+					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "step.#", "2"),
 					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "step.0.timeout", "PT1M"),
 					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "step.0.targets.0.type", "OnCallSchedule"),
 					resource.TestCheckResourceAttrSet("data.firehydrant_escalation_policy.test_escalation_policy", "step.0.targets.0.id"),
+					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "step.1.timeout", "PT2M"),
+					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "step.1.targets.0.type", "OnCallSchedule"),
+					resource.TestCheckResourceAttrSet("data.firehydrant_escalation_policy.test_escalation_policy", "step.1.targets.0.id"),
 					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.#", "2"),
 					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.0.priority", "HIGH"),
 					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.0.repetitions", "2"),
-					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.0.step.#", "1"),
-					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.0.step.0.timeout", "PT2M"),
-					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.0.step.0.targets.0.type", "OnCallSchedule"),
-					resource.TestCheckResourceAttrSet("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.0.step.0.targets.0.id"),
 					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.0.handoff_step.0.target_type", "Team"),
 					resource.TestCheckResourceAttrSet("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.0.handoff_step.0.target_id"),
 					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.1.priority", "LOW"),
 					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.1.repetitions", "1"),
-					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.1.step.#", "1"),
-					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.1.step.0.timeout", "PT5M"),
-					resource.TestCheckResourceAttr("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.1.step.0.targets.0.type", "OnCallSchedule"),
-					resource.TestCheckResourceAttrSet("data.firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.1.step.0.targets.0.id"),
 				),
 			},
 		},
