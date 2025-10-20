@@ -72,6 +72,7 @@ func Provider() *schema.Provider {
 			"firehydrant_service":           dataSourceService(),
 			"firehydrant_services":          dataSourceServices(),
 			"firehydrant_severity":          dataSourceSeverity(),
+			"firehydrant_signal_rule":       dataSourceSignalRule(),
 			"firehydrant_slack_channel":     dataSourceSlackChannel(),
 			"firehydrant_task_list":         dataSourceTaskList(),
 			"firehydrant_team":              dataSourceTeam(),
