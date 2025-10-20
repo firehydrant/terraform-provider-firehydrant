@@ -91,21 +91,7 @@ func createResourceLifecycleMilestone(ctx context.Context, d *schema.ResourceDat
 		return diag.Errorf("Error creating new Lifecycle Milestone: %v", err)
 	}
 
-	// we get back the entire list of phases and milestones, so we need to dig through it to get the id of the one we just created
-	milestoneID := ""
-	for _, phase := range response.Data {
-		if *phase.ID == phase_id {
-			for _, milestone := range phase.Milestones {
-				if *milestone.Name == name {
-					milestoneID = *milestone.ID
-				}
-			}
-		}
-	}
-	if milestoneID == "" {
-		return diag.Errorf("Lifecycle Milestone %v not found in response", milestoneID)
-	}
-	d.SetId(milestoneID)
+	d.SetId(*response.ID)
 
 	return readResourceIncidentType(ctx, d, m)
 }
