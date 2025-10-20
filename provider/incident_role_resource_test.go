@@ -29,6 +29,8 @@ func TestAccIncidentRoleResource_basic(t *testing.T) {
 						"firehydrant_incident_role.test_incident_role", "name", fmt.Sprintf("test-incident-role-%s", rName)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_incident_role.test_incident_role", "summary", fmt.Sprintf("test-summary-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_incident_role.test_incident_role", "description", fmt.Sprintf("test-description-%s", rName)),
 				),
 			},
 		},
@@ -53,6 +55,8 @@ func TestAccIncidentRoleResource_update(t *testing.T) {
 						"firehydrant_incident_role.test_incident_role", "name", fmt.Sprintf("test-incident-role-%s", rName)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_incident_role.test_incident_role", "summary", fmt.Sprintf("test-summary-%s", rName)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_incident_role.test_incident_role", "description", fmt.Sprintf("test-description-%s", rName)),
 				),
 			},
 			{
@@ -77,6 +81,8 @@ func TestAccIncidentRoleResource_update(t *testing.T) {
 						"firehydrant_incident_role.test_incident_role", "name", fmt.Sprintf("test-incident-role-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_incident_role.test_incident_role", "summary", fmt.Sprintf("test-summary-%s", rNameUpdated)),
+					resource.TestCheckResourceAttr(
+						"firehydrant_incident_role.test_incident_role", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
 				),
 			},
 		},
@@ -136,23 +142,24 @@ func testAccCheckIncidentRoleResourceExistsWithAttributes_basic(resourceName str
 			return err
 		}
 
-		incidentRoleResponse, err := client.IncidentRoles().Get(context.TODO(), incidentRoleResource.Primary.ID)
+		incidentRole, err := client.Sdk.IncidentSettings.GetIncidentRole(context.TODO(), incidentRoleResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		expected, got := incidentRoleResource.Primary.Attributes["name"], incidentRoleResponse.Name
+		expected, got := incidentRoleResource.Primary.Attributes["name"], *incidentRole.GetName()
 		if expected != got {
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = incidentRoleResource.Primary.Attributes["summary"], incidentRoleResponse.Summary
+		expected, got = incidentRoleResource.Primary.Attributes["summary"], *incidentRole.GetSummary()
 		if expected != got {
 			return fmt.Errorf("Unexpected summary. Expected: %s, got: %s", expected, got)
 		}
 
-		if incidentRoleResponse.Description != "" {
-			return fmt.Errorf("Unexpected description. Expected no description, got: %s", incidentRoleResponse.Description)
+		expected, got = incidentRoleResource.Primary.Attributes["description"], *incidentRole.GetDescription()
+		if expected != got {
+			return fmt.Errorf("Unexpected description. Expected: %s, got: %s", expected, got)
 		}
 
 		return nil
@@ -174,22 +181,22 @@ func testAccCheckIncidentRoleResourceExistsWithAttributes_update(resourceName st
 			return err
 		}
 
-		incidentRoleResponse, err := client.IncidentRoles().Get(context.TODO(), incidentRoleResource.Primary.ID)
+		incidentRole, err := client.Sdk.IncidentSettings.GetIncidentRole(context.TODO(), incidentRoleResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		expected, got := incidentRoleResource.Primary.Attributes["name"], incidentRoleResponse.Name
+		expected, got := incidentRoleResource.Primary.Attributes["name"], *incidentRole.GetName()
 		if expected != got {
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = incidentRoleResource.Primary.Attributes["summary"], incidentRoleResponse.Summary
+		expected, got = incidentRoleResource.Primary.Attributes["summary"], *incidentRole.GetSummary()
 		if expected != got {
 			return fmt.Errorf("Unexpected summary. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = incidentRoleResource.Primary.Attributes["description"], incidentRoleResponse.Description
+		expected, got = incidentRoleResource.Primary.Attributes["description"], *incidentRole.GetDescription()
 		if expected != got {
 			return fmt.Errorf("Unexpected description. Expected: %s, got: %s", expected, got)
 		}
@@ -218,8 +225,8 @@ func testAccCheckIncidentRoleResourceDestroy() resource.TestCheckFunc {
 			// that has been deleted. However, the incident role API will still return deleted/archived incident
 			// roles instead of returning 404. So, to check for incident roles that are deleted, we have to check
 			// for incident roles that have a DiscardedAt timestamp
-			incidentRoleResponse, _ := client.IncidentRoles().Get(context.TODO(), stateResource.Primary.ID)
-			if incidentRoleResponse.DiscardedAt.IsZero() {
+			incidentRole, _ := client.Sdk.IncidentSettings.GetIncidentRole(context.TODO(), stateResource.Primary.ID)
+			if incidentRole.GetDiscardedAt() == nil || incidentRole.GetDiscardedAt().IsZero() {
 				return fmt.Errorf("Incident role %s still exists", stateResource.Primary.ID)
 			}
 		}
@@ -231,9 +238,10 @@ func testAccCheckIncidentRoleResourceDestroy() resource.TestCheckFunc {
 func testAccIncidentRoleResourceConfig_basic(rName string) string {
 	return fmt.Sprintf(`
 resource "firehydrant_incident_role" "test_incident_role" {
-  name    = "test-incident-role-%s"
-  summary = "test-summary-%s"
-}`, rName, rName)
+  name        = "test-incident-role-%s"
+  summary     = "test-summary-%s"
+  description = "test-description-%s"
+}`, rName, rName, rName)
 }
 
 func testAccIncidentRoleResourceConfig_update(rName string) string {
