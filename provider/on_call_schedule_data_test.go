@@ -120,6 +120,8 @@ func (s *testOnCallScheduleDataSuite) testResource(steps ...resource.TestStep) {
 /** Tests *************************************************************************************************************/
 
 func TestAccOnCallScheduleDataSource_basic(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),
@@ -129,7 +131,7 @@ func TestAccOnCallScheduleDataSource_basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOnCallScheduleDataSourceConfig_basic(),
+				Config: testAccOnCallScheduleDataSourceConfig_basic(rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.firehydrant_on_call_schedule.test_on_call_schedule", "id"),
 					resource.TestCheckResourceAttrSet("data.firehydrant_on_call_schedule.test_on_call_schedule", "team_id"),
@@ -145,19 +147,14 @@ func TestAccOnCallScheduleDataSource_basic(t *testing.T) {
 	})
 }
 
-func testAccOnCallScheduleDataSourceConfig_basic() string {
-	return `
-provider "firehydrant" {
-	api_key = "fhb-03a365902b5b5bcffa6c1363fe81a840"
-	firehydrant_base_url = "https://api.staging.firehydrant.io/v1/"
-}
-
+func testAccOnCallScheduleDataSourceConfig_basic(rName string) string {
+	return fmt.Sprintf(`
 resource "firehydrant_team" "team_team" {
-	name = "test-team-acc-data-source"
+	name = "test-team-acc-data-source-%s"
 }
 
 resource "firehydrant_on_call_schedule" "test_schedule" {
-	name        = "test-on-call-schedule-acc-data-source"
+	name        = "test-on-call-schedule-acc-data-source-%s"
 	description = "test-description"
 	team_id     = firehydrant_team.team_team.id
 	time_zone   = "America/New_York"
@@ -179,7 +176,7 @@ resource "firehydrant_on_call_schedule" "test_schedule" {
 data "firehydrant_on_call_schedule" "test_on_call_schedule" {
 	id = firehydrant_on_call_schedule.test_schedule.id
 	team_id = firehydrant_team.team_team.id
-}`
+}`, rName, rName)
 }
 
 func (s *testOnCallScheduleDataSuite) TestSuccess() {
