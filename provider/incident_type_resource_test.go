@@ -263,7 +263,7 @@ resource "firehydrant_incident_type" "test_incident_type" {
 
 		tags = [ "foo", "bar" ]
 		runbook_ids = [ "88f9f172-cc07-477e-9a80-b1ae7669ec3d", "39de1363-4ae3-4aa3-913b-d63312c76afd" ]
-		team_ids = [ "cd2b6d18-e616-4990-9065-ec0cab037680", "2af88e28-0205-4d39-b304-133bd2e19358" ]
+		team_ids = [ "a7c021b5-b05b-43b4-a5db-661309c8e5d1", "2af88e28-0205-4d39-b304-133bd2e19358" ]
 
 		impacts {
 		  impact_id = "8c6731c8-a49a-415e-91c9-61378d526c58"

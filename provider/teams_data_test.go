@@ -89,7 +89,7 @@ func testAccCheckTeamsSet(name string) resource.TestCheckFunc {
 			return err
 		}
 
-		if teamsCount <= 1 {
+		if teamsCount < 1 {
 			return fmt.Errorf("Incorrect number of teams - expected at least 1, got %d", teamsCount)
 		}
 
