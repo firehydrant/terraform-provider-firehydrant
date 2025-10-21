@@ -108,7 +108,7 @@ func readResourceLifecycleMilestone(ctx context.Context, d *schema.ResourceData,
 	// We're also pulling the phase ID from here as we search.
 	response, err := client.Sdk.IncidentSettings.ListLifecyclePhases(ctx)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error getting milestone list: %v", err)
 	}
 
 	var desired_milestone *components.LifecyclesMilestoneEntity
