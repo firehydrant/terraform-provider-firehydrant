@@ -56,7 +56,11 @@ func (s *testOnCallScheduleDataSuite) testResource(steps ...resource.TestStep) {
 	resource.Test(s.T(), resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(s.T()) },
 		ProviderFactories: defaultProviderFactories(),
-		Steps:             steps,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckOnCallScheduleResourceDestroy(),
+			testAccCheckTeamResourceDestroy(),
+		),
+		Steps: steps,
 	})
 }
 

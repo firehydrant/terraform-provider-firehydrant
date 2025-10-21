@@ -20,20 +20,15 @@ data "firehydrant_escalation_policy" "test_escalation_policy" {
 }`)
 }
 
-func testAccEscalationPolicyDataSourceConfig_basic() string {
-	return `
-provider "firehydrant" {
-	api_key = "fhb-03a365902b5b5bcffa6c1363fe81a840"
-	firehydrant_base_url = "https://api.staging.firehydrant.io/v1/"
-}
-
+func testAccEscalationPolicyDataSourceConfig_basic(rName string) string {
+	return fmt.Sprintf(`
 resource "firehydrant_team" "test_team" {
-	name = "test-team-acc-escalation"
+	name = "test-team-acc-escalation-%s"
 }
 
 resource "firehydrant_on_call_schedule" "test_on_call_schedule" {
 	team_id = firehydrant_team.test_team.id
-	name = "test-on-call-schedule-escalation"
+	name = "test-on-call-schedule-escalation-%s"
 	time_zone = "America/New_York"
 
 	strategy {
@@ -62,16 +57,11 @@ resource "firehydrant_escalation_policy" "test_escalation_policy" {
 data "firehydrant_escalation_policy" "test_escalation_policy" {
 	team_id = firehydrant_team.test_team.id
 	name = firehydrant_escalation_policy.test_escalation_policy.name
-}`
+}`, rName, rName)
 }
 
 func testAccEscalationPolicyDataSourceConfig_dynamic(rName string) string {
 	return fmt.Sprintf(`
-provider "firehydrant" {
-	api_key = "fhb-03a365902b5b5bcffa6c1363fe81a840"
-	firehydrant_base_url = "https://api.staging.firehydrant.io/v1/"
-}
-
 resource "firehydrant_team" "test_team" {
 	name = "test-team-acc-dynamic-%s"
 }
@@ -144,6 +134,8 @@ data "firehydrant_escalation_policy" "test_escalation_policy" {
 }
 
 func TestAccEscalationPolicyDataSource_basic(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),
@@ -154,7 +146,7 @@ func TestAccEscalationPolicyDataSource_basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccEscalationPolicyDataSourceConfig_basic(),
+				Config: testAccEscalationPolicyDataSourceConfig_basic(rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.firehydrant_escalation_policy.test_escalation_policy", "id"),
 					resource.TestCheckResourceAttrSet("data.firehydrant_escalation_policy.test_escalation_policy", "team_id"),
