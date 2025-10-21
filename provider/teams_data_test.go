@@ -55,6 +55,7 @@ func TestAccTeamsDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),
+		CheckDestroy:      testAccCheckTeamResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccTeamsDataSourceConfig_basic(rName),
@@ -89,7 +90,7 @@ func testAccCheckTeamsSet(name string) resource.TestCheckFunc {
 			return err
 		}
 
-		if teamsCount <= 1 {
+		if teamsCount < 1 {
 			return fmt.Errorf("Incorrect number of teams - expected at least 1, got %d", teamsCount)
 		}
 
