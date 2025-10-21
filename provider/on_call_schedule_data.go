@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -41,13 +42,61 @@ func dataSourceOnCallSchedule() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"strategy": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"handoff_time": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"handoff_day": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"shift_duration": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"restrictions": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"start_day": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"start_time": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"end_day": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"end_time": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
 func dataFireHydrantOnCallSchedule(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Get the team
 	id := d.Get("id").(string)
@@ -56,13 +105,13 @@ func dataFireHydrantOnCallSchedule(ctx context.Context, d *schema.ResourceData, 
 		"id":      id,
 		"team_id": teamID,
 	})
-	schedule, err := firehydrantAPIClient.OnCallSchedules().Get(ctx, teamID, id)
+	schedule, err := client.Sdk.Signals.GetTeamOnCallSchedule(ctx, teamID, id, nil, nil)
 	if err != nil {
 		return diag.Errorf("Error reading on-call schedule %s for team %s: %v", id, teamID, err)
 	}
 
 	// Gather values from API response
-	attributes := dataFireHydrantOnCallScheduleToAttributesMap(teamID, schedule)
+	attributes := dataFireHydrantOnCallScheduleToAttributesMap(teamID, *schedule)
 
 	// Set the data source attributes to the values we got from the API
 	for key, value := range attributes {
@@ -72,18 +121,32 @@ func dataFireHydrantOnCallSchedule(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	// Set the schedule's ID in state
-	d.SetId(schedule.ID)
+	d.SetId(*schedule.GetID())
 
 	return diag.Diagnostics{}
 }
 
-func dataFireHydrantOnCallScheduleToAttributesMap(teamID string, schedule *firehydrant.OnCallScheduleResponse) map[string]interface{} {
-	return map[string]interface{}{
-		"id":                  schedule.ID,
-		"team_id":             teamID,
-		"name":                schedule.Name,
-		"description":         schedule.Description,
-		"time_zone":           schedule.TimeZone,
-		"slack_user_group_id": schedule.SlackUserGroupID,
+func dataFireHydrantOnCallScheduleToAttributesMap(teamID string, schedule components.SignalsAPIOnCallScheduleEntity) map[string]interface{} {
+	attributes := map[string]interface{}{
+		"id":          *schedule.GetID(),
+		"team_id":     teamID,
+		"name":        *schedule.GetName(),
+		"description": *schedule.GetDescription(),
+		"time_zone":   *schedule.GetTimeZone(),
 	}
+
+	// Add slack_user_group_id if available
+	if slackUserGroupID := schedule.GetSlackUserGroupID(); slackUserGroupID != nil && *slackUserGroupID != "" {
+		attributes["slack_user_group_id"] = *slackUserGroupID
+	}
+
+	// Add strategy if available
+	if strategy := schedule.GetStrategy(); strategy != nil {
+		attributes["strategy"] = strategyToMapSDK(*strategy)
+	}
+
+	// Add restrictions if available
+	attributes["restrictions"] = restrictionsToDataSDK(schedule.GetRestrictions())
+
+	return attributes
 }
