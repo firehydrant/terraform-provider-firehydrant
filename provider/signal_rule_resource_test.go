@@ -2,10 +2,10 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -316,9 +316,13 @@ func testAccCheckFireHydrantSignalRuleDestroy() resource.TestCheckFunc {
 			}
 
 			// Check if the signal rule still exists
-			_, err := client.SignalsRules().Get(context.TODO(), rs.Primary.Attributes["team_id"], rs.Primary.ID)
-			if err != nil && !errors.Is(err, firehydrant.ErrorNotFound) {
+			_, err := client.Sdk.Signals.GetTeamSignalRule(context.TODO(), rs.Primary.Attributes["team_id"], rs.Primary.ID)
+			if err == nil {
 				return fmt.Errorf("Signal rule %s still exists", rs.Primary.ID)
+			}
+			errStr := err.Error()
+			if !strings.Contains(errStr, "404") && !strings.Contains(errStr, "record not found") {
+				return fmt.Errorf("Error checking signal rule %s: %v", rs.Primary.ID, err)
 			}
 		}
 
