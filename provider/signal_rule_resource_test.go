@@ -316,9 +316,14 @@ func testAccCheckFireHydrantSignalRuleDestroy() resource.TestCheckFunc {
 			}
 
 			// Check if the signal rule still exists
-			_, err := client.SignalsRules().Get(context.TODO(), rs.Primary.Attributes["team_id"], rs.Primary.ID)
-			if err != nil && !errors.Is(err, firehydrant.ErrorNotFound) {
+			_, err := client.Sdk.Signals.GetTeamSignalRule(context.TODO(), rs.Primary.Attributes["team_id"], rs.Primary.ID)
+			if err == nil {
 				return fmt.Errorf("Signal rule %s still exists", rs.Primary.ID)
+			}
+
+			// If we get a 404, that's what we expect after deletion
+			if !errors.Is(err, firehydrant.ErrorNotFound) {
+				return fmt.Errorf("unexpected error checking signal rule deletion: %v", err)
 			}
 		}
 
