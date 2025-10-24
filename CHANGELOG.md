@@ -1,3 +1,16 @@
+## 0.14.10
+
+ENHANCEMENTS:
+
+* **New Data Sources**: 
+`firehydrant_escalation_policy` ([#xxx](https://github.com/firehydrant/terraform-provider-firehydrant/pull/209))
+`firehydrant_signal_rule` ([#xxx](https://github.com/firehydrant/terraform-provider-firehydrant/pull/209))
+
+Documentation updated for `firehydrant_team`, `firehydrant_escalation_policy`, `firehydrant_signal_rule`
+
+Adds support for dynamic escalation policies to `firehydrant_escalation_policy`
+Adds support for deduplicaiton expiry, create incident condition when, target specifications to `firehydrant_signal_rule`
+
 ## 0.14.9
 
 BUG FIXES:
@@ -8,7 +21,7 @@ BUG FIXES:
 
 ENHANCEMENTS:
 
-* **New Resource**: 'firehydrant_incident_type` ([#xxx](https://github.com/firehydrant/terraform-provider-firehydrant/pull/xxx))
+* **New Resource**: `firehydrant_incident_type` ([#xxx](https://github.com/firehydrant/terraform-provider-firehydrant/pull/xxx))
 
 ## 0.14.7
 
