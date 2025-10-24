@@ -4,7 +4,7 @@ ENHANCEMENTS:
 
 * **New Data Sources**: 
 `firehydrant_escalation_policy` ([#xxx](https://github.com/firehydrant/terraform-provider-firehydrant/pull/209))
-`firehydrant_signal_rule` ([#xxx](https://github.com/firehydrant/terraform-provider-firehydrant/pull/209))
+`firehydrant_signal_rule` ([#xxx](https://github.com/firehydrant/terraform-provider-firehydrant/pull/205))
 
 Documentation updated for `firehydrant_team`, `firehydrant_escalation_policy`, `firehydrant_signal_rule`
 
@@ -21,7 +21,7 @@ BUG FIXES:
 
 ENHANCEMENTS:
 
-* **New Resource**: `firehydrant_incident_type` ([#xxx](https://github.com/firehydrant/terraform-provider-firehydrant/pull/xxx))
+* **New Resource**: `firehydrant_incident_type` ([#xxx](https://github.com/firehydrant/terraform-provider-firehydrant/pull/199))
 
 ## 0.14.7
 
