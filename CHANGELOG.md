@@ -9,7 +9,7 @@ ENHANCEMENTS:
 Documentation updated for `firehydrant_team`, `firehydrant_escalation_policy`, `firehydrant_signal_rule`
 
 Adds support for dynamic escalation policies to `firehydrant_escalation_policy`
-Adds support for deduplicaiton expiry, create incident condition when, target specifications to `firehydrant_signal_rule`
+Adds support for deduplication expiry, create incident condition when, target specifications to `firehydrant_signal_rule`
 
 ## 0.14.9
 
