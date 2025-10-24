@@ -74,7 +74,6 @@ type Client interface {
 	// Signals
 	IngestURL() IngestURLClient
 	Transposers() TransposersClient
-	InboundEmails() InboundEmailsClient
 	Rotations() Rotations
 	Roles() Roles
 	Permissions() Permissions
