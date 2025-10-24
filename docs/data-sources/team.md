@@ -33,3 +33,10 @@ In addition to all arguments above, the following attributes are exported:
 * `slug` - The slug for the team.
 * `service_ids` - A set of IDs of the services associated with this team
 * `owned_service_ids` - A set of IDs of the services owned by this team
+* `memberships` - A set of team memberships
+
+The `memberships` block supports:
+
+* `default_incident_role_id` - The ID of the default incident role for this membership
+* `user_id` - The ID of the user (if this membership is for a user)
+* `schedule_id` - The ID of the schedule (if this membership is for a schedule)
