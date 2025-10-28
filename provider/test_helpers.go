@@ -298,6 +298,21 @@ func getSharedTeamID(t *testing.T) string {
 	return ""
 }
 
+// getSharedTeamID2 returns the second shared team ID for tests that need multiple teams
+func getSharedTeamID2(t *testing.T) string {
+	resources, err := getSharedTestResources()
+	if err != nil {
+		t.Fatalf("Shared test resources not available: %v", err)
+	}
+
+	if id, err := resources.GetTeamID("team2"); err == nil {
+		return id
+	}
+
+	t.Fatalf("Shared team 'team2' not available")
+	return ""
+}
+
 // getSharedOnCallScheduleID returns the default shared on-call schedule ID for tests
 // Fails the test if shared resources are not available
 func getSharedOnCallScheduleID(t *testing.T) string {
