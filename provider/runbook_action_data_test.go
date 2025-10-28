@@ -9,7 +9,7 @@ import (
 func TestAccRunbookActionDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccRunbookActionDataSourceConfig_basic(),
@@ -29,7 +29,7 @@ func TestAccRunbookActionDataSource_basic(t *testing.T) {
 func TestAccRunbookActionDataSource_allAttributes(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccRunbookActionDataSourceConfig_allAttributes(),
@@ -51,7 +51,7 @@ func TestAccRunbookActionDataSource_allAttributes(t *testing.T) {
 func TestAccRunbookActionDataSource_multipleActionsForSlug(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccRunbookActionDataSourceConfig_multipleActionsForSlug(),

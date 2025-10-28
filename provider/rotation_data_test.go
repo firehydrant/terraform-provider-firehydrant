@@ -81,7 +81,7 @@ data "firehydrant_rotation" "test_rotation_data" {
 func (s *testRotationDataSuite) testResource(steps ...resource.TestStep) {
 	resource.Test(s.T(), resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(s.T()) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps:             steps,
 	})
 }

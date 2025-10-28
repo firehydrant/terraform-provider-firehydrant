@@ -19,7 +19,7 @@ func TestAccFireHydrantSignalRule_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckFireHydrantSignalRuleDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -61,7 +61,7 @@ func TestAccFireHydrantSignalRule_invalidPriority(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckFireHydrantSignalRuleDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -77,7 +77,7 @@ func TestAccFireHydrantSignalRule_createIncidentConditionWhen(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckFireHydrantSignalRuleDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -127,7 +127,7 @@ func TestAccFireHydrantSignalRule_IncidentTypeIDMissing(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckFireHydrantSignalRuleDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -147,7 +147,7 @@ func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckFireHydrantSignalRuleDestroy(),
 		Steps: []resource.TestStep{
 			{

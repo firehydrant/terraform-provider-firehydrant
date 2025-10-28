@@ -20,7 +20,7 @@ func TestAccRunbookResource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckRunbookResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -53,7 +53,7 @@ func TestAccRunbookResource_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckRunbookResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -131,7 +131,7 @@ func TestAccRunbookResource_validateSchemaAttributesStepsConfig(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccRunbookResourceConfig_stepsConfigInvalidJSON(rName),
@@ -146,7 +146,7 @@ func TestAccRunbookResource_validateSchemaAttributesAttachmentRule(t *testing.T)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccRunbookResourceConfig_attachmentRuleInvalidJSON(rName),
@@ -161,7 +161,7 @@ func TestAccRunbookResource_validateSchemaAttributesStepsRule(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccRunbookResourceConfig_stepsRuleInvalidJSON(rName),
@@ -176,7 +176,7 @@ func TestAccRunbookResource_validateSchemaAttributesStepsRepeatsDuration(t *test
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccRunbookResourceConfig_stepsRequiredRepeatsDurationNotSet(rName),
@@ -191,7 +191,7 @@ func TestAccRunbookResourceImport_validateSchemaAttributesStepsRepeats(t *testin
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccRunbookResourceConfig_stepsRequiredRepeatsNotSet(rName),
@@ -206,7 +206,7 @@ func TestAccRunbookResourceImport_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccRunbookResourceConfig_basic(rName),
@@ -225,7 +225,7 @@ func TestAccRunbookResourceImport_allAttributes(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccRunbookResourceConfig_update(rName),

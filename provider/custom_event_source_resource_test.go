@@ -16,7 +16,7 @@ import (
 func TestAccCustomEventSourceResource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckCustomEventSourceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -42,7 +42,7 @@ func TestAccCustomEventSourceResource_basic(t *testing.T) {
 func TestAccCustomEventSourceResource_update(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckCustomEventSourceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -91,7 +91,11 @@ func testAccCheckCustomEventSourceResourceExistsWithAttributes_basic(resourceNam
 			return fmt.Errorf("No ID is set")
 		}
 
-		client := fhsdk.New(fhsdk.WithSecurity(components.Security{APIKey: os.Getenv("FIREHYDRANT_API_KEY")}))
+		provider, err := getSharedProvider()
+		if err != nil {
+			return err
+		}
+		client := provider.Sdk
 
 		response, err := client.Signals.GetSignalsEventSource(context.TODO(), customEventSourceResource.Primary.ID)
 		if err != nil {
@@ -124,7 +128,11 @@ func testAccCheckCustomEventSourceResourceExistsWithAttributes_basic(resourceNam
 
 func testAccCheckCustomEventSourceResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := fhsdk.New(fhsdk.WithSecurity(components.Security{APIKey: os.Getenv("FIREHYDRANT_API_KEY")}))
+		provider, err := getSharedProvider()
+		if err != nil {
+			return err
+		}
+		client := provider.Sdk
 
 		for _, stateResource := range s.RootModule().Resources {
 			if stateResource.Type != "firehydrant_custom_event_source" {
@@ -169,7 +177,7 @@ func TestAccCustomEventSourceResourceImport_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckCustomEventSourceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{

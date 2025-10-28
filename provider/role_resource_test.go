@@ -18,7 +18,7 @@ func TestAccRoleResource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckRoleResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -51,7 +51,7 @@ func TestAccRoleResource_withPermissions(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckRoleResourceDestroy(),
 		Steps: []resource.TestStep{
 			{

@@ -18,7 +18,7 @@ func TestAccServiceResource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckServiceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -47,7 +47,7 @@ func TestAccServiceResource_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckServiceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -115,7 +115,7 @@ func TestAccServiceResource_updateLabels(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckServiceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -197,7 +197,7 @@ func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckServiceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -297,7 +297,7 @@ func TestAccServiceResourceImport_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccServiceResourceConfig_basic(rName),
@@ -316,7 +316,7 @@ func TestAccServiceResourceImport_allAttributes(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccServiceResourceConfig_update(rName),

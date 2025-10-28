@@ -17,7 +17,7 @@ func TestAccIncidentTypeResource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckIncidentTypeResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -41,7 +41,7 @@ func TestAccIncidentTypeResource_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIncidentTypeResourceDestroy(),
 			testAccCheckTeamResourceDestroy(),
@@ -111,7 +111,7 @@ func TestAccIncidentTypeResourceImport_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccIncidentTypeResourceConfig_basic(rName),
@@ -130,7 +130,7 @@ func TestAccIncidentTypeResourceImport_allAttributes(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccIncidentTypeResourceConfig_update(rName),

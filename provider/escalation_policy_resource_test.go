@@ -18,7 +18,7 @@ func TestAccEscalationPolicyResource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckEscalationPolicyResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -42,7 +42,7 @@ func TestAccEscalationPolicyResource_dynamicWithPriorityPolicies(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckEscalationPolicyResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -85,7 +85,7 @@ func TestAccEscalationPolicyResource_dynamicWithHandoffSteps(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckEscalationPolicyResourceDestroy(),
 		Steps: []resource.TestStep{
 			{

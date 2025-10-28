@@ -14,7 +14,7 @@ import (
 func TestAccRoleDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccBuiltInRoleDataSourceConfig(),
@@ -36,7 +36,7 @@ func TestAccRoleDataSource_builtIn(t *testing.T) {
 	// Test looking up a built-in role that should always exist
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccBuiltInRoleDataSourceConfig(),

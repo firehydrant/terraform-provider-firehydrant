@@ -24,7 +24,7 @@ func TestAccRotationResource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckRotationResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -282,7 +282,7 @@ func TestAccRotationResource_updateHandoffAndRestrictions(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckRotationResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -432,7 +432,7 @@ func TestAccRotationResource_scheduleModifications(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckRotationResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -535,7 +535,7 @@ func TestAccRotationResource_effectiveAt(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckRotationResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -628,7 +628,7 @@ func TestAccRotationResourceImport_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckRotationResourceDestroy(),
 		Steps: []resource.TestStep{
 			{

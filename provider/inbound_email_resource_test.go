@@ -18,7 +18,7 @@ func TestAccInboundEmailResource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckInboundEmailResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -49,7 +49,7 @@ func TestAccInboundEmailResource_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckInboundEmailResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -83,7 +83,7 @@ func TestAccInboundEmailResource_update(t *testing.T) {
 
 // 	resource.Test(t, resource.TestCase{
 // 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-// 		ProviderFactories: defaultProviderFactories(),
+// 		ProviderFactories: sharedProviderFactories(),
 // 		CheckDestroy:      testAccCheckInboundEmailResourceDestroy(),
 // 		Steps: []resource.TestStep{
 // 			{

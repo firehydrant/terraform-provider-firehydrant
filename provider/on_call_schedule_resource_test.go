@@ -25,7 +25,7 @@ func TestAccOnCallScheduleResource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckOnCallScheduleResourceDestroy(),
 			testAccCheckTeamResourceDestroy(),
@@ -356,7 +356,7 @@ func TestAccOnCallScheduleResource_updateHandoffAndRestrictions(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckOnCallScheduleResourceDestroy(),
 			testAccCheckTeamResourceDestroy(),
@@ -479,7 +479,7 @@ func TestAccOnCallScheduleResource_scheduleModifications(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckOnCallScheduleResourceDestroy(),
 			testAccCheckTeamResourceDestroy(),
@@ -571,7 +571,7 @@ func TestAccOnCallScheduleResource_effectiveAt(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckOnCallScheduleResourceDestroy(),
 			testAccCheckTeamResourceDestroy(),
@@ -652,7 +652,7 @@ func TestAccOnCallScheduleResourceImport_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckOnCallScheduleResourceDestroy(),
 			testAccCheckTeamResourceDestroy(),

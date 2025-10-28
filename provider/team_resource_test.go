@@ -19,7 +19,7 @@ func TestAccTeamResource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckTeamResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -41,7 +41,7 @@ func TestAccTeamResource_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckTeamResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -82,7 +82,7 @@ func TestAccTeamResourceImport_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccTeamResourceConfig_basic(rName),
@@ -108,7 +108,7 @@ func TestAccTeamResource_withMembership(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckTeamResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -136,7 +136,11 @@ func testAccCheckTeamResourceExistsWithAttributes_basic(resourceName string) res
 			return fmt.Errorf("No ID is set")
 		}
 
-		client := fhsdk.New(fhsdk.WithSecurity(components.Security{APIKey: os.Getenv("FIREHYDRANT_API_KEY")}))
+		provider, err := getSharedProvider()
+		if err != nil {
+			return err
+		}
+		client := provider.Sdk
 
 		teamResponse, err := client.Teams.GetTeam(context.TODO(), teamResource.Primary.ID, nil)
 		if err != nil {
@@ -166,7 +170,11 @@ func testAccCheckTeamResourceExistsWithAttributes_update(resourceName string) re
 			return fmt.Errorf("No ID is set")
 		}
 
-		client := fhsdk.New(fhsdk.WithSecurity(components.Security{APIKey: os.Getenv("FIREHYDRANT_API_KEY")}))
+		provider, err := getSharedProvider()
+		if err != nil {
+			return err
+		}
+		client := provider.Sdk
 
 		teamResponse, err := client.Teams.GetTeam(context.TODO(), teamResource.Primary.ID, nil)
 		if err != nil {
@@ -189,7 +197,11 @@ func testAccCheckTeamResourceExistsWithAttributes_update(resourceName string) re
 
 func testAccCheckTeamResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := fhsdk.New(fhsdk.WithSecurity(components.Security{APIKey: os.Getenv("FIREHYDRANT_API_KEY")}))
+		provider, err := getSharedProvider()
+		if err != nil {
+			return err
+		}
+		client := provider.Sdk
 
 		for _, teamResource := range s.RootModule().Resources {
 			if teamResource.Type != "firehydrant_team" {

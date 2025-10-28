@@ -108,7 +108,7 @@ data "firehydrant_on_call_schedule" "test_on_call_schedule_data" {
 func (s *testOnCallScheduleDataSuite) testResource(steps ...resource.TestStep) {
 	resource.Test(s.T(), resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(s.T()) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckOnCallScheduleResourceDestroy(),
 			testAccCheckTeamResourceDestroy(),
@@ -124,7 +124,7 @@ func TestAccOnCallScheduleDataSource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckOnCallScheduleResourceDestroy(),
 			testAccCheckTeamResourceDestroy(),
