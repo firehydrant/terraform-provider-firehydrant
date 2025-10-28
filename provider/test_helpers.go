@@ -91,6 +91,19 @@ func sharedProviderFactories() map[string]func() (*schema.Provider, error) {
 	}
 }
 
+// mockProviderFactories returns provider factories that create a new provider instance for each test.
+// This should be used for tests that need to mock the API or use different configurations.
+func mockProviderFactories() map[string]func() (*schema.Provider, error) {
+	return map[string]func() (*schema.Provider, error){
+		"firehydrant": func() (*schema.Provider, error) {
+			// Create a new provider instance for mock tests
+			// This bypasses the shared provider and allows environment variable changes
+			p := Provider()
+			return p, nil
+		},
+	}
+}
+
 // resetSharedProvider resets the shared provider for testing.
 // This should only be used in test cleanup or when testing provider initialization itself.
 func resetSharedProvider() {

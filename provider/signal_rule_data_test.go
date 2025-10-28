@@ -51,7 +51,7 @@ func TestSignalRuleDataSource_OneMatch(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testSignalRuleDataSourceConfig_basic(),
@@ -90,7 +90,7 @@ func TestSignalRuleDataSource_MultipleMatches(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testSignalRuleDataSourceConfig_exactMatch(),
@@ -129,7 +129,7 @@ func TestSignalRuleDataSource_MultipleMatchesNoExactMatch(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testSignalRuleDataSourceConfig_exactMatch(),
@@ -162,7 +162,7 @@ func TestSignalRuleDataSource_NoMatches(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testSignalRuleDataSourceConfig_basic(),

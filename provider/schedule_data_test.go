@@ -49,7 +49,7 @@ func TestScheduleDataSource_OneMatch(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testScheduleDataSourceConfig_basic(),
@@ -88,7 +88,7 @@ func TestScheduleDataSource_MultipleMatches(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testScheduleDataSourceConfig_exactMatch(),
@@ -127,7 +127,7 @@ func TestScheduleDataSource_MultipleMatchesNoExactMatch(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testScheduleDataSourceConfig_exactMatch(),
@@ -160,7 +160,7 @@ func TestScheduleDataSource_NoMatches(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testScheduleDataSourceConfig_basic(),

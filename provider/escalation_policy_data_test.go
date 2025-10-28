@@ -138,7 +138,7 @@ func TestAccEscalationPolicyDataSource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckEscalationPolicyResourceDestroy(),
 			testAccCheckOnCallScheduleResourceDestroy(),
@@ -167,7 +167,7 @@ func TestAccEscalationPolicyDataSource_dynamic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckEscalationPolicyResourceDestroy(),
 			testAccCheckOnCallScheduleResourceDestroy(),
@@ -229,7 +229,7 @@ func TestEscalationPolicyDataSource_OneMatch(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testEscalationPolicyDataSourceConfig_basic(),
@@ -268,7 +268,7 @@ func TestEscalationPolicyDataSource_MultipleMatches(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testEscalationPolicyDataSourceConfig_exactMatch(),
@@ -307,7 +307,7 @@ func TestEscalationPolicyDataSource_MultipleMatchesNoExactMatch(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testEscalationPolicyDataSourceConfig_exactMatch(),
@@ -340,7 +340,7 @@ func TestEscalationPolicyDataSource_NoMatches(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: sharedProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testEscalationPolicyDataSourceConfig_basic(),
