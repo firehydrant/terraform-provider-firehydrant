@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 
 	"regexp"
 	"testing"
@@ -20,6 +19,8 @@ import (
 )
 
 func TestAccRotationResource_basic(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedScheduleID := getSharedOnCallScheduleID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -28,7 +29,7 @@ func TestAccRotationResource_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckRotationResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRotationConfig_basic(rName),
+				Config: testAccRotationConfig_basic(rName, sharedTeamID, sharedScheduleID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation", "id"),
 					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation", "name", fmt.Sprintf("test-rotation-%s", rName)),
@@ -38,7 +39,7 @@ func TestAccRotationResource_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRotationConfig_restrictions(rName),
+				Config: testAccRotationConfig_restrictions(rName, sharedTeamID, sharedScheduleID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_with_restrictions", "id"),
 					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_with_restrictions", "name", fmt.Sprintf("test-rotation-restrictions-%s", rName)),
@@ -59,28 +60,11 @@ func TestAccRotationResource_basic(t *testing.T) {
 	})
 }
 
-func testAccRotationConfig_basic(rName string) string {
+func testAccRotationConfig_basic(rName, sharedTeamID, sharedScheduleID string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "team_team" {
-		name = "test-team-%s"
-	}
-
-	resource "firehydrant_on_call_schedule" "test_on_call_schedule" {
-		team_id = firehydrant_team.team_team.id
-		name = "test-on-call-schedule-%s"
-		description = "test-description-%s"
-		time_zone = "America/New_York"
-
-		strategy {
-			type         = "weekly"
-			handoff_time = "10:00:00"
-			handoff_day  = "thursday"
-		}
-	}
-
 	resource "firehydrant_rotation" "test_rotation" {
-	  team_id = firehydrant_team.team_team.id
-		schedule_id = firehydrant_on_call_schedule.test_on_call_schedule.id
+	  team_id = "%s"
+		schedule_id = "%s"
 		name = "test-rotation-%s"
 		description = "test-description-%s"
 		time_zone = "America/New_York"
@@ -95,32 +79,14 @@ func testAccRotationConfig_basic(rName string) string {
 			handoff_day  = "thursday"
 		}
 	}
-	`, rName, rName, rName, rName, rName)
+	`, sharedTeamID, sharedScheduleID, rName, rName)
 }
 
-func testAccRotationConfig_restrictions(rName string) string {
+func testAccRotationConfig_restrictions(rName, sharedTeamID, sharedScheduleID string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "team_team" {
-		name = "test-team-%s"
-	}
-
-	resource "firehydrant_on_call_schedule" "test_on_call_schedule" {
-		team_id = firehydrant_team.team_team.id
-		name = "test-on-call-schedule-restrictions-%s"
-		description = "test-description-%s"
-		time_zone = "America/New_York"
-		slack_user_group_id = "test-group-1"
-
-		strategy {
-			type         = "weekly"
-			handoff_time = "10:00:00"
-			handoff_day  = "thursday"
-		}
-	}
-
 	resource "firehydrant_rotation" "test_rotation_with_restrictions" {
-	  team_id = firehydrant_team.team_team.id
-		schedule_id = firehydrant_on_call_schedule.test_on_call_schedule.id
+	  team_id = "%s"
+		schedule_id = "%s"
 		name = "test-rotation-restrictions-%s"
 		description = "test-description-%s"
 		time_zone = "America/New_York"
@@ -149,7 +115,7 @@ func testAccRotationConfig_restrictions(rName string) string {
 			end_time = "18:00:00"
 		}
 	}
-	`, rName, rName, rName, rName, rName)
+	`, sharedTeamID, sharedScheduleID, rName, rName)
 }
 
 func testAccCheckRotationResourceDestroy() resource.TestCheckFunc {
@@ -622,6 +588,8 @@ func testAccRotationConfig_withEffectiveAt(rName, handoffDay, handoffTime, effec
 }
 
 func TestAccRotationResourceImport_basic(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedScheduleID := getSharedOnCallScheduleID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resourceName := "firehydrant_rotation.test_rotation"
@@ -632,7 +600,7 @@ func TestAccRotationResourceImport_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckRotationResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRotationConfig_basic(rName),
+				Config: testAccRotationConfig_basic(rName, sharedTeamID, sharedScheduleID),
 			},
 			{
 				ResourceName: resourceName,

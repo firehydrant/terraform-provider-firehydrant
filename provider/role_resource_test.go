@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccRoleResource_basic(t *testing.T) {
@@ -72,6 +73,32 @@ func TestAccRoleResource_withPermissions(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccCheckRoleResourceDestroy() resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		client, err := getAccTestClient()
+		if err != nil {
+			return err
+		}
+
+		for _, stateResource := range s.RootModule().Resources {
+			if stateResource.Type != "firehydrant_role" {
+				continue
+			}
+
+			if stateResource.Primary.ID == "" {
+				return fmt.Errorf("No instance ID is set")
+			}
+
+			_, err := client.Roles().Get(context.TODO(), stateResource.Primary.ID)
+			if err == nil {
+				return fmt.Errorf("Role %s still exists", stateResource.Primary.ID)
+			}
+		}
+
+		return nil
+	}
 }
 
 func testAccRoleConfig_basic(rName string) string {

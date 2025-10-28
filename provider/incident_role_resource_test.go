@@ -3,10 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -137,7 +135,7 @@ func testAccCheckIncidentRoleResourceExistsWithAttributes_basic(resourceName str
 			return fmt.Errorf("No ID is set")
 		}
 
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}

@@ -5,20 +5,17 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccServicesDataSource_basic(t *testing.T) {
-	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServicesDataSourceConfig_basic(rName),
+				Config: testAccServicesDataSourceConfig_basic(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.firehydrant_services.all_services", "services.#"),
 					testAccCheckServicesSet("data.firehydrant_services.all_services"),
@@ -50,20 +47,19 @@ func testAccCheckServicesSet(name string) resource.TestCheckFunc {
 			return err
 		}
 
-		if servicesCount <= 1 {
-			return fmt.Errorf("Incorrect number of services - expected at least 1, got %d", servicesCount)
+		if servicesCount < 2 {
+			return fmt.Errorf("Incorrect number of services - expected at least 2, got %d", servicesCount)
 		}
 
 		return nil
 	}
 }
 
-func testAccServicesDataSourceConfig_basic(rName string) string {
-	return fmt.Sprintf(`
-resource "firehydrant_service" "test_service" {
-  name = "test-service-%s"
-}
-
+func testAccServicesDataSourceConfig_basic() string {
+	return `
 data "firehydrant_services" "all_services" {
-}`, rName)
+	labels = {
+		"test" = "shared"
+	}
+}`
 }

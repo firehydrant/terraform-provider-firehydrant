@@ -15,6 +15,47 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
+func TestMain(m *testing.M) {
+	var exitCode int
+
+	// Only initialize shared resources for acceptance tests
+	if os.Getenv("TF_ACC") == "true" {
+		ctx := context.Background()
+		client, err := getAccTestClient()
+		if err != nil {
+			fmt.Printf("Failed to get test client: %v\n", err)
+			os.Exit(1)
+		}
+
+		// Get shared resources (loads from env or API)
+		resources, err := getSharedTestResources()
+		if err != nil {
+			fmt.Printf("Warning: Could not load shared resources: %v\n", err)
+			// Continue anyway - will create resources
+		}
+
+		// Initialize shared resources (creates missing ones)
+		if resources != nil {
+			if err := resources.InitializeSharedResources(ctx, client); err != nil {
+				fmt.Printf("Failed to initialize shared resources: %v\n", err)
+				os.Exit(1)
+			}
+
+			// Ensure cleanup happens
+			defer func() {
+				if err := resources.DestroyCreatedResources(ctx, client); err != nil {
+					fmt.Printf("Warning: Failed to destroy created resources: %v\n", err)
+				}
+			}()
+		}
+	}
+
+	// Run all tests
+	exitCode = m.Run()
+
+	os.Exit(exitCode)
+}
+
 func defaultProviderFactories() map[string]func() (*schema.Provider, error) {
 	return map[string]func() (*schema.Provider, error){
 		"firehydrant": func() (*schema.Provider, error) {
@@ -29,7 +70,7 @@ func TestAccService(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testServiceDoesNotExist("firehydrant_service.terraform-acceptance-test-service"),
 		Steps: []resource.TestStep{
 			{

@@ -3,11 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
-
-	fhsdk "github.com/firehydrant/firehydrant-go-sdk"
-	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -130,7 +126,6 @@ func testAccCheckCustomEventSourceResourceDestroy() resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
-		client := provider.Sdk
 
 		for _, stateResource := range s.RootModule().Resources {
 			if stateResource.Type != "firehydrant_custom_event_source" {

@@ -3,16 +3,16 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccServiceDependencyResource_basic(t *testing.T) {
+	sharedServiceID1 := getSharedServiceID(t)
+	sharedServiceID2 := getSharedServiceID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -21,7 +21,7 @@ func TestAccServiceDependencyResource_basic(t *testing.T) {
 		CheckDestroy:      testAccCheckServiceDependencyResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServiceDependencyResourceConfig_basic(rName),
+				Config: testAccServiceDependencyResourceConfig_basic(rName, sharedServiceID1, sharedServiceID2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckServiceDependencyResourceExistsWithAttributes_basic("firehydrant_service_dependency.test_service_dependency"),
 					resource.TestCheckResourceAttrSet("firehydrant_service_dependency.test_service_dependency", "id"),
@@ -34,6 +34,8 @@ func TestAccServiceDependencyResource_basic(t *testing.T) {
 }
 
 func TestAccServiceDependencyResource_update(t *testing.T) {
+	sharedServiceID1 := getSharedServiceID(t)
+	sharedServiceID2 := getSharedServiceID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -43,7 +45,7 @@ func TestAccServiceDependencyResource_update(t *testing.T) {
 		CheckDestroy:      testAccCheckServiceDependencyResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServiceDependencyResourceConfig_basic(rName),
+				Config: testAccServiceDependencyResourceConfig_basic(rName, sharedServiceID1, sharedServiceID2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckServiceDependencyResourceExistsWithAttributes_basic("firehydrant_service_dependency.test_service_dependency"),
 					resource.TestCheckResourceAttrSet("firehydrant_service_dependency.test_service_dependency", "id"),
@@ -52,7 +54,7 @@ func TestAccServiceDependencyResource_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccServiceDependencyResourceConfig_update(rNameUpdated),
+				Config: testAccServiceDependencyResourceConfig_update(rNameUpdated, sharedServiceID1, sharedServiceID2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckServiceDependencyResourceExistsWithAttributes_update("firehydrant_service_dependency.test_service_dependency"),
 					resource.TestCheckResourceAttrSet("firehydrant_service_dependency.test_service_dependency", "id"),
@@ -63,7 +65,7 @@ func TestAccServiceDependencyResource_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccServiceDependencyResourceConfig_basic(rNameUpdated),
+				Config: testAccServiceDependencyResourceConfig_basic(rNameUpdated, sharedServiceID1, sharedServiceID2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckServiceDependencyResourceExistsWithAttributes_basic("firehydrant_service_dependency.test_service_dependency"),
 					resource.TestCheckResourceAttrSet("firehydrant_service_dependency.test_service_dependency", "id"),
@@ -76,6 +78,8 @@ func TestAccServiceDependencyResource_update(t *testing.T) {
 }
 
 func TestAccServiceDependencyResourceImport_basic(t *testing.T) {
+	sharedServiceID1 := getSharedServiceID(t)
+	sharedServiceID2 := getSharedServiceID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -83,7 +87,7 @@ func TestAccServiceDependencyResourceImport_basic(t *testing.T) {
 		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServiceDependencyResourceConfig_basic(rName),
+				Config: testAccServiceDependencyResourceConfig_basic(rName, sharedServiceID1, sharedServiceID2),
 			},
 			{
 				ResourceName:      "firehydrant_service_dependency.test_service_dependency",
@@ -95,6 +99,8 @@ func TestAccServiceDependencyResourceImport_basic(t *testing.T) {
 }
 
 func TestAccServiceDependencyResourceImport_allAttributes(t *testing.T) {
+	sharedServiceID1 := getSharedServiceID(t)
+	sharedServiceID2 := getSharedServiceID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -102,7 +108,7 @@ func TestAccServiceDependencyResourceImport_allAttributes(t *testing.T) {
 		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServiceDependencyResourceConfig_update(rName),
+				Config: testAccServiceDependencyResourceConfig_update(rName, sharedServiceID1, sharedServiceID2),
 			},
 			{
 				ResourceName:      "firehydrant_service_dependency.test_service_dependency",
@@ -216,35 +222,19 @@ func testAccCheckServiceDependencyResourceDestroy() resource.TestCheckFunc {
 	}
 }
 
-func testAccServiceDependencyResourceConfig_basic(rName string) string {
+func testAccServiceDependencyResourceConfig_basic(rName, sharedServiceID1, sharedServiceID2 string) string {
 	return fmt.Sprintf(`
-resource "firehydrant_service" "test_service1" {
-  name = "test-service1-%s"
-}
-
-resource "firehydrant_service" "test_service2" {
-  name = "test-service2-%s"
-}
-
 resource "firehydrant_service_dependency" "test_service_dependency" {
-  service_id = firehydrant_service.test_service1.id
-  connected_service_id = firehydrant_service.test_service2.id
-}`, rName, rName)
+  service_id = "%s"
+  connected_service_id = "%s"
+}`, sharedServiceID1, sharedServiceID2)
 }
 
-func testAccServiceDependencyResourceConfig_update(rName string) string {
+func testAccServiceDependencyResourceConfig_update(rName, sharedServiceID1, sharedServiceID2 string) string {
 	return fmt.Sprintf(`
-resource "firehydrant_service" "test_service1" {
-  name = "test-service1-%s"
-}
-
-resource "firehydrant_service" "test_service2" {
-  name = "test-service2-%s"
-}
-
 resource "firehydrant_service_dependency" "test_service_dependency" {
-  service_id = firehydrant_service.test_service1.id
-  connected_service_id = firehydrant_service.test_service2.id
+  service_id = "%s"
+  connected_service_id = "%s"
   notes = "test-notes-%s"
-}`, rName, rName, rName)
+}`, sharedServiceID1, sharedServiceID2, rName)
 }

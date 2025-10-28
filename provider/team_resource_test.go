@@ -6,9 +6,6 @@ import (
 	"os"
 	"testing"
 
-	fhsdk "github.com/firehydrant/firehydrant-go-sdk"
-	"github.com/firehydrant/firehydrant-go-sdk/models/components"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -100,8 +97,8 @@ func TestAccTeamResourceImport_basic(t *testing.T) {
 func TestAccTeamResource_withMembership(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
+	// Use existing user from environment variable with fallback
 	existingUser := os.Getenv("EXISTING_USER_EMAIL")
-
 	if existingUser == "" {
 		existingUser = "local@firehydrant.io"
 	}
@@ -234,15 +231,15 @@ resource "firehydrant_team" "test_team" {
 }`, rName, rName)
 }
 
-func testAccTeamResourceConfig_withMembership(rName string, existingUser string) string {
+func testAccTeamResourceConfig_withMembership(rName string, userEmail string) string {
 	return fmt.Sprintf(`
-data "firehydrant_user" "test_user" {
-	email = "%s"
-}
-
 resource "firehydrant_incident_role" "test_incident_role" {
 	name    = "test-incident-role-%s"
 	summary = "test-summary-%s"
+}
+
+data "firehydrant_user" "test_user" {
+	email = "%s"
 }
 
 resource "firehydrant_team" "test_team" {
@@ -250,7 +247,7 @@ resource "firehydrant_team" "test_team" {
 
 	memberships {
 		user_id                  = data.firehydrant_user.test_user.id
-		default_incident_role_id = resource.firehydrant_incident_role.test_incident_role.id
+		default_incident_role_id = firehydrant_incident_role.test_incident_role.id
 	}
-}`, existingUser, rName, rName, rName)
+}`, rName, rName, userEmail, rName)
 }

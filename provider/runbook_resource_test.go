@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"regexp"
 	"testing"
 
@@ -48,6 +47,7 @@ func TestAccRunbookResource_basic(t *testing.T) {
 }
 
 func TestAccRunbookResource_update(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -77,7 +77,7 @@ func TestAccRunbookResource_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRunbookResourceConfig_update(rNameUpdated),
+				Config: testAccRunbookResourceConfig_update(rNameUpdated, sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckRunbookResourceExistsWithAttributes_update("firehydrant_runbook.test_runbook"),
 					resource.TestCheckResourceAttrSet("firehydrant_runbook.test_runbook", "id"),
@@ -221,6 +221,7 @@ func TestAccRunbookResourceImport_basic(t *testing.T) {
 }
 
 func TestAccRunbookResourceImport_allAttributes(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -228,7 +229,7 @@ func TestAccRunbookResourceImport_allAttributes(t *testing.T) {
 		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRunbookResourceConfig_update(rName),
+				Config: testAccRunbookResourceConfig_update(rName, sharedTeamID),
 			},
 			{
 				ResourceName:      "firehydrant_runbook.test_runbook",
@@ -498,12 +499,8 @@ resource "firehydrant_runbook" "test_runbook" {
 }`, rName)
 }
 
-func testAccRunbookResourceConfig_update(rName string) string {
+func testAccRunbookResourceConfig_update(rName, sharedTeamID string) string {
 	return fmt.Sprintf(`
-resource "firehydrant_team" "test_team1" {
-  name = "test-team1-%s"
-}
-
 data "firehydrant_runbook_action" "notify_channel" {
   slug             = "notify_channel"
   integration_slug = "slack"
@@ -517,7 +514,7 @@ data "firehydrant_runbook_action" "archive_channel" {
 resource "firehydrant_runbook" "test_runbook" {
   name        = "test-runbook-%s"
   description = "test-description-%s"
-  owner_id    = firehydrant_team.test_team1.id
+  owner_id    = "%s"
   attachment_rule = jsonencode({
     logic = {
       eq = [
@@ -574,7 +571,7 @@ resource "firehydrant_runbook" "test_runbook" {
     action_id = data.firehydrant_runbook_action.archive_channel.id
   }
 }
-`, rName, rName, rName)
+`, rName, rName, sharedTeamID)
 }
 
 func testAccRunbookResourceConfig_stepsRequiredRepeatsDurationNotSet(rName string) string {
