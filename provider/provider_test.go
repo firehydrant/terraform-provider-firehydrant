@@ -117,12 +117,12 @@ func testServiceExists(resourceName string) resource.TestCheckFunc {
 			return fmt.Errorf("ID was not set")
 		}
 
-		c, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
 
-		svc, err := c.Services().Get(context.TODO(), rs.Primary.ID)
+		svc, err := client.Services().Get(context.TODO(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -147,12 +147,12 @@ func testServiceDoesNotExist(resourceName string) resource.TestCheckFunc {
 			return fmt.Errorf("ID was not set")
 		}
 
-		c, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
 
-		svc, err := c.Services().Get(context.TODO(), rs.Primary.ID)
+		svc, err := client.Services().Get(context.TODO(), rs.Primary.ID)
 		if svc != nil {
 			return fmt.Errorf("The service existed, when it should not")
 		}

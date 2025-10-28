@@ -91,13 +91,11 @@ func testAccCheckCustomEventSourceResourceExistsWithAttributes_basic(resourceNam
 			return fmt.Errorf("No ID is set")
 		}
 
-		provider, err := getSharedProvider()
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
-		client := provider.Sdk
-
-		response, err := client.Signals.GetSignalsEventSource(context.TODO(), customEventSourceResource.Primary.ID)
+		response, err := client.Sdk.Signals.GetSignalsEventSource(context.TODO(), customEventSourceResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -128,7 +126,7 @@ func testAccCheckCustomEventSourceResourceExistsWithAttributes_basic(resourceNam
 
 func testAccCheckCustomEventSourceResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		provider, err := getSharedProvider()
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
@@ -143,7 +141,7 @@ func testAccCheckCustomEventSourceResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			_, err := client.Signals.GetSignalsEventSource(context.TODO(), stateResource.Primary.ID)
+			_, err := client.Sdk.Signals.GetSignalsEventSource(context.TODO(), stateResource.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("Custom Event Source %s still exists", stateResource.Primary.ID)
 			}

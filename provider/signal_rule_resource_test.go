@@ -305,7 +305,7 @@ func testAccCheckFireHydrantSignalRuleExists(resourceName string) resource.TestC
 
 func testAccCheckFireHydrantSignalRuleDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}

@@ -155,7 +155,7 @@ func testAccOnCallScheduleConfig_restrictions(rName string) string {
 
 func testAccCheckOnCallScheduleResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}

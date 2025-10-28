@@ -307,7 +307,7 @@ func testAccEscalationPolicyConfig_dynamicWithHandoffSteps(rName string) string 
 
 func testAccCheckEscalationPolicyResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}

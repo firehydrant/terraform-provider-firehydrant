@@ -136,13 +136,12 @@ func testAccCheckTeamResourceExistsWithAttributes_basic(resourceName string) res
 			return fmt.Errorf("No ID is set")
 		}
 
-		provider, err := getSharedProvider()
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
-		client := provider.Sdk
 
-		teamResponse, err := client.Teams.GetTeam(context.TODO(), teamResource.Primary.ID, nil)
+		teamResponse, err := client.Sdk.Teams.GetTeam(context.TODO(), teamResource.Primary.ID, nil)
 		if err != nil {
 			return err
 		}
@@ -170,13 +169,12 @@ func testAccCheckTeamResourceExistsWithAttributes_update(resourceName string) re
 			return fmt.Errorf("No ID is set")
 		}
 
-		provider, err := getSharedProvider()
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
-		client := provider.Sdk
 
-		teamResponse, err := client.Teams.GetTeam(context.TODO(), teamResource.Primary.ID, nil)
+		teamResponse, err := client.Sdk.Teams.GetTeam(context.TODO(), teamResource.Primary.ID, nil)
 		if err != nil {
 			return err
 		}
@@ -197,11 +195,10 @@ func testAccCheckTeamResourceExistsWithAttributes_update(resourceName string) re
 
 func testAccCheckTeamResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		provider, err := getSharedProvider()
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
-		client := provider.Sdk
 
 		for _, teamResource := range s.RootModule().Resources {
 			if teamResource.Type != "firehydrant_team" {
@@ -212,7 +209,7 @@ func testAccCheckTeamResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			_, err := client.Teams.GetTeam(context.TODO(), teamResource.Primary.ID, nil)
+			_, err := client.Sdk.Teams.GetTeam(context.TODO(), teamResource.Primary.ID, nil)
 			if err == nil {
 				return fmt.Errorf("Team %s still exists", teamResource.Primary.ID)
 			}

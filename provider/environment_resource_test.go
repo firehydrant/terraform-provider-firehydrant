@@ -124,7 +124,7 @@ func testAccCheckEnvironmentResourceExistsWithAttributes_basic(resourceName stri
 			return fmt.Errorf("No ID is set")
 		}
 
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
@@ -157,7 +157,7 @@ func testAccCheckEnvironmentResourceExistsWithAttributes_update(resourceName str
 			return fmt.Errorf("No ID is set")
 		}
 
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
@@ -183,7 +183,7 @@ func testAccCheckEnvironmentResourceExistsWithAttributes_update(resourceName str
 
 func testAccCheckEnvironmentResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
