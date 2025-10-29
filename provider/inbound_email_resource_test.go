@@ -14,15 +14,16 @@ import (
 )
 
 func TestAccInboundEmailResource_basic(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckInboundEmailResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccInboundEmailResourceConfig_basic(rName),
+				Config: testAccInboundEmailResourceConfig_basic(rName, sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckInboundEmailResourceExists("firehydrant_inbound_email.test"),
 					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "name", fmt.Sprintf("test-inbound-email-%s", rName)),
@@ -45,15 +46,16 @@ func TestAccInboundEmailResource_basic(t *testing.T) {
 }
 
 func TestAccInboundEmailResource_update(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckInboundEmailResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccInboundEmailResourceConfig_basic(rName),
+				Config: testAccInboundEmailResourceConfig_basic(rName, sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckInboundEmailResourceExists("firehydrant_inbound_email.test"),
 					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "name", fmt.Sprintf("test-inbound-email-%s", rName)),
@@ -61,7 +63,7 @@ func TestAccInboundEmailResource_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccInboundEmailResourceConfig_update(rName),
+				Config: testAccInboundEmailResourceConfig_update(rName, sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckInboundEmailResourceExists("firehydrant_inbound_email.test"),
 					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "name", fmt.Sprintf("updated-inbound-email-%s", rName)),
@@ -83,7 +85,7 @@ func TestAccInboundEmailResource_update(t *testing.T) {
 
 // 	resource.Test(t, resource.TestCase{
 // 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-// 		ProviderFactories: defaultProviderFactories(),
+// 		ProviderFactories: sharedProviderFactories(),
 // 		CheckDestroy:      testAccCheckInboundEmailResourceDestroy(),
 // 		Steps: []resource.TestStep{
 // 			{
@@ -192,12 +194,8 @@ func getTestClient() (firehydrant.Client, error) {
 	return client, nil
 }
 
-func testAccInboundEmailResourceConfig_basic(rName string) string {
+func testAccInboundEmailResourceConfig_basic(rName, sharedTeamID string) string {
 	return fmt.Sprintf(`
-resource "firehydrant_team" "test" {
-  name = "test-team-%s"
-}
-
 resource "firehydrant_inbound_email" "test" {
   name                   = "test-inbound-email-%s"
   slug                   = "test-inbound-email-%s"
@@ -207,20 +205,16 @@ resource "firehydrant_inbound_email" "test" {
   allowed_senders        = ["@firehydrant.com"]
   target {
     type = "Team"
-    id   = firehydrant_team.test.id
+    id   = "%s"
   }
   rules                  = ["email.body.contains(\"hello\")"]
   rule_matching_strategy = "all"
 }
-`, rName, rName, rName)
+`, rName, rName, sharedTeamID)
 }
 
-func testAccInboundEmailResourceConfig_update(rName string) string {
+func testAccInboundEmailResourceConfig_update(rName, sharedTeamID string) string {
 	return fmt.Sprintf(`
-resource "firehydrant_team" "test" {
-  name = "test-team-%s"
-}
-
 resource "firehydrant_inbound_email" "test" {
   name                   = "updated-inbound-email-%s"
   slug                   = "test-inbound-email-%s"
@@ -230,12 +224,12 @@ resource "firehydrant_inbound_email" "test" {
   allowed_senders        = ["@firehydrant.com", "@example.com"]
   target {
     type = "Team"
-    id   = firehydrant_team.test.id
+    id   = "%s"
   }
   rules                  = ["email.body.contains(\"hello\")", "email.body.contains(\"urgent\")"]
   rule_matching_strategy = "any"
 }
-`, rName, rName, rName)
+`, rName, rName, sharedTeamID)
 }
 
 // func testAccInboundResourceConfig_no_target(rName string) string {

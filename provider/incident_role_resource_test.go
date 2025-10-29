@@ -3,10 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -17,7 +15,7 @@ func TestAccIncidentRoleResource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckIncidentRoleResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -43,7 +41,7 @@ func TestAccIncidentRoleResource_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckIncidentRoleResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -94,7 +92,7 @@ func TestAccIncidentRoleResourceImport_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccIncidentRoleResourceConfig_basic(rName),
@@ -113,7 +111,7 @@ func TestAccIncidentRoleResourceImport_allAttributes(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccIncidentRoleResourceConfig_update(rName),
@@ -137,7 +135,7 @@ func testAccCheckIncidentRoleResourceExistsWithAttributes_basic(resourceName str
 			return fmt.Errorf("No ID is set")
 		}
 
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
@@ -176,7 +174,7 @@ func testAccCheckIncidentRoleResourceExistsWithAttributes_update(resourceName st
 			return fmt.Errorf("No ID is set")
 		}
 
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
@@ -207,7 +205,7 @@ func testAccCheckIncidentRoleResourceExistsWithAttributes_update(resourceName st
 
 func testAccCheckIncidentRoleResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}

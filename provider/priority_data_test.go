@@ -14,7 +14,7 @@ func TestAccPriorityDataSource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccPriorityDataSourceConfig_basic(rSlug),

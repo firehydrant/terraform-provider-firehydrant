@@ -13,7 +13,7 @@ func TestAccRunbookDataSource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccRunbookDataSourceConfig_basic(rName),
@@ -32,7 +32,7 @@ func TestAccRunbookDataSource_allAttributes(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccRunbookDataSourceConfig_allAttributes(rName),

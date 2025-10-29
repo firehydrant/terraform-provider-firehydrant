@@ -3,12 +3,9 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -20,7 +17,7 @@ func TestAccPriorityResource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckPriorityResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -44,7 +41,7 @@ func TestAccPriorityResource_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckPriorityResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -91,7 +88,7 @@ func TestAccPriorityResource_validateSchemaAttributesSlug(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccPriorityResourceConfig_slugTooLong(rSlug),
@@ -110,7 +107,7 @@ func TestAccPriorityResourceImport_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccPriorityResourceConfig_basic(rSlug),
@@ -129,7 +126,7 @@ func TestAccPriorityResourceImport_allAttributes(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccPriorityResourceConfig_update(rSlug),
@@ -153,7 +150,7 @@ func testAccCheckPriorityResourceExistsWithAttributes_basic(resourceSlug string)
 			return fmt.Errorf("No ID is set")
 		}
 
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
@@ -191,7 +188,7 @@ func testAccCheckPriorityResourceExistsWithAttributes_update(resourceSlug string
 			return fmt.Errorf("No ID is set")
 		}
 
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
@@ -222,7 +219,7 @@ func testAccCheckPriorityResourceExistsWithAttributes_update(resourceSlug string
 
 func testAccCheckPriorityResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}

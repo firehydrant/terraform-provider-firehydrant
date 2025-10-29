@@ -3,10 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -17,7 +15,7 @@ func TestAccTaskListResource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckTaskListResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -43,7 +41,7 @@ func TestAccTaskListResource_update(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckTaskListResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -102,7 +100,7 @@ func TestAccTaskListResourceImport_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccTaskListResourceConfig_basic(rName),
@@ -121,7 +119,7 @@ func TestAccTaskListResourceImport_allAttributes(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccTaskListResourceConfig_update(rName),
@@ -145,7 +143,7 @@ func testAccCheckTaskListResourceExistsWithAttributes_basic(resourceName string)
 			return fmt.Errorf("No ID is set")
 		}
 
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
@@ -193,7 +191,7 @@ func testAccCheckTaskListResourceExistsWithAttributes_update(resourceName string
 			return fmt.Errorf("No ID is set")
 		}
 
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
@@ -234,7 +232,7 @@ func testAccCheckTaskListResourceExistsWithAttributes_update(resourceName string
 
 func testAccCheckTaskListResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}

@@ -57,7 +57,7 @@ data "firehydrant_on_call_schedules" "schedules" {
 func (s *testOnCallSchedulesDataSuite) testResource(steps ...resource.TestStep) {
 	resource.Test(s.T(), resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(s.T()) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps:             steps,
 	})
 }

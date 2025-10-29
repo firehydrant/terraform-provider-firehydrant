@@ -41,7 +41,7 @@ func TestUserDataSource_OneMatch(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testUserDataSourceConfig_basic(),
@@ -82,7 +82,7 @@ func TestUserDataSource_MultipleMatches(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testUserDataSourceConfig_basic(),
@@ -115,7 +115,7 @@ func TestUserDataSource_NoMatches(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: mockProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:      testUserDataSourceConfig_basic(),

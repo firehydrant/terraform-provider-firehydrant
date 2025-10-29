@@ -3,10 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
-
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -18,7 +15,7 @@ func TestAccServiceResource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckServiceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -42,12 +39,14 @@ func TestAccServiceResource_basic(t *testing.T) {
 }
 
 func TestAccServiceResource_update(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedTeamID2 := getSharedTeamID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckServiceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -67,7 +66,7 @@ func TestAccServiceResource_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccServiceResourceConfig_update(rNameUpdated),
+				Config: testAccServiceResourceConfig_update(rNameUpdated, sharedTeamID, sharedTeamID2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckServiceResourceExistsWithAttributes_update("firehydrant_service.test_service"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "id"),
@@ -110,16 +109,18 @@ func TestAccServiceResource_update(t *testing.T) {
 }
 
 func TestAccServiceResource_updateLabels(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedTeamID2 := getSharedTeamID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckServiceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServiceResourceConfig_update(rName),
+				Config: testAccServiceResourceConfig_update(rName, sharedTeamID, sharedTeamID2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckServiceResourceExistsWithAttributes_update("firehydrant_service.test_service"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "id"),
@@ -142,7 +143,7 @@ func TestAccServiceResource_updateLabels(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccServiceResourceConfig_updateChangeLabels(rNameUpdated),
+				Config: testAccServiceResourceConfig_updateChangeLabels(rNameUpdated, sharedTeamID, sharedTeamID2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckServiceResourceExistsWithAttributes_update("firehydrant_service.test_service"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "id"),
@@ -192,16 +193,18 @@ func TestAccServiceResource_updateLabels(t *testing.T) {
 }
 
 func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedTeamID2 := getSharedTeamID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckServiceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServiceResourceConfig_update(rName),
+				Config: testAccServiceResourceConfig_update(rName, sharedTeamID, sharedTeamID2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckServiceResourceExistsWithAttributes_update("firehydrant_service.test_service"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "id"),
@@ -224,7 +227,7 @@ func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccServiceResourceConfig_update(rNameUpdated),
+				Config: testAccServiceResourceConfig_update(rNameUpdated, sharedTeamID, sharedTeamID2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckServiceResourceExistsWithAttributes_update("firehydrant_service.test_service"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "id"),
@@ -247,7 +250,7 @@ func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccServiceResourceConfig_updateChangeOwnerIDAndTeamIDs(rNameUpdated),
+				Config: testAccServiceResourceConfig_updateChangeOwnerIDAndTeamIDs(rNameUpdated, sharedTeamID, sharedTeamID2),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckServiceResourceExistsWithAttributes_update("firehydrant_service.test_service"),
 					resource.TestCheckResourceAttrSet("firehydrant_service.test_service", "id"),
@@ -297,7 +300,7 @@ func TestAccServiceResourceImport_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccServiceResourceConfig_basic(rName),
@@ -312,14 +315,16 @@ func TestAccServiceResourceImport_basic(t *testing.T) {
 }
 
 func TestAccServiceResourceImport_allAttributes(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedTeamID2 := getSharedTeamID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServiceResourceConfig_update(rName),
+				Config: testAccServiceResourceConfig_update(rName, sharedTeamID, sharedTeamID2),
 			},
 			{
 				ResourceName:      "firehydrant_service.test_service",
@@ -340,7 +345,7 @@ func testAccCheckServiceResourceExistsWithAttributes_basic(resourceName string) 
 			return fmt.Errorf("No ID is set")
 		}
 
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
@@ -405,7 +410,7 @@ func testAccCheckServiceResourceExistsWithAttributes_update(resourceName string)
 			return fmt.Errorf("No ID is set")
 		}
 
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
@@ -475,7 +480,7 @@ func testAccCheckServiceResourceExistsWithAttributes_update(resourceName string)
 
 func testAccCheckServiceResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
@@ -506,20 +511,8 @@ resource "firehydrant_service" "test_service" {
 }`, rName)
 }
 
-func testAccServiceResourceConfig_update(rName string) string {
+func testAccServiceResourceConfig_update(rName, sharedTeamID, sharedTeamID2 string) string {
 	return fmt.Sprintf(`
-resource "firehydrant_team" "test_team1" {
-  name = "test-team1-%s"
-}
-
-resource "firehydrant_team" "test_team2" {
-  name = "test-team2-%s"
-}
-
-resource "firehydrant_team" "test_team3" {
-  name = "test-team3-%s"
-}
-
 resource "firehydrant_service" "test_service" {
   name                     = "test-service-%s"
   alert_on_add             = true
@@ -536,29 +529,17 @@ resource "firehydrant_service" "test_service" {
     href_url = "https://example.com/test-link2-%s"
     name = "test-link2-%s"
   }
-  owner_id     = firehydrant_team.test_team1.id
+  owner_id     = "%s"
   service_tier = "1"
   team_ids = [
-    firehydrant_team.test_team2.id,
-    firehydrant_team.test_team3.id
+    "%s",
+    "%s"
   ]
-}`, rName, rName, rName, rName, rName, rName, rName, rName, rName, rName)
+}`, rName, rName, rName, rName, rName, rName, rName, sharedTeamID, sharedTeamID, sharedTeamID2)
 }
 
-func testAccServiceResourceConfig_updateChangeLabels(rName string) string {
+func testAccServiceResourceConfig_updateChangeLabels(rName, sharedTeamID, sharedTeamID2 string) string {
 	return fmt.Sprintf(`
-resource "firehydrant_team" "test_team1" {
-  name = "test-team1-%s"
-}
-
-resource "firehydrant_team" "test_team2" {
-  name = "test-team2-%s"
-}
-
-resource "firehydrant_team" "test_team3" {
-  name = "test-team3-%s"
-}
-
 resource "firehydrant_service" "test_service" {
   name                     = "test-service-%s"
   alert_on_add             = true
@@ -576,29 +557,17 @@ resource "firehydrant_service" "test_service" {
     href_url = "https://example.com/test-link2-%s"
     name = "test-link2-%s"
   }
-  owner_id     = firehydrant_team.test_team1.id
+  owner_id     = "%s"
   service_tier = "1"
   team_ids = [
-    firehydrant_team.test_team2.id,
-    firehydrant_team.test_team3.id
+    "%s",
+    "%s"
   ]
-}`, rName, rName, rName, rName, rName, rName, rName, rName, rName, rName, rName)
+}`, rName, rName, rName, rName, rName, rName, rName, rName, sharedTeamID, sharedTeamID, sharedTeamID2)
 }
 
-func testAccServiceResourceConfig_updateChangeOwnerIDAndTeamIDs(rName string) string {
+func testAccServiceResourceConfig_updateChangeOwnerIDAndTeamIDs(rName, sharedTeamID, sharedTeamID2 string) string {
 	return fmt.Sprintf(`
-resource "firehydrant_team" "test_team1" {
-  name = "test-team1-%s"
-}
-
-resource "firehydrant_team" "test_team2" {
-  name = "test-team2-%s"
-}
-
-resource "firehydrant_team" "test_team3" {
-  name = "test-team3-%s"
-}
-
 resource "firehydrant_service" "test_service" {
   name                     = "test-service-%s"
   alert_on_add             = true
@@ -615,11 +584,11 @@ resource "firehydrant_service" "test_service" {
     href_url = "https://example.com/test-link2-%s"
     name = "test-link2-%s"
   }
-  owner_id     = firehydrant_team.test_team2.id
+  owner_id     = "%s"
   service_tier = "1"
   team_ids = [
-    firehydrant_team.test_team1.id,
-    firehydrant_team.test_team3.id
+    "%s",
+    "%s"
   ]
-}`, rName, rName, rName, rName, rName, rName, rName, rName, rName, rName)
+}`, rName, rName, rName, rName, rName, rName, rName, sharedTeamID, sharedTeamID, sharedTeamID2)
 }

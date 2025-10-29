@@ -3,26 +3,26 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccEscalationPolicyResource_basic(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedScheduleID := getSharedOnCallScheduleID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckEscalationPolicyResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccEscalationPolicyConfig_basic(rName),
+				Config: testAccEscalationPolicyConfig_basic(rName, sharedTeamID, sharedScheduleID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_escalation_policy.test_escalation_policy", "id"),
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "name", fmt.Sprintf("test-escalation-policy-%s", rName)),
@@ -38,15 +38,17 @@ func TestAccEscalationPolicyResource_basic(t *testing.T) {
 }
 
 func TestAccEscalationPolicyResource_dynamicWithPriorityPolicies(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedScheduleID := getSharedOnCallScheduleID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckEscalationPolicyResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccEscalationPolicyConfig_dynamicPriority(rName),
+				Config: testAccEscalationPolicyConfig_dynamicPriority(rName, sharedTeamID, sharedScheduleID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_escalation_policy.test_escalation_policy", "id"),
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "name", fmt.Sprintf("test-escalation-policy-%s", rName)),
@@ -62,7 +64,7 @@ func TestAccEscalationPolicyResource_dynamicWithPriorityPolicies(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccEscalationPolicyConfig_dynamicPriorityUpdated(rName),
+				Config: testAccEscalationPolicyConfig_dynamicPriorityUpdated(rName, sharedTeamID, sharedScheduleID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_escalation_policy.test_escalation_policy", "id"),
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "name", fmt.Sprintf("test-escalation-policy-updated-%s", rName)),
@@ -81,15 +83,17 @@ func TestAccEscalationPolicyResource_dynamicWithPriorityPolicies(t *testing.T) {
 }
 
 func TestAccEscalationPolicyResource_dynamicWithHandoffSteps(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedScheduleID := getSharedOnCallScheduleID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckEscalationPolicyResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccEscalationPolicyConfig_dynamicWithHandoffSteps(rName),
+				Config: testAccEscalationPolicyConfig_dynamicWithHandoffSteps(rName, sharedTeamID, sharedScheduleID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_escalation_policy.test_escalation_policy", "id"),
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "name", fmt.Sprintf("test-escalation-policy-%s", rName)),
@@ -105,27 +109,10 @@ func TestAccEscalationPolicyResource_dynamicWithHandoffSteps(t *testing.T) {
 	})
 }
 
-func testAccEscalationPolicyConfig_basic(rName string) string {
+func testAccEscalationPolicyConfig_basic(rName, sharedTeamID, sharedScheduleID string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "test-team" {
-		name = "test-team-%s"
-	}
-
-	resource "firehydrant_on_call_schedule" "test_on_call_schedule" {
-		team_id = firehydrant_team.test-team.id
-		name = "test-on-call-schedule-restrictions-%s"
-		time_zone = "America/New_York"
-		slack_user_group_id = "test-group-1"
-
-		strategy {
-			type         = "weekly"
-			handoff_time = "10:00:00"
-			handoff_day  = "thursday"
-		}
-	}
-
 	resource "firehydrant_escalation_policy" "test_escalation_policy" {
-		team_id = firehydrant_team.test-team.id
+		team_id = "%s"
 		name = "test-escalation-policy-%s"
 		description = "test-description-%s"
 		repetitions = 1
@@ -136,39 +123,22 @@ func testAccEscalationPolicyConfig_basic(rName string) string {
 
 			targets {
 				type = "OnCallSchedule"
-				id   = firehydrant_on_call_schedule.test_on_call_schedule.id
+				id   = "%s"
 			}
 		}
 
 		handoff_step {
 			target_type = "Team"
-			target_id   = firehydrant_team.test-team.id
+			target_id   = "%s"
 		}
 	}
-	`, rName, rName, rName, rName)
+	`, sharedTeamID, rName, rName, sharedScheduleID, sharedTeamID)
 }
 
-func testAccEscalationPolicyConfig_dynamicPriority(rName string) string {
+func testAccEscalationPolicyConfig_dynamicPriority(rName, sharedTeamID, sharedScheduleID string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "test-team" {
-		name = "test-team-%s"
-	}
-
-	resource "firehydrant_on_call_schedule" "test_on_call_schedule" {
-		team_id = firehydrant_team.test-team.id
-		name = "test-on-call-schedule-restrictions-%s"
-		time_zone = "America/New_York"
-		slack_user_group_id = "test-group-1"
-
-		strategy {
-			type         = "weekly"
-			handoff_time = "10:00:00"
-			handoff_day  = "thursday"
-		}
-	}
-
 	resource "firehydrant_escalation_policy" "test_escalation_policy" {
-		team_id = firehydrant_team.test-team.id
+		team_id = "%s"
 		name = "test-escalation-policy-%s"
 		description = "test-description-%s"
 		repetitions = 1
@@ -180,7 +150,7 @@ func testAccEscalationPolicyConfig_dynamicPriority(rName string) string {
 
 			targets {
 				type = "OnCallSchedule"
-				id   = firehydrant_on_call_schedule.test_on_call_schedule.id
+				id   = "%s"
 			}
 		}
 
@@ -190,7 +160,7 @@ func testAccEscalationPolicyConfig_dynamicPriority(rName string) string {
 
 			targets {
 				type = "OnCallSchedule"
-				id   = firehydrant_on_call_schedule.test_on_call_schedule.id
+				id   = "%s"
 			}
 		}
 
@@ -204,30 +174,13 @@ func testAccEscalationPolicyConfig_dynamicPriority(rName string) string {
 			repetitions = 1
 		}
 	}
-	`, rName, rName, rName, rName)
+	`, sharedTeamID, rName, rName, sharedScheduleID, sharedScheduleID)
 }
 
-func testAccEscalationPolicyConfig_dynamicPriorityUpdated(rName string) string {
+func testAccEscalationPolicyConfig_dynamicPriorityUpdated(rName, sharedTeamID, sharedScheduleID string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "test-team" {
-		name = "test-team-%s"
-	}
-
-	resource "firehydrant_on_call_schedule" "test_on_call_schedule" {
-		team_id = firehydrant_team.test-team.id
-		name = "test-on-call-schedule-restrictions-%s"
-		time_zone = "America/New_York"
-		slack_user_group_id = "test-group-1"
-
-		strategy {
-			type         = "weekly"
-			handoff_time = "10:00:00"
-			handoff_day  = "thursday"
-		}
-	}
-
 	resource "firehydrant_escalation_policy" "test_escalation_policy" {
-		team_id = firehydrant_team.test-team.id
+		team_id = "%s"
 		name = "test-escalation-policy-updated-%s"
 		description = "test-description-updated-%s"
 		repetitions = 1
@@ -239,7 +192,7 @@ func testAccEscalationPolicyConfig_dynamicPriorityUpdated(rName string) string {
 
 			targets {
 				type = "OnCallSchedule"
-				id   = firehydrant_on_call_schedule.test_on_call_schedule.id
+				id   = "%s"
 			}
 		}
 
@@ -253,30 +206,13 @@ func testAccEscalationPolicyConfig_dynamicPriorityUpdated(rName string) string {
 			repetitions = 1
 		}
 	}
-	`, rName, rName, rName, rName)
+	`, sharedTeamID, rName, rName, sharedScheduleID)
 }
 
-func testAccEscalationPolicyConfig_dynamicWithHandoffSteps(rName string) string {
+func testAccEscalationPolicyConfig_dynamicWithHandoffSteps(rName, sharedTeamID, sharedScheduleID string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "test-team" {
-		name = "test-team-%s"
-	}
-
-	resource "firehydrant_on_call_schedule" "test_on_call_schedule" {
-		team_id = firehydrant_team.test-team.id
-		name = "test-on-call-schedule-restrictions-%s"
-		time_zone = "America/New_York"
-		slack_user_group_id = "test-group-1"
-
-		strategy {
-			type         = "weekly"
-			handoff_time = "10:00:00"
-			handoff_day  = "thursday"
-		}
-	}
-
 	resource "firehydrant_escalation_policy" "test_escalation_policy" {
-		team_id = firehydrant_team.test-team.id
+		team_id = "%s"
 		name = "test-escalation-policy-%s"
 		description = "test-description-%s"
 		repetitions = 1
@@ -288,7 +224,7 @@ func testAccEscalationPolicyConfig_dynamicWithHandoffSteps(rName string) string 
 
 			targets {
 				type = "OnCallSchedule"
-				id   = firehydrant_on_call_schedule.test_on_call_schedule.id
+				id   = "%s"
 			}
 		}
 
@@ -298,16 +234,16 @@ func testAccEscalationPolicyConfig_dynamicWithHandoffSteps(rName string) string 
 			
 			handoff_step {
 				target_type = "Team"
-				target_id   = firehydrant_team.test-team.id
+				target_id   = "%s"
 			}
 		}
 	}
-	`, rName, rName, rName, rName)
+	`, sharedTeamID, rName, rName, sharedScheduleID, sharedTeamID)
 }
 
 func testAccCheckEscalationPolicyResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -21,18 +20,18 @@ import (
 )
 
 func TestAccOnCallScheduleResource_basic(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckOnCallScheduleResourceDestroy(),
-			testAccCheckTeamResourceDestroy(),
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOnCallScheduleConfig_basic(rName),
+				Config: testAccOnCallScheduleConfig_basic(rName, sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_on_call_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule", "name", fmt.Sprintf("test-on-call-schedule-%s", rName)),
@@ -44,7 +43,7 @@ func TestAccOnCallScheduleResource_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOnCallScheduleConfig_restrictions(rName),
+				Config: testAccOnCallScheduleConfig_restrictions(rName, sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_on_call_schedule_with_restrictions", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_on_call_schedule_with_restrictions", "name", fmt.Sprintf("test-on-call-schedule-restrictions-%s", rName)),
@@ -62,7 +61,7 @@ func TestAccOnCallScheduleResource_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccOnCallScheduleConfig_customStrategy(rName),
+				Config: testAccOnCallScheduleConfig_customStrategy(rName, sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_custom_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_custom_schedule", "name", fmt.Sprintf("test-custom-schedule-%s", rName)),
@@ -75,14 +74,10 @@ func TestAccOnCallScheduleResource_basic(t *testing.T) {
 	})
 }
 
-func testAccOnCallScheduleConfig_basic(rName string) string {
+func testAccOnCallScheduleConfig_basic(rName, sharedTeamID string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "team_team" {
-		name = "test-team-%s"
-	}
-
 	resource "firehydrant_on_call_schedule" "test_on_call_schedule" {
-		team_id = firehydrant_team.team_team.id
+		team_id = "%s"
 		name = "test-on-call-schedule-%s"
 		description = "test-description-%s"
 		time_zone = "America/New_York"
@@ -93,17 +88,13 @@ func testAccOnCallScheduleConfig_basic(rName string) string {
 			handoff_day  = "thursday"
 		}
 	}
-	`, rName, rName, rName)
+	`, sharedTeamID, rName, rName)
 }
 
-func testAccOnCallScheduleConfig_customStrategy(rName string) string {
+func testAccOnCallScheduleConfig_customStrategy(rName, sharedTeamID string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "team_team" {
-		name = "test-team-%s"
-	}
-
 	resource "firehydrant_on_call_schedule" "test_custom_schedule" {
-		team_id = firehydrant_team.team_team.id
+		team_id = "%s"
 		name = "test-custom-schedule-%s"
 		description = "test-description-%s"
 		time_zone = "America/New_York"
@@ -114,17 +105,13 @@ func testAccOnCallScheduleConfig_customStrategy(rName string) string {
 			shift_duration = "PT8H"
 		}
 	}
-	`, rName, rName, rName, time.Now().Add(24*time.Hour).Format(time.RFC3339))
+	`, sharedTeamID, rName, rName, time.Now().Add(24*time.Hour).Format(time.RFC3339))
 }
 
-func testAccOnCallScheduleConfig_restrictions(rName string) string {
+func testAccOnCallScheduleConfig_restrictions(rName, sharedTeamID string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "team_team" {
-		name = "test-team-%s"
-	}
-
 	resource "firehydrant_on_call_schedule" "test_on_call_schedule_with_restrictions" {
-		team_id = firehydrant_team.team_team.id
+		team_id = "%s"
 		name = "test-on-call-schedule-restrictions-%s"
 		description = "test-description-%s"
 		time_zone = "America/New_York"
@@ -150,12 +137,12 @@ func testAccOnCallScheduleConfig_restrictions(rName string) string {
 			end_time = "18:00:00"
 		}
 	}
-	`, rName, rName, rName)
+	`, sharedTeamID, rName, rName)
 }
 
 func testAccCheckOnCallScheduleResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client, err := firehydrant.NewRestClient(os.Getenv("FIREHYDRANT_API_KEY"))
+		client, err := getAccTestClient()
 		if err != nil {
 			return err
 		}
@@ -352,19 +339,19 @@ func TestOfflineOnCallScheduleCreateDeprecated(t *testing.T) {
 }
 
 func TestAccOnCallScheduleResource_updateHandoffAndRestrictions(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckOnCallScheduleResourceDestroy(),
-			testAccCheckTeamResourceDestroy(),
 		),
 		Steps: []resource.TestStep{
 			{
 				// Initial configuration
-				Config: testAccOnCallScheduleConfig_withHandoff(rName, "monday", "09:00:00"),
+				Config: testAccOnCallScheduleConfig_withHandoff(rName, "monday", "09:00:00", sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "name", fmt.Sprintf("test-schedule-%s", rName)),
@@ -380,7 +367,7 @@ func TestAccOnCallScheduleResource_updateHandoffAndRestrictions(t *testing.T) {
 			},
 			{
 				// Update handoff day/time and add restrictions
-				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "wednesday", "13:00:00"),
+				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "wednesday", "13:00:00", sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "name", fmt.Sprintf("test-schedule-%s", rName)),
@@ -404,7 +391,7 @@ func TestAccOnCallScheduleResource_updateHandoffAndRestrictions(t *testing.T) {
 			},
 			{
 				// Update just handoff time, keeping restrictions
-				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "wednesday", "15:00:00"),
+				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "wednesday", "15:00:00", sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
 					// Changed handoff time only
@@ -418,14 +405,10 @@ func TestAccOnCallScheduleResource_updateHandoffAndRestrictions(t *testing.T) {
 	})
 }
 
-func testAccOnCallScheduleConfig_withHandoff(rName, handoffDay, handoffTime string) string {
+func testAccOnCallScheduleConfig_withHandoff(rName, handoffDay, handoffTime, sharedTeamID string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "test_team" {
-		name = "test-team-%s"
-	}
-
 	resource "firehydrant_on_call_schedule" "test_schedule" {
-		team_id = firehydrant_team.test_team.id
+		team_id = "%s"
 		name = "test-schedule-%s"
 		time_zone = "America/New_York"
 		slack_user_group_id = "test-group-1"
@@ -436,17 +419,13 @@ func testAccOnCallScheduleConfig_withHandoff(rName, handoffDay, handoffTime stri
 			handoff_day  = "%s"
 		}
 	}
-	`, rName, rName, handoffTime, handoffDay)
+	`, sharedTeamID, rName, handoffTime, handoffDay)
 }
 
-func testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, handoffDay, handoffTime string) string {
+func testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, handoffDay, handoffTime, sharedTeamID string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "test_team" {
-		name = "test-team-%s"
-	}
-
 	resource "firehydrant_on_call_schedule" "test_schedule" {
-		team_id = firehydrant_team.test_team.id
+		team_id = "%s"
 		name = "test-schedule-%s"
 		time_zone = "America/New_York"
 		slack_user_group_id = "test-group-1"
@@ -471,23 +450,23 @@ func testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, handoffDay, h
 			end_time = "17:00:00"
 		}
 	}
-	`, rName, rName, handoffTime, handoffDay)
+	`, sharedTeamID, rName, handoffTime, handoffDay)
 }
 
 func TestAccOnCallScheduleResource_scheduleModifications(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckOnCallScheduleResourceDestroy(),
-			testAccCheckTeamResourceDestroy(),
 		),
 		Steps: []resource.TestStep{
 			{
 				// Initial configuration with restrictions
-				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "monday", "09:00:00"),
+				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "monday", "09:00:00", sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.type", "weekly"),
@@ -498,7 +477,7 @@ func TestAccOnCallScheduleResource_scheduleModifications(t *testing.T) {
 			},
 			{
 				// Change just handoff day, keeping time and restrictions
-				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "friday", "09:00:00"),
+				Config: testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, "friday", "09:00:00", sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "friday"),
@@ -519,7 +498,7 @@ func TestAccOnCallScheduleResource_scheduleModifications(t *testing.T) {
 			// },
 			{
 				// Add different restriction pattern
-				Config: testAccOnCallScheduleConfig_withBusinessHours(rName, "friday", "09:00:00"),
+				Config: testAccOnCallScheduleConfig_withBusinessHours(rName, "friday", "09:00:00", sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "friday"),
@@ -536,14 +515,10 @@ func TestAccOnCallScheduleResource_scheduleModifications(t *testing.T) {
 	})
 }
 
-func testAccOnCallScheduleConfig_withBusinessHours(rName, handoffDay, handoffTime string) string {
+func testAccOnCallScheduleConfig_withBusinessHours(rName, handoffDay, handoffTime, sharedTeamID string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "test_team" {
-		name = "test-team-%s"
-	}
-
 	resource "firehydrant_on_call_schedule" "test_schedule" {
-		team_id = firehydrant_team.test_team.id
+		team_id = "%s"
 		name = "test-schedule-%s"
 		time_zone = "America/New_York"
 		slack_user_group_id = "test-group-1"
@@ -561,17 +536,18 @@ func testAccOnCallScheduleConfig_withBusinessHours(rName, handoffDay, handoffTim
 			end_time = "17:00:00"
 		}
 	}
-	`, rName, rName, handoffTime, handoffDay)
+	`, sharedTeamID, rName, handoffTime, handoffDay)
 }
 
 func TestAccOnCallScheduleResource_effectiveAt(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 	futureTime := time.Now().Add(24 * time.Hour).Format(time.RFC3339) // Tomorrow
 	pastTime := time.Now().Add(-24 * time.Hour).Format(time.RFC3339)  // Yesterday
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckOnCallScheduleResourceDestroy(),
 			testAccCheckTeamResourceDestroy(),
@@ -579,7 +555,7 @@ func TestAccOnCallScheduleResource_effectiveAt(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Initial schedule setup
-				Config: testAccOnCallScheduleConfig_withHandoff(rName, "monday", "09:00:00"),
+				Config: testAccOnCallScheduleConfig_withHandoff(rName, "monday", "09:00:00", sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "monday"),
@@ -588,7 +564,7 @@ func TestAccOnCallScheduleResource_effectiveAt(t *testing.T) {
 			},
 			{
 				// Update with future effective_at
-				Config: testAccOnCallScheduleConfig_withEffectiveAt(rName, "friday", "13:00:00", futureTime),
+				Config: testAccOnCallScheduleConfig_withEffectiveAt(rName, "friday", "13:00:00", futureTime, sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "friday"),
@@ -599,7 +575,7 @@ func TestAccOnCallScheduleResource_effectiveAt(t *testing.T) {
 			},
 			{
 				// Update with past effective_at (should apply immediately)
-				Config: testAccOnCallScheduleConfig_withEffectiveAt(rName, "wednesday", "15:00:00", pastTime),
+				Config: testAccOnCallScheduleConfig_withEffectiveAt(rName, "wednesday", "15:00:00", pastTime, sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_schedule", "id"),
 					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_schedule", "strategy.0.handoff_day", "wednesday"),
@@ -610,26 +586,22 @@ func TestAccOnCallScheduleResource_effectiveAt(t *testing.T) {
 			},
 			{
 				// Test invalid timestamp format
-				Config:      testAccOnCallScheduleConfig_withEffectiveAt(rName, "thursday", "10:00:00", "invalid-timestamp"),
+				Config:      testAccOnCallScheduleConfig_withEffectiveAt(rName, "thursday", "10:00:00", "invalid-timestamp", sharedTeamID),
 				ExpectError: regexp.MustCompile("effective_at must be a valid RFC3339 timestamp"),
 			},
 			{
 				// Verify plan is empty when effective_at changes but nothing else does
-				Config:   testAccOnCallScheduleConfig_withEffectiveAt(rName, "wednesday", "15:00:00", futureTime),
+				Config:   testAccOnCallScheduleConfig_withEffectiveAt(rName, "wednesday", "15:00:00", futureTime, sharedTeamID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func testAccOnCallScheduleConfig_withEffectiveAt(rName, handoffDay, handoffTime, effectiveAt string) string {
+func testAccOnCallScheduleConfig_withEffectiveAt(rName, handoffDay, handoffTime, effectiveAt, sharedTeamID string) string {
 	return fmt.Sprintf(`
-	resource "firehydrant_team" "test_team" {
-		name = "test-team-%s"
-	}
-
 	resource "firehydrant_on_call_schedule" "test_schedule" {
-		team_id = firehydrant_team.test_team.id
+		team_id = "%s"
 		name = "test-schedule-%s"
 		time_zone = "America/New_York"
 		slack_user_group_id = "test-group-1"
@@ -642,24 +614,25 @@ func testAccOnCallScheduleConfig_withEffectiveAt(rName, handoffDay, handoffTime,
 
 		effective_at = "%s"
 	}
-	`, rName, rName, handoffTime, handoffDay, effectiveAt)
+	`, sharedTeamID, rName, handoffTime, handoffDay, effectiveAt)
 }
 
 func TestAccOnCallScheduleResourceImport_basic(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resourceName := "firehydrant_on_call_schedule.test_on_call_schedule"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckOnCallScheduleResourceDestroy(),
 			testAccCheckTeamResourceDestroy(),
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOnCallScheduleConfig_basic(rName),
+				Config: testAccOnCallScheduleConfig_basic(rName, sharedTeamID),
 			},
 			{
 				ResourceName: resourceName,

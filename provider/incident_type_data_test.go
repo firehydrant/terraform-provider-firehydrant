@@ -13,7 +13,7 @@ func TestAccIncidentTypeDataSource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckIncidentTypeResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -35,7 +35,7 @@ func TestAccIncidentTypeDataSource_allAttributes(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIncidentTypeResourceDestroy(),
 			testAccCheckTeamResourceDestroy(),

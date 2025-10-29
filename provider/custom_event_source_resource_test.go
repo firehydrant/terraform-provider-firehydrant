@@ -3,11 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
-
-	fhsdk "github.com/firehydrant/firehydrant-go-sdk"
-	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -16,7 +12,7 @@ import (
 func TestAccCustomEventSourceResource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckCustomEventSourceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -42,7 +38,7 @@ func TestAccCustomEventSourceResource_basic(t *testing.T) {
 func TestAccCustomEventSourceResource_update(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckCustomEventSourceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
@@ -91,9 +87,11 @@ func testAccCheckCustomEventSourceResourceExistsWithAttributes_basic(resourceNam
 			return fmt.Errorf("No ID is set")
 		}
 
-		client := fhsdk.New(fhsdk.WithSecurity(components.Security{APIKey: os.Getenv("FIREHYDRANT_API_KEY")}))
-
-		response, err := client.Signals.GetSignalsEventSource(context.TODO(), customEventSourceResource.Primary.ID)
+		client, err := getAccTestClient()
+		if err != nil {
+			return err
+		}
+		response, err := client.Sdk.Signals.GetSignalsEventSource(context.TODO(), customEventSourceResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -124,7 +122,10 @@ func testAccCheckCustomEventSourceResourceExistsWithAttributes_basic(resourceNam
 
 func testAccCheckCustomEventSourceResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client := fhsdk.New(fhsdk.WithSecurity(components.Security{APIKey: os.Getenv("FIREHYDRANT_API_KEY")}))
+		client, err := getAccTestClient()
+		if err != nil {
+			return err
+		}
 
 		for _, stateResource := range s.RootModule().Resources {
 			if stateResource.Type != "firehydrant_custom_event_source" {
@@ -135,7 +136,7 @@ func testAccCheckCustomEventSourceResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			_, err := client.Signals.GetSignalsEventSource(context.TODO(), stateResource.Primary.ID)
+			_, err := client.Sdk.Signals.GetSignalsEventSource(context.TODO(), stateResource.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("Custom Event Source %s still exists", stateResource.Primary.ID)
 			}
@@ -169,7 +170,7 @@ func TestAccCustomEventSourceResourceImport_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-		ProviderFactories: defaultProviderFactories(),
+		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckCustomEventSourceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
