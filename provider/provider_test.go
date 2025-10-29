@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"testing"
 
@@ -37,8 +38,7 @@ func TestMain(m *testing.M) {
 		// Initialize shared resources (creates missing ones)
 		if resources != nil {
 			if err := resources.InitializeSharedResources(ctx, client); err != nil {
-				fmt.Printf("Failed to initialize shared resources: %v\n", err)
-				os.Exit(1)
+				log.Fatalf("Failed to initialize shared resources: %v", err)
 			}
 
 			// Ensure cleanup happens
