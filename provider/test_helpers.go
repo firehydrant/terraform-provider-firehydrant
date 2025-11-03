@@ -139,12 +139,12 @@ func testAccCheckResourceDestroy(resourceType string) resource.TestCheckFunc {
 					return fmt.Errorf("%s %s still exists", resourceType, stateResource.Primary.ID)
 				}
 			case "firehydrant_service":
-				_, err := client.Services().Get(context.TODO(), stateResource.Primary.ID)
+				_, err := client.Sdk.CatalogEntries.GetService(context.TODO(), stateResource.Primary.ID)
 				if err == nil {
 					return fmt.Errorf("%s %s still exists", resourceType, stateResource.Primary.ID)
 				}
 			case "firehydrant_environment":
-				_, err := client.Environments().Get(context.TODO(), stateResource.Primary.ID)
+				_, err := client.Sdk.CatalogEntries.GetEnvironment(context.TODO(), stateResource.Primary.ID)
 				if err == nil {
 					return fmt.Errorf("%s %s still exists", resourceType, stateResource.Primary.ID)
 				}
@@ -190,12 +190,12 @@ func testAccResourceExists(resourceType, resourceName string) resource.TestCheck
 				return fmt.Errorf("Error getting %s: %v", resourceType, err)
 			}
 		case "firehydrant_service":
-			_, err := client.Services().Get(context.TODO(), rs.Primary.ID)
+			_, err := client.Sdk.CatalogEntries.GetService(context.TODO(), rs.Primary.ID)
 			if err != nil {
 				return fmt.Errorf("Error getting %s: %v", resourceType, err)
 			}
 		case "firehydrant_environment":
-			_, err := client.Environments().Get(context.TODO(), rs.Primary.ID)
+			_, err := client.Sdk.CatalogEntries.GetEnvironment(context.TODO(), rs.Primary.ID)
 			if err != nil {
 				return fmt.Errorf("Error getting %s: %v", resourceType, err)
 			}
@@ -238,12 +238,12 @@ func testAccCheckResourceExistsWithAttributes(resourceType, resourceName string,
 				return fmt.Errorf("Error getting team: %v", err)
 			}
 		case "firehydrant_service":
-			_, err := client.Services().Get(context.TODO(), rs.Primary.ID)
+			_, err := client.Sdk.CatalogEntries.GetService(context.TODO(), rs.Primary.ID)
 			if err != nil {
 				return fmt.Errorf("Error getting service: %v", err)
 			}
 		case "firehydrant_environment":
-			_, err := client.Environments().Get(context.TODO(), rs.Primary.ID)
+			_, err := client.Sdk.CatalogEntries.GetEnvironment(context.TODO(), rs.Primary.ID)
 			if err != nil {
 				return fmt.Errorf("Error getting environment: %v", err)
 			}

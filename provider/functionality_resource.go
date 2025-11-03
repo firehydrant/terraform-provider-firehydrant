@@ -202,12 +202,6 @@ func updateResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 	autoAddRespondingTeam := d.Get("auto_add_responding_team").(bool)
 	labels := convertStringMap(d.Get("labels").(map[string]interface{}))
 
-	// Work around SDK's omitempty tag on labels: if labels are empty, we need to send
-	// {"labels": {"": ""}} to clear them, otherwise omitempty will omit the field entirely
-	if len(labels) == 0 {
-		labels = map[string]string{"": ""}
-	}
-
 	removeRemainingServices := true
 	updateRequest := components.UpdateFunctionality{
 		Name:                    &name,
@@ -218,6 +212,8 @@ func updateResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 	}
 
 	// Process services
+	// Always initialize Services as empty slice (not nil) so empty array is sent to clear services
+	updateRequest.Services = []components.UpdateFunctionalityService{}
 	serviceIDs := d.Get("service_ids").(*schema.Set).List()
 	for _, serviceID := range serviceIDs {
 		updateRequest.Services = append(updateRequest.Services, components.UpdateFunctionalityService{
@@ -237,6 +233,8 @@ func updateResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resou
 	}
 
 	// Process team IDs
+	// Always initialize Teams as empty slice (not nil) so empty array is sent to clear teams
+	updateRequest.Teams = []components.UpdateFunctionalityTeam{}
 	teamIDs := d.Get("team_ids").(*schema.Set).List()
 	for _, teamID := range teamIDs {
 		updateRequest.Teams = append(updateRequest.Teams, components.UpdateFunctionalityTeam{

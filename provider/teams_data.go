@@ -7,8 +7,6 @@ import (
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/operations"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
-
-	"github.com/firehydrant/firehydrant-go-sdk/models/operations"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"

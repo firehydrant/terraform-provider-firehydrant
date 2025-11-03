@@ -227,19 +227,19 @@ func (r *SharedTestResources) createSharedIncidentRole(ctx context.Context, clie
 
 // createSharedService creates a service with the given name
 func (r *SharedTestResources) createSharedService(ctx context.Context, client *firehydrant.APIClient, name string) (string, error) {
-	createRequest := firehydrant.CreateServiceRequest{
+	createRequest := components.CreateService{
 		Name: name,
 		Labels: map[string]string{
 			"test": "shared",
 		},
 	}
 
-	serviceResponse, err := client.Services().Create(ctx, createRequest)
+	serviceResponse, err := client.Sdk.CatalogEntries.CreateService(ctx, createRequest)
 	if err != nil {
 		return "", fmt.Errorf("failed to create service %s: %w", name, err)
 	}
 
-	return serviceResponse.ID, nil
+	return *serviceResponse.ID, nil
 }
 
 // LoadFromEnvironment loads shared resources from FIREHYDRANT_TEST_RESOURCES JSON environment variable
@@ -422,7 +422,7 @@ func (r *SharedTestResources) DestroyCreatedResources(ctx context.Context, clien
 
 	// Destroy services
 	for _, serviceID := range r.CreatedResources.ServiceIDs {
-		if err := client.Services().Delete(ctx, serviceID); err != nil {
+		if err := client.Sdk.CatalogEntries.DeleteService(ctx, serviceID); err != nil {
 			fmt.Printf("Warning: Failed to delete service %s: %v\n", serviceID, err)
 		}
 	}

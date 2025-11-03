@@ -294,12 +294,6 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	serviceTier := d.Get("service_tier").(int)
 	labels := convertStringMap(d.Get("labels").(map[string]interface{}))
 
-	// Work around SDK's omitempty tag on labels: if labels are empty, we need to send
-	// {"labels": {""}} to clear them, otherwise omitempty will omit the field entirely
-	if len(labels) == 0 {
-		labels = map[string]string{"": ""}
-	}
-
 	// Process any optional attributes and add to the update request if necessary
 
 	updateRequest := components.UpdateService{
@@ -323,6 +317,8 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Process links
+	// Always initialize Links as empty slice (not nil) so empty array is sent to clear links
+	updateRequest.Links = []components.UpdateServiceLink{}
 	links := d.Get("links").(*schema.Set).List()
 	for _, currentLink := range links {
 		link := currentLink.(map[string]interface{})
@@ -335,6 +331,8 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	}
 
 	// Process team IDs
+	// Always initialize Teams as empty slice (not nil) so empty array is sent to clear teams
+	updateRequest.Teams = []components.UpdateServiceTeam{}
 	teamIDs := d.Get("team_ids").(*schema.Set).List()
 	for _, teamID := range teamIDs {
 		updateRequest.Teams = append(updateRequest.Teams, components.UpdateServiceTeam{
@@ -346,6 +344,8 @@ func updateResourceFireHydrantService(ctx context.Context, d *schema.ResourceDat
 	updateRequest.RemoveRemainingTeams = &removeRemainingTeams
 
 	// Process external resources
+	// Always initialize ExternalResources as empty slice (not nil) so empty array is sent to clear external resources
+	updateRequest.ExternalResources = []components.UpdateServiceExternalResource{}
 	externalResources := d.Get("external_resources").(*schema.Set).List()
 	for _, currentER := range externalResources {
 		er := currentER.(map[string]interface{})
