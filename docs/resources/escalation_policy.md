@@ -97,3 +97,11 @@ The `handoff_step` block supports:
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the escalation policy.
+
+## Import
+
+Escalation policies can be imported; use `<TeamID>:<EscationPolicyID>` as the import ID. For example:
+
+```shell
+terraform import firehydrant_escalation_policy.example_rule 3638b647-b99c-5051-b715-eda2c912c42e:12345678-90ab-cdef-1234-567890abcdef
+```
