@@ -313,3 +313,37 @@ func testAccCheckFireHydrantSignalRuleDestroy() resource.TestCheckFunc {
 		return nil
 	}
 }
+
+func TestAccSignalRuleResourceImport_basic(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+	priority := "MEDIUM"
+
+	resourceName := "firehydrant_signal_rule.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: sharedProviderFactories(),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckFireHydrantSignalRuleDestroy(),
+			testAccCheckTeamResourceDestroy(),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFireHydrantSignalRuleConfigBasic(rName, priority, sharedTeamID),
+			},
+			{
+				ResourceName: resourceName,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("Not found: %s", resourceName)
+					}
+					return fmt.Sprintf("%s:%s", rs.Primary.Attributes["team_id"], rs.Primary.Attributes["id"]), nil
+				},
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}

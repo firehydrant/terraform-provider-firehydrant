@@ -271,3 +271,37 @@ func testAccCheckEscalationPolicyResourceDestroy() resource.TestCheckFunc {
 		return nil
 	}
 }
+
+func TestAccEscalationPolicyResourceImport_basic(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedScheduleID := getSharedOnCallScheduleID(t)
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
+	resourceName := "firehydrant_escalation_policy.test_escalation_policy"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: sharedProviderFactories(),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckEscalationPolicyResourceDestroy(),
+			testAccCheckTeamResourceDestroy(),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccEscalationPolicyConfig_basic(rName, sharedTeamID, sharedScheduleID),
+			},
+			{
+				ResourceName: resourceName,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("Not found: %s", resourceName)
+					}
+					return fmt.Sprintf("%s:%s", rs.Primary.Attributes["team_id"], rs.Primary.Attributes["id"]), nil
+				},
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
