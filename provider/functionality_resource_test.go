@@ -63,6 +63,9 @@ func TestAccFunctionalityResource_update(t *testing.T) {
 						"firehydrant_functionality.test_functionality", "description", fmt.Sprintf("test-description-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_functionality.test_functionality", "service_ids.#", "2"),
+					resource.TestCheckResourceAttrSet("firehydrant_functionality.test_functionality", "owner_id"),
+					resource.TestCheckResourceAttr("firehydrant_functionality.test_functionality", "team_ids.#", "2"),
+					resource.TestCheckResourceAttr("firehydrant_functionality.test_functionality", "auto_add_responding_team", "true"),
 				),
 			},
 			{
@@ -135,18 +138,18 @@ func testAccCheckFunctionalityResourceExistsWithAttributes_basic(resourceName st
 			return err
 		}
 
-		functionalityResponse, err := client.Functionalities().Get(context.TODO(), functionalityResource.Primary.ID)
+		functionalityResponse, err := client.Sdk.CatalogEntries.GetFunctionality(context.TODO(), functionalityResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		expected, got := functionalityResource.Primary.Attributes["name"], functionalityResponse.Name
+		expected, got := functionalityResource.Primary.Attributes["name"], *functionalityResponse.Name
 		if expected != got {
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
 		}
 
-		if functionalityResponse.Description != "" {
-			return fmt.Errorf("Unexpected description. Expected no description, got: %s", functionalityResponse.Description)
+		if functionalityResponse.Description != nil && *functionalityResponse.Description != "" {
+			return fmt.Errorf("Unexpected description. Expected no description, got: %s", *functionalityResponse.Description)
 		}
 
 		if len(functionalityResponse.Services) != 0 {
@@ -172,17 +175,17 @@ func testAccCheckFunctionalityResourceExistsWithAttributes_update(resourceName s
 			return err
 		}
 
-		functionalityResponse, err := client.Functionalities().Get(context.TODO(), functionalityResource.Primary.ID)
+		functionalityResponse, err := client.Sdk.CatalogEntries.GetFunctionality(context.TODO(), functionalityResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		expected, got := functionalityResource.Primary.Attributes["name"], functionalityResponse.Name
+		expected, got := functionalityResource.Primary.Attributes["name"], *functionalityResponse.Name
 		if expected != got {
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = functionalityResource.Primary.Attributes["description"], functionalityResponse.Description
+		expected, got = functionalityResource.Primary.Attributes["description"], *functionalityResponse.Description
 		if expected != got {
 			return fmt.Errorf("Unexpected description. Expected: %s, got: %s", expected, got)
 		}
@@ -212,7 +215,7 @@ func testAccCheckFunctionalityResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			_, err := client.Functionalities().Get(context.TODO(), functionalityResource.Primary.ID)
+			_, err := client.Sdk.CatalogEntries.GetFunctionality(context.TODO(), functionalityResource.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("Functionality %s still exists", functionalityResource.Primary.ID)
 			}
@@ -242,6 +245,18 @@ resource "firehydrant_service" "test_service2" {
   name = "test-service2-%s"
 }
 
+resource "firehydrant_team" "test_team1" {
+  name = "test-team1-%s"
+}
+
+resource "firehydrant_team" "test_team2" {
+  name = "test-team2-%s"
+}
+
+resource "firehydrant_team" "test_team3" {
+  name = "test-team3-%s"
+}
+
 resource "firehydrant_functionality" "test_functionality" {
   name        = "test-functionality-%s"
   description = "test-description-%s"
@@ -253,5 +268,12 @@ resource "firehydrant_functionality" "test_functionality" {
     firehydrant_service.test_service1.id,
     firehydrant_service.test_service2.id
   ]
-}`, rName, rName, rName, rName)
+
+  owner_id = firehydrant_team.test_team1.id
+  team_ids = [
+    firehydrant_team.test_team2.id,
+    firehydrant_team.test_team3.id
+  ]
+  auto_add_responding_team = true
+}`, rName, rName, rName, rName, rName, rName, rName)
 }

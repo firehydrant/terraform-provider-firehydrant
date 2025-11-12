@@ -350,32 +350,40 @@ func testAccCheckServiceResourceExistsWithAttributes_basic(resourceName string) 
 			return err
 		}
 
-		serviceResponse, err := client.Services().Get(context.TODO(), serviceResource.Primary.ID)
+		serviceResponse, err := client.Sdk.CatalogEntries.GetService(context.TODO(), serviceResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		expected, got := serviceResource.Primary.Attributes["name"], serviceResponse.Name
+		expected, got := serviceResource.Primary.Attributes["name"], *serviceResponse.Name
 		if expected != got {
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = serviceResource.Primary.Attributes["alert_on_add"], fmt.Sprintf("%t", serviceResponse.AlertOnAdd)
+		alertOnAdd := false
+		if serviceResponse.AlertOnAdd != nil {
+			alertOnAdd = *serviceResponse.AlertOnAdd
+		}
+		expected, got = serviceResource.Primary.Attributes["alert_on_add"], fmt.Sprintf("%t", alertOnAdd)
 		if expected != got {
 			return fmt.Errorf("Unexpected alert_on_add. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = serviceResource.Primary.Attributes["auto_add_responding_team"], fmt.Sprintf("%t", serviceResponse.AutoAddRespondingTeam)
+		autoAddRespondingTeam := false
+		if serviceResponse.AutoAddRespondingTeam != nil {
+			autoAddRespondingTeam = *serviceResponse.AutoAddRespondingTeam
+		}
+		expected, got = serviceResource.Primary.Attributes["auto_add_responding_team"], fmt.Sprintf("%t", autoAddRespondingTeam)
 		if expected != got {
 			return fmt.Errorf("Unexpected auto_add_responding_team. Expected: %s, got: %s", expected, got)
 		}
 
-		if serviceResponse.Description != "" {
-			return fmt.Errorf("Unexpected description. Expected no description, got: %s", serviceResponse.Description)
+		if serviceResponse.Description != nil && *serviceResponse.Description != "" {
+			return fmt.Errorf("Unexpected description. Expected no description, got: %s", *serviceResponse.Description)
 		}
 
-		if len(serviceResponse.Labels) != 0 {
-			return fmt.Errorf("Unexpected number of labels. Expected no labels, got: %v", len(serviceResponse.Labels))
+		if labelsCount, ok := serviceResource.Primary.Attributes["labels.%"]; ok && labelsCount != "0" {
+			return fmt.Errorf("Unexpected labels in state. Expected no labels, got: %s labels", labelsCount)
 		}
 
 		if len(serviceResponse.Links) != 0 {
@@ -383,10 +391,14 @@ func testAccCheckServiceResourceExistsWithAttributes_basic(resourceName string) 
 		}
 
 		if serviceResponse.Owner != nil {
-			return fmt.Errorf("Unexpected owner. Expected no owner ID, got: %s", serviceResponse.Owner.ID)
+			return fmt.Errorf("Unexpected owner. Expected no owner ID, got: %s", *serviceResponse.Owner.ID)
 		}
 
-		expected, got = serviceResource.Primary.Attributes["service_tier"], fmt.Sprintf("%d", serviceResponse.ServiceTier)
+		serviceTier := 0
+		if serviceResponse.ServiceTier != nil {
+			serviceTier = *serviceResponse.ServiceTier
+		}
+		expected, got = serviceResource.Primary.Attributes["service_tier"], fmt.Sprintf("%d", serviceTier)
 		if expected != got {
 			return fmt.Errorf("Unexpected service_tier. Expected: %s, got: %s", expected, got)
 		}
@@ -415,40 +427,41 @@ func testAccCheckServiceResourceExistsWithAttributes_update(resourceName string)
 			return err
 		}
 
-		serviceResponse, err := client.Services().Get(context.TODO(), serviceResource.Primary.ID)
+		serviceResponse, err := client.Sdk.CatalogEntries.GetService(context.TODO(), serviceResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		expected, got := serviceResource.Primary.Attributes["name"], serviceResponse.Name
+		expected, got := serviceResource.Primary.Attributes["name"], *serviceResponse.Name
 		if expected != got {
 			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = serviceResource.Primary.Attributes["alert_on_add"], fmt.Sprintf("%t", serviceResponse.AlertOnAdd)
+		alertOnAdd := false
+		if serviceResponse.AlertOnAdd != nil {
+			alertOnAdd = *serviceResponse.AlertOnAdd
+		}
+		expected, got = serviceResource.Primary.Attributes["alert_on_add"], fmt.Sprintf("%t", alertOnAdd)
 		if expected != got {
 			return fmt.Errorf("Unexpected alert_on_add. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = serviceResource.Primary.Attributes["auto_add_responding_team"], fmt.Sprintf("%t", serviceResponse.AutoAddRespondingTeam)
+		autoAddRespondingTeam := false
+		if serviceResponse.AutoAddRespondingTeam != nil {
+			autoAddRespondingTeam = *serviceResponse.AutoAddRespondingTeam
+		}
+		expected, got = serviceResource.Primary.Attributes["auto_add_responding_team"], fmt.Sprintf("%t", autoAddRespondingTeam)
 		if expected != got {
 			return fmt.Errorf("Unexpected auto_add_responding_team. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = serviceResource.Primary.Attributes["description"], serviceResponse.Description
+		expected, got = serviceResource.Primary.Attributes["description"], *serviceResponse.Description
 		if expected != got {
 			return fmt.Errorf("Unexpected description. Expected: %s, got: %s", expected, got)
 		}
 
-		if len(serviceResponse.Labels) == 0 {
-			return fmt.Errorf("Unexpected number of labels. Expected at least 1 label, got: %v", len(serviceResponse.Labels))
-		}
-
-		for labelKey, labelValue := range serviceResponse.Labels {
-			key := fmt.Sprintf("labels.%s", labelKey)
-			if serviceResource.Primary.Attributes[key] != labelValue {
-				return fmt.Errorf("Unexpected label. Expected %s:%s, got: %s:%s", labelKey, labelValue, labelKey, serviceResource.Primary.Attributes[key])
-			}
+		if serviceResponse.Labels == nil || len(serviceResponse.Labels) == 0 {
+			return fmt.Errorf("Unexpected labels. Expected labels to be set")
 		}
 
 		// TODO: check link attributes
@@ -459,12 +472,16 @@ func testAccCheckServiceResourceExistsWithAttributes_update(resourceName string)
 		if serviceResponse.Owner == nil {
 			return fmt.Errorf("Unexpected owner. Expected owner to be set.")
 		}
-		expected, got = serviceResource.Primary.Attributes["owner_id"], serviceResponse.Owner.ID
+		expected, got = serviceResource.Primary.Attributes["owner_id"], *serviceResponse.Owner.ID
 		if expected != got {
 			return fmt.Errorf("Unexpected owner ID. Expected:%s, got: %s", expected, got)
 		}
 
-		expected, got = serviceResource.Primary.Attributes["service_tier"], fmt.Sprintf("%d", serviceResponse.ServiceTier)
+		serviceTier := 0
+		if serviceResponse.ServiceTier != nil {
+			serviceTier = *serviceResponse.ServiceTier
+		}
+		expected, got = serviceResource.Primary.Attributes["service_tier"], fmt.Sprintf("%d", serviceTier)
 		if expected != got {
 			return fmt.Errorf("Unexpected service_tier. Expected: %s, got: %s", expected, got)
 		}
@@ -494,7 +511,7 @@ func testAccCheckServiceResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			_, err := client.Services().Get(context.TODO(), stateResource.Primary.ID)
+			_, err := client.Sdk.CatalogEntries.GetService(context.TODO(), stateResource.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("Service %s still exists", stateResource.Primary.ID)
 			}

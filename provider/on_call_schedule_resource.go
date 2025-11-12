@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
+	"github.com/firehydrant/firehydrant-go-sdk/models/sdkerrors"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -439,6 +440,28 @@ func deleteResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 	// Delete the on-call schedule
 	err := client.Sdk.Signals.DeleteTeamOnCallSchedule(ctx, teamID, id)
 	if err != nil {
+		// If the resource is already deleted (404), treat as success
+		if sdkErr, ok := err.(*sdkerrors.SDKError); ok && sdkErr.StatusCode == 404 {
+			// Resource already deleted, remove from state
+			d.SetId("")
+			return diag.Diagnostics{}
+		}
+		// If it's a server error during cleanup, check if resource was actually deleted
+		if sdkErr, ok := err.(*sdkerrors.SDKError); ok && sdkErr.StatusCode >= 500 {
+			_, readErr := client.Sdk.Signals.GetTeamOnCallSchedule(ctx, teamID, id, nil, nil)
+			if readErr != nil {
+				// If read returns 404, the resource was actually deleted despite the 500 error
+				if readSDKErr, readOk := readErr.(*sdkerrors.SDKError); readOk && readSDKErr.StatusCode == 404 {
+					tflog.Warn(ctx, fmt.Sprintf("On-call schedule %s was deleted despite 500 error during cleanup", id))
+					d.SetId("")
+					return diag.Diagnostics{}
+				}
+				// If read returns another error, fall through to return the original delete error
+			} else {
+				// Resource still exists - the 500 error was real, return it
+				return diag.Errorf("Error deleting on-call schedule %s: %v", id, err)
+			}
+		}
 		return diag.Errorf("Error deleting on-call schedule %s: %v", id, err)
 	}
 

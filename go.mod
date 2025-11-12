@@ -15,14 +15,12 @@ require (
 	github.com/stretchr/testify v1.11.1
 )
 
-require github.com/ericlagergren/decimal v0.0.0-20221120152707-495c53812d05 // indirect
-
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-cidr v1.1.0 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
-	github.com/firehydrant/firehydrant-go-sdk v1.4.0
+	github.com/firehydrant/firehydrant-go-sdk v1.7.0
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
