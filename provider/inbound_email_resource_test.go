@@ -3,11 +3,9 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 	"regexp"
 	"testing"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -80,35 +78,38 @@ func TestAccInboundEmailResource_update(t *testing.T) {
 // this now fails in the api.  I'm opening a ticket for this and disabling this test so the
 //failure isn't blocking other work
 
-// func TestAccInboundEmailResource_no_target(t *testing.T) {
-// 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+func TestAccInboundEmailResource_no_target(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testFireHydrantIsSetup(t) },
-// 		ProviderFactories: sharedProviderFactories(),
-// 		CheckDestroy:      testAccCheckInboundEmailResourceDestroy(),
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccInboundResourceConfig_no_target(rName),
-// 				Check: resource.ComposeAggregateTestCheckFunc(
-// 					testAccCheckInboundEmailResourceExists("firehydrant_inbound_email.test"),
-// 					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "name", fmt.Sprintf("test-inbound-email-%s", rName)),
-// 					resource.TestCheckNoResourceAttr("firehydrant_inbound_email.test", "target.0"),
-// 				),
-// 			},
-// 			// update the inbound email to have a target block
-// 			{
-// 				Config: testAccInboundEmailResourceConfig_basic(rName),
-// 				Check: resource.ComposeAggregateTestCheckFunc(
-// 					testAccCheckInboundEmailResourceExists("firehydrant_inbound_email.test"),
-// 					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "name", fmt.Sprintf("test-inbound-email-%s", rName)),
-// 					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "target.0.type", "Team"),
-// 					resource.TestCheckResourceAttrSet("firehydrant_inbound_email.test", "target.0.id"),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: sharedProviderFactories(),
+		CheckDestroy:      testAccCheckInboundEmailResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccInboundResourceConfig_no_target(rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckInboundEmailResourceExists("firehydrant_inbound_email.test"),
+					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "name", fmt.Sprintf("test-inbound-email-%s", rName)),
+					resource.TestCheckNoResourceAttr("firehydrant_inbound_email.test", "target.0"),
+					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "rules.#", "0"),
+					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "rule_matching_strategy", "all"),
+				),
+			},
+			// update the inbound email to have a target block
+			{
+				Config: testAccInboundEmailResourceConfig_basic(rName, sharedTeamID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckInboundEmailResourceExists("firehydrant_inbound_email.test"),
+					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "name", fmt.Sprintf("test-inbound-email-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "target.0.type", "Team"),
+					resource.TestCheckResourceAttrSet("firehydrant_inbound_email.test", "target.0.id"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckInboundEmailResourceExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -121,12 +122,12 @@ func testAccCheckInboundEmailResourceExists(resourceName string) resource.TestCh
 			return fmt.Errorf("No Inbound Email ID is set")
 		}
 
-		client, err := getTestClient()
+		client, err := getAccTestClient()
 		if err != nil {
 			return fmt.Errorf("Error getting client: %s", err)
 		}
 
-		_, err = client.InboundEmails().Get(context.Background(), rs.Primary.ID)
+		_, err = client.Sdk.Signals.GetSignalsEmailTarget(context.Background(), rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("Error fetching inbound email with ID %s: %s", rs.Primary.ID, err)
 		}
@@ -137,7 +138,7 @@ func testAccCheckInboundEmailResourceExists(resourceName string) resource.TestCh
 
 func testAccCheckInboundEmailResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		client, err := getTestClient()
+		client, err := getAccTestClient()
 		if err != nil {
 			return fmt.Errorf("Error getting client: %s", err)
 		}
@@ -147,7 +148,7 @@ func testAccCheckInboundEmailResourceDestroy() resource.TestCheckFunc {
 				continue
 			}
 
-			_, err := client.InboundEmails().Get(context.Background(), rs.Primary.ID)
+			_, err := client.Sdk.Signals.GetSignalsEmailTarget(context.Background(), rs.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("Inbound Email still exists")
 			}
@@ -178,20 +179,6 @@ func testAccCheckInboundEmailResourceEmailAddressFormat(resourceName string) res
 
 		return nil
 	}
-}
-
-func getTestClient() (firehydrant.Client, error) {
-	apiKey := os.Getenv("FIREHYDRANT_API_KEY")
-	if apiKey == "" {
-		return nil, fmt.Errorf("FIREHYDRANT_API_KEY must be set for acceptance tests")
-	}
-
-	client, err := firehydrant.NewRestClient(apiKey)
-	if err != nil {
-		return nil, fmt.Errorf("Error creating client: %s", err)
-	}
-
-	return client, nil
 }
 
 func testAccInboundEmailResourceConfig_basic(rName, sharedTeamID string) string {
@@ -232,21 +219,22 @@ resource "firehydrant_inbound_email" "test" {
 `, rName, rName, sharedTeamID)
 }
 
-// func testAccInboundResourceConfig_no_target(rName string) string {
-// 	return fmt.Sprintf(`
-// resource "firehydrant_team" "test" {
-//   name = "test-team-%s"
-// }
+func testAccInboundResourceConfig_no_target(rName string) string {
+	return fmt.Sprintf(`
+resource "firehydrant_team" "test" {
+  name = "test-team-%s"
+}
 
-// resource "firehydrant_inbound_email" "test" {
-//   name                   = "test-inbound-email-%s"
-//   slug                   = "test-inbound-email-%s"
-//   description            = "Updated test inbound email description"
-//   status_cel             = "email.body.contains('resolved') ? 'CLOSED' : 'OPEN'"
-//   level_cel              = "email.body.contains('critical') ? 'ERROR' : 'INFO'"
-//   allowed_senders        = ["@firehydrant.com", "@example.com"]
-//   rules                  = ["email.body.contains(\"hello\")", "email.body.contains(\"urgent\")"]
-//   rule_matching_strategy = "any"
-// }
-// `, rName, rName, rName)
-// }
+resource "firehydrant_inbound_email" "test" {
+  name            = "test-inbound-email-%s"
+  slug            = "test-inbound-email-%s"
+  description     = "Test inbound email without target"
+  status_cel      = "email.body.contains('resolved') ? 'CLOSED' : 'OPEN'"
+  level_cel       = "email.body.contains('critical') ? 'ERROR' : 'INFO'"
+  allowed_senders = ["@firehydrant.com"]
+  rule_matching_strategy = "all"
+  # No target block
+  # No rules - rules require a target
+}
+`, rName, rName, rName)
+}

@@ -2,8 +2,11 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -62,12 +65,12 @@ func resourceInboundEmail() *schema.Resource {
 			},
 			"rules": {
 				Type:     schema.TypeSet,
-				Required: true,
+				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"rule_matching_strategy": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"email": {
 				Type:     schema.TypeString,
@@ -78,86 +81,171 @@ func resourceInboundEmail() *schema.Resource {
 }
 
 func resourceInboundEmailCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
-	createReq := firehydrant.CreateInboundEmailRequest{
-		Name:                 d.Get("name").(string),
-		Slug:                 d.Get("slug").(string),
-		Description:          d.Get("description").(string),
-		StatusCEL:            d.Get("status_cel").(string),
-		LevelCEL:             d.Get("level_cel").(string),
-		AllowedSenders:       expandStringSet(d.Get("allowed_senders").(*schema.Set)),
-		Target:               targetFromResourceData(d),
-		Rules:                expandStringSet(d.Get("rules").(*schema.Set)),
-		RuleMatchingStrategy: d.Get("rule_matching_strategy").(string),
+	slug := d.Get("slug").(string)
+	statusCel := d.Get("status_cel").(string)
+	levelCel := d.Get("level_cel").(string)
+
+	createReq := components.CreateSignalsEmailTarget{
+		Name:           d.Get("name").(string),
+		Slug:           &slug,
+		StatusCel:      &statusCel,
+		LevelCel:       &levelCel,
+		AllowedSenders: expandStringSet(d.Get("allowed_senders").(*schema.Set)),
 	}
 
-	inboundEmail, err := c.InboundEmails().Create(ctx, createReq)
+	// Handle optional description
+	if desc := d.Get("description").(string); desc != "" {
+		createReq.Description = &desc
+	}
+
+	// Handle optional target
+	if target := targetFromResourceData(d); target != nil {
+		createReq.Target = target
+	}
+
+	// Handle optional rules - provide empty array if not specified
+	if rulesSet := d.Get("rules").(*schema.Set); rulesSet.Len() > 0 {
+		createReq.Rules = expandStringSet(rulesSet)
+	} else {
+		createReq.Rules = []string{}
+	}
+
+	// Handle optional rule_matching_strategy
+	// The api defaults rule matching strategy to "all" for inbound emails so we need to handle
+	// this field the same way within the provider otherwise, terrform state will always have unexpected diffs
+	if ruleMatchingStrategy := d.Get("rule_matching_strategy").(string); ruleMatchingStrategy != "" {
+		strategy := components.CreateSignalsEmailTargetRuleMatchingStrategy(ruleMatchingStrategy)
+		createReq.RuleMatchingStrategy = &strategy
+	} else {
+		// Always set default strategy to match API behavior
+		defaultStrategy := components.CreateSignalsEmailTargetRuleMatchingStrategyAll // api defaults to all
+		createReq.RuleMatchingStrategy = &defaultStrategy
+	}
+
+	tflog.Debug(ctx, fmt.Sprintf("Create inbound email: %s", createReq.Name), map[string]interface{}{
+		"name": createReq.Name,
+	})
+
+	inboundEmail, err := client.Sdk.Signals.CreateSignalsEmailTarget(ctx, createReq)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error creating inbound email %s: %v", createReq.Name, err)
 	}
 
-	d.SetId(inboundEmail.ID)
+	d.SetId(*inboundEmail.GetID())
 
 	return resourceInboundEmailRead(ctx, d, m)
 }
 
 func resourceInboundEmailRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
-	inboundEmail, err := c.InboundEmails().Get(ctx, d.Id())
+	inboundEmail, err := client.Sdk.Signals.GetSignalsEmailTarget(ctx, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var targetResourceData []interface{}
-	if inboundEmail.Target != nil {
-		targetResourceData = []interface{}{flattenTarget(inboundEmail.Target)}
+	if target := inboundEmail.GetTarget(); target != nil {
+		targetResourceData = []interface{}{flattenTarget(target)}
 	}
 
-	d.Set("name", inboundEmail.Name)
-	d.Set("slug", inboundEmail.Slug)
-	d.Set("description", inboundEmail.Description)
-	d.Set("status_cel", inboundEmail.StatusCEL)
-	d.Set("level_cel", inboundEmail.LevelCEL)
-	d.Set("allowed_senders", inboundEmail.AllowedSenders)
+	d.Set("name", *inboundEmail.GetName())
+	d.Set("slug", *inboundEmail.GetSlug())
+
+	// Handle optional description
+	if desc := inboundEmail.GetDescription(); desc != nil {
+		d.Set("description", *desc)
+	}
+
+	d.Set("status_cel", *inboundEmail.GetStatusCel())
+	d.Set("level_cel", *inboundEmail.GetLevelCel())
+	d.Set("allowed_senders", inboundEmail.GetAllowedSenders())
 	d.Set("target", targetResourceData)
-	d.Set("rules", inboundEmail.Rules)
-	d.Set("rule_matching_strategy", inboundEmail.RuleMatchingStrategy)
-	d.Set("email", inboundEmail.Email)
+	d.Set("rules", inboundEmail.GetRules())
+
+	// Handle rule_matching_strategy - API always returns this field with default "all"
+	if strategy := inboundEmail.GetRuleMatchingStrategy(); strategy != nil {
+		d.Set("rule_matching_strategy", *strategy)
+	} else {
+		// Fallback to default if somehow not present
+		d.Set("rule_matching_strategy", "all")
+	}
+
+	// Handle computed email field
+	if email := inboundEmail.GetEmail(); email != nil {
+		d.Set("email", *email)
+	}
 
 	return nil
 }
 
 func resourceInboundEmailUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
-	updateReq := firehydrant.UpdateInboundEmailRequest{
-		Name:                 d.Get("name").(string),
-		Slug:                 d.Get("slug").(string),
-		Description:          d.Get("description").(string),
-		StatusCEL:            d.Get("status_cel").(string),
-		LevelCEL:             d.Get("level_cel").(string),
-		AllowedSenders:       expandStringSet(d.Get("allowed_senders").(*schema.Set)),
-		Target:               targetFromResourceData(d),
-		Rules:                expandStringSet(d.Get("rules").(*schema.Set)),
-		RuleMatchingStrategy: d.Get("rule_matching_strategy").(string),
+	updateReq := components.UpdateSignalsEmailTarget{}
+
+	// Set required fields
+	name := d.Get("name").(string)
+	updateReq.Name = &name
+	slug := d.Get("slug").(string)
+	updateReq.Slug = &slug
+	statusCel := d.Get("status_cel").(string)
+	updateReq.StatusCel = &statusCel
+	levelCel := d.Get("level_cel").(string)
+	updateReq.LevelCel = &levelCel
+	updateReq.AllowedSenders = expandStringSet(d.Get("allowed_senders").(*schema.Set))
+
+	// Handle optional description
+	if desc := d.Get("description").(string); desc != "" {
+		updateReq.Description = &desc
 	}
 
-	_, err := c.InboundEmails().Update(ctx, d.Id(), updateReq)
+	// Handle optional target
+	if target := targetFromResourceDataForUpdate(d); target != nil {
+		updateReq.Target = target
+	}
+
+	// Handle optional rules - provide empty array if not specified
+	if rulesSet := d.Get("rules").(*schema.Set); rulesSet.Len() > 0 {
+		updateReq.Rules = expandStringSet(rulesSet)
+	} else {
+		updateReq.Rules = []string{}
+	}
+
+	// Handle optional rule_matching_strategy - always set a value to match API defaults
+	if ruleMatchingStrategy := d.Get("rule_matching_strategy").(string); ruleMatchingStrategy != "" {
+		strategy := components.UpdateSignalsEmailTargetRuleMatchingStrategy(ruleMatchingStrategy)
+		updateReq.RuleMatchingStrategy = &strategy
+	} else {
+		// Always set default strategy to match API behavior
+		defaultStrategy := components.UpdateSignalsEmailTargetRuleMatchingStrategyAll
+		updateReq.RuleMatchingStrategy = &defaultStrategy
+	}
+
+	tflog.Debug(ctx, fmt.Sprintf("Update inbound email: %s", d.Id()), map[string]interface{}{
+		"id": d.Id(),
+	})
+
+	_, err := client.Sdk.Signals.UpdateSignalsEmailTarget(ctx, d.Id(), updateReq)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error updating inbound email %s: %v", d.Id(), err)
 	}
 
 	return resourceInboundEmailRead(ctx, d, m)
 }
 
 func resourceInboundEmailDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
-	err := c.InboundEmails().Delete(ctx, d.Id())
+	tflog.Debug(ctx, fmt.Sprintf("Delete inbound email: %s", d.Id()), map[string]interface{}{
+		"id": d.Id(),
+	})
+
+	err := client.Sdk.Signals.DeleteSignalsEmailTarget(ctx, d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("Error deleting inbound email %s: %v", d.Id(), err)
 	}
 
 	d.SetId("")
@@ -173,29 +261,44 @@ func expandStringSet(set *schema.Set) []string {
 	return s
 }
 
-func targetFromResourceData(d *schema.ResourceData) *firehydrant.Target {
+func targetFromResourceData(d *schema.ResourceData) *components.CreateSignalsEmailTargetTarget {
 	if len(d.Get("target").([]interface{})) == 0 {
 		return nil
 	}
 
 	t := d.Get("target").([]interface{})[0].(map[string]interface{})
-	return &firehydrant.Target{
-		Type: t["type"].(string),
+	return &components.CreateSignalsEmailTargetTarget{
+		Type: components.CreateSignalsEmailTargetType(t["type"].(string)),
 		ID:   t["id"].(string),
 	}
 }
 
-func flattenTarget(target *firehydrant.Target) map[string]interface{} {
+func targetFromResourceDataForUpdate(d *schema.ResourceData) *components.UpdateSignalsEmailTargetTarget {
+	if len(d.Get("target").([]interface{})) == 0 {
+		return nil
+	}
+
+	t := d.Get("target").([]interface{})[0].(map[string]interface{})
+	return &components.UpdateSignalsEmailTargetTarget{
+		Type: components.UpdateSignalsEmailTargetType(t["type"].(string)),
+		ID:   t["id"].(string),
+	}
+}
+
+func flattenTarget(target *components.NullableSignalsAPITargetEntity) map[string]interface{} {
 	if target == nil {
 		return nil
 	}
 
-	if target.ID == "" || target.Type == "" {
+	id := target.GetID()
+	typeVal := target.GetType()
+
+	if id == nil || typeVal == nil {
 		return nil
 	}
 
 	return map[string]interface{}{
-		"type": target.Type,
-		"id":   target.ID,
+		"type": *typeVal,
+		"id":   *id,
 	}
 }
