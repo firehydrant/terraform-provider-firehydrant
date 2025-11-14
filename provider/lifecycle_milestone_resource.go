@@ -93,7 +93,7 @@ func createResourceLifecycleMilestone(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(*response.ID)
 
-	return readResourceIncidentType(ctx, d, m)
+	return readResourceLifecycleMilestone(ctx, d, m)
 }
 
 func readResourceLifecycleMilestone(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
