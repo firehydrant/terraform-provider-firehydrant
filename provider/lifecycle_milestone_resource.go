@@ -34,6 +34,8 @@ func resourceLifecycleMilestone() *schema.Resource {
 			"slug": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
+				ForceNew: true,
 			},
 			"phase_id": {
 				Type:     schema.TypeString,
@@ -47,6 +49,7 @@ func resourceLifecycleMilestone() *schema.Resource {
 			"auto_assign_timestamp_on_create": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Default:  "never_set_on_create",
 			},
 		},
 	}
