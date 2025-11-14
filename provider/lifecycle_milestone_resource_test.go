@@ -204,7 +204,7 @@ data "firehydrant_lifecycle_phase" "started" {
 
 resource "firehydrant_lifecycle_milestone" "new_milestone" {
   name        = "Test Milestone %s"
-  description = "test-description-%s"
+  description = "test description %s"
 	phase_id    = data.firehydrant_lifecycle_phase.started.id
 	slug        = "test-milestone"
 	position    = 2
