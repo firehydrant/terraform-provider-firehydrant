@@ -133,5 +133,6 @@ resource "firehydrant_team" "test_team" {
 }
 
 data "firehydrant_teams" "all_teams" {
+	query = "test-team"
 }`, rName)
 }

@@ -58,6 +58,7 @@ func testAccCheckServicesSet(name string) resource.TestCheckFunc {
 func testAccServicesDataSourceConfig_basic() string {
 	return `
 data "firehydrant_services" "all_services" {
+	query = "tf-test-shared"
 	labels = {
 		"test" = "shared"
 	}
