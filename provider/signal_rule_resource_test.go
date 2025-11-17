@@ -178,8 +178,39 @@ func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
 	})
 }
 
-// TODO: After the Go SDK omitempty limitation is fixed, add a test to verify that
-// notification_priority_override can be properly cleared
+func TestAccFireHydrantSignalRule_withoutNotificationPriorityOverride(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: sharedProviderFactories(),
+		CheckDestroy:      testAccCheckFireHydrantSignalRuleDestroy(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFireHydrantSignalRuleConfigWithoutPriority(rName, sharedTeamID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
+					// Verify notification_priority_override is not set (empty string or not present)
+					resource.TestCheckNoResourceAttr("firehydrant_signal_rule.test", "notification_priority_override"),
+					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "create_incident_condition_when", "WHEN_UNSPECIFIED"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_name"),
+					resource.TestCheckResourceAttrSet("firehydrant_signal_rule.test", "target_is_pageable"),
+				),
+			},
+			{
+				// Update the name to verify updates work without notification_priority_override
+				Config: testAccFireHydrantSignalRuleConfigWithoutPriorityUpdated(rName, sharedTeamID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFireHydrantSignalRuleExists("firehydrant_signal_rule.test"),
+					resource.TestCheckNoResourceAttr("firehydrant_signal_rule.test", "notification_priority_override"),
+					resource.TestCheckResourceAttr("firehydrant_signal_rule.test", "name", fmt.Sprintf("test-signal-rule-updated-%s", rName)),
+				),
+			},
+		},
+	})
+}
+
 func testAccFireHydrantSignalRuleConfigWithPriority(rName, priority, sharedTeamID string) string {
 	existingUser := os.Getenv("EXISTING_USER_EMAIL")
 	if existingUser == "" {
@@ -217,6 +248,28 @@ func testAccFireHydrantSignalRuleConfigWithoutPriority(rName, sharedTeamID strin
 	resource "firehydrant_signal_rule" "test" {
 		team_id = "%s"
 		name = "test-signal-rule-%s"
+		expression = "signal.summary == 'test-signal-summary-%s'"
+		target_type = "User"
+		target_id = data.firehydrant_user.test_user.id
+		create_incident_condition_when = "WHEN_UNSPECIFIED"
+	}
+	`, existingUser, sharedTeamID, rName, rName)
+}
+
+func testAccFireHydrantSignalRuleConfigWithoutPriorityUpdated(rName, sharedTeamID string) string {
+	existingUser := os.Getenv("EXISTING_USER_EMAIL")
+	if existingUser == "" {
+		existingUser = "local@firehydrant.io"
+	}
+
+	return fmt.Sprintf(`
+	data "firehydrant_user" "test_user" {
+		email = "%s"
+	}
+
+	resource "firehydrant_signal_rule" "test" {
+		team_id = "%s"
+		name = "test-signal-rule-updated-%s"
 		expression = "signal.summary == 'test-signal-summary-%s'"
 		target_type = "User"
 		target_id = data.firehydrant_user.test_user.id
