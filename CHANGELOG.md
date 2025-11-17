@@ -1,3 +1,9 @@
+## 0.14.11
+
+BUG FIXES:
+
+* Upgrades Go SDK Client to fix errors on unmarshalling empty or optional fields.
+
 ## 0.14.10
 
 ENHANCEMENTS:
