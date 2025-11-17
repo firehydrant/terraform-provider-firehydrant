@@ -50,6 +50,7 @@ func readResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.Re
 
 	response, err := client.Sdk.Signals.GetNotificationPolicy(ctx, notificationPolicyID)
 	if err != nil {
+		return diag.Errorf("Error reading notification policy %s: %v", notificationPolicyID, err)
 	}
 
 	attributes := map[string]interface{}{
