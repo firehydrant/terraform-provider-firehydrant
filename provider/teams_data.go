@@ -7,7 +7,6 @@ import (
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/operations"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
-
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -37,7 +36,7 @@ func dataFireHydrantTeams(ctx context.Context, d *schema.ResourceData, m interfa
 	// Get the API client
 	client := m.(*firehydrant.APIClient)
 
-	// Get the teams
+	// Build the list teams request
 	query := d.Get("query").(string)
 	tflog.Debug(ctx, "Read teams", map[string]interface{}{
 		"query": query,

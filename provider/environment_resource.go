@@ -2,11 +2,12 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
+	"github.com/firehydrant/firehydrant-go-sdk/models/sdkerrors"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,16 +41,16 @@ func resourceEnvironment() *schema.Resource {
 
 func readResourceFireHydrantEnvironment(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Get the environment
 	environmentID := d.Id()
 	tflog.Debug(ctx, fmt.Sprintf("Read environment: %s", environmentID), map[string]interface{}{
 		"id": environmentID,
 	})
-	environmentResponse, err := firehydrantAPIClient.Environments().Get(ctx, environmentID)
+	environmentResponse, err := client.Sdk.CatalogEntries.GetEnvironment(ctx, environmentID)
 	if err != nil {
-		if errors.Is(err, firehydrant.ErrorNotFound) {
+		if sdkErr, ok := err.(*sdkerrors.SDKError); ok && sdkErr.StatusCode == 404 {
 			tflog.Debug(ctx, fmt.Sprintf("Environment %s no longer exists", environmentID), map[string]interface{}{
 				"id": environmentID,
 			})
@@ -61,8 +62,8 @@ func readResourceFireHydrantEnvironment(ctx context.Context, d *schema.ResourceD
 
 	// Gather values from API response
 	attributes := map[string]interface{}{
-		"name":        environmentResponse.Name,
-		"description": environmentResponse.Description,
+		"name":        *environmentResponse.Name,
+		"description": *environmentResponse.Description,
 	}
 
 	// Set the resource attributes to the values we got from the API
@@ -77,25 +78,28 @@ func readResourceFireHydrantEnvironment(ctx context.Context, d *schema.ResourceD
 
 func createResourceFireHydrantEnvironment(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Get attributes from config and construct the create request
-	createRequest := firehydrant.CreateEnvironmentRequest{
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
+	name := d.Get("name").(string)
+	description := d.Get("description").(string)
+
+	createRequest := components.CreateEnvironment{
+		Name:        name,
+		Description: &description,
 	}
 
 	// Create the new environment
-	tflog.Debug(ctx, fmt.Sprintf("Create environment: %s", createRequest.Name), map[string]interface{}{
-		"name": createRequest.Name,
+	tflog.Debug(ctx, fmt.Sprintf("Create environment: %s", name), map[string]interface{}{
+		"name": name,
 	})
-	environmentResponse, err := firehydrantAPIClient.Environments().Create(ctx, createRequest)
+	environmentResponse, err := client.Sdk.CatalogEntries.CreateEnvironment(ctx, createRequest)
 	if err != nil {
-		return diag.Errorf("Error creating environment %s: %v", createRequest.Name, err)
+		return diag.Errorf("Error creating environment %s: %v", name, err)
 	}
 
 	// Set the new environment's ID in state
-	d.SetId(environmentResponse.ID)
+	d.SetId(*environmentResponse.ID)
 
 	// Update state with the latest information from the API
 	return readResourceFireHydrantEnvironment(ctx, d, m)
@@ -103,19 +107,22 @@ func createResourceFireHydrantEnvironment(ctx context.Context, d *schema.Resourc
 
 func updateResourceFireHydrantEnvironment(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Construct the update request
-	updateRequest := firehydrant.UpdateEnvironmentRequest{
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
+	name := d.Get("name").(string)
+	description := d.Get("description").(string)
+
+	updateRequest := components.UpdateEnvironment{
+		Name:        name,
+		Description: &description,
 	}
 
 	// Update the environment
 	tflog.Debug(ctx, fmt.Sprintf("Update environment: %s", d.Id()), map[string]interface{}{
 		"id": d.Id(),
 	})
-	_, err := firehydrantAPIClient.Environments().Update(ctx, d.Id(), updateRequest)
+	_, err := client.Sdk.CatalogEntries.UpdateEnvironment(ctx, d.Id(), updateRequest)
 	if err != nil {
 		return diag.Errorf("Error updating environment %s: %v", d.Id(), err)
 	}
@@ -126,16 +133,16 @@ func updateResourceFireHydrantEnvironment(ctx context.Context, d *schema.Resourc
 
 func deleteResourceFireHydrantEnvironment(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Delete the environment
 	environmentID := d.Id()
 	tflog.Debug(ctx, fmt.Sprintf("Delete environment: %s", environmentID), map[string]interface{}{
 		"id": environmentID,
 	})
-	err := firehydrantAPIClient.Environments().Delete(ctx, environmentID)
+	err := client.Sdk.CatalogEntries.DeleteEnvironment(ctx, environmentID)
 	if err != nil {
-		if errors.Is(err, firehydrant.ErrorNotFound) {
+		if sdkErr, ok := err.(*sdkerrors.SDKError); ok && sdkErr.StatusCode == 404 {
 			return nil
 		}
 		return diag.Errorf("Error deleting environment %s: %v", environmentID, err)

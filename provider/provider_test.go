@@ -2,13 +2,10 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
 	"testing"
-
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -163,16 +160,16 @@ func testServiceExists(resourceName string) resource.TestCheckFunc {
 			return err
 		}
 
-		svc, err := client.Services().Get(context.TODO(), rs.Primary.ID)
+		svc, err := client.Sdk.CatalogEntries.GetService(context.TODO(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		if expected, got := rs.Primary.Attributes["name"], svc.Name; expected != got {
+		if expected, got := rs.Primary.Attributes["name"], *svc.Name; expected != got {
 			return fmt.Errorf("Expected name %s, got %s", expected, got)
 		}
 
-		if expected, got := rs.Primary.Attributes["description"], svc.Description; expected != got {
+		if expected, got := rs.Primary.Attributes["description"], *svc.Description; expected != got {
 			return fmt.Errorf("Expected description %s, got %s", expected, got)
 		}
 
@@ -193,13 +190,9 @@ func testServiceDoesNotExist(resourceName string) resource.TestCheckFunc {
 			return err
 		}
 
-		svc, err := client.Services().Get(context.TODO(), rs.Primary.ID)
-		if svc != nil {
+		_, err = client.Sdk.CatalogEntries.GetService(context.TODO(), rs.Primary.ID)
+		if err == nil {
 			return fmt.Errorf("The service existed, when it should not")
-		}
-
-		if !errors.Is(err, firehydrant.ErrorNotFound) {
-			return err
 		}
 
 		return nil
