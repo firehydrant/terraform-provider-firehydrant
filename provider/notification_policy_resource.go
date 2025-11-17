@@ -53,9 +53,9 @@ func readResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.Re
 	}
 
 	attributes := map[string]interface{}{
-		"notification_group_method": *response.GetNotificationGroupMethod(),
+		"notification_group_method": string(*response.NotificationGroupMethod),
 		"max_delay":                 *response.GetMaxDelay(),
-		"priority":                  *response.GetPriority(),
+		"priority":                  string(*response.Priority),
 	}
 
 	for key, value := range attributes {
