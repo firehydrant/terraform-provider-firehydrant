@@ -120,7 +120,7 @@ func createResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.
 	d.SetId(*serviceResponse.ID)
 
 	// Update state with the latest information from the API
-	return readResourceFireHydrantService(ctx, d, m)
+	return readResourceFireHydrantNotificationPolicy(ctx, d, m)
 }
 
 func updateResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -174,7 +174,7 @@ func updateResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.
 		return diag.Errorf("Error updating notification policy %s: %v", d.Id(), err)
 	}
 
-	return readResourceFireHydrantService(ctx, d, m)
+	return readResourceFireHydrantNotificationPolicy(ctx, d, m)
 }
 
 func deleteResourceFireHydrantNotificationPolicy(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
