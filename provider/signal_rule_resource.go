@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -21,7 +22,7 @@ func resourceSignalRule() *schema.Resource {
 		ReadContext:   readResourceFireHydrantSignalRule,
 		DeleteContext: deleteResourceFireHydrantSignalRule,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: importResourceFireHydrantSignalRule,
 		},
 		Schema: map[string]*schema.Schema{
 			// Required
@@ -290,4 +291,26 @@ func deleteResourceFireHydrantSignalRule(ctx context.Context, d *schema.Resource
 	}
 
 	return diag.Diagnostics{}
+}
+
+func importResourceFireHydrantSignalRule(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+	teamID, id, err := resourceFireHydrantSignalRuleParseId(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	d.Set("team_id", teamID)
+	d.SetId(id)
+
+	return []*schema.ResourceData{d}, nil
+}
+
+func resourceFireHydrantSignalRuleParseId(id string) (string, string, error) {
+	parts := strings.SplitN(id, ":", 2)
+
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", fmt.Errorf("unexpected format of ID (%s), expected Team_ID:Signal_Rule_ID", id)
+	}
+
+	return parts[0], parts[1], nil
 }

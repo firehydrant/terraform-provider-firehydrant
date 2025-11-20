@@ -181,3 +181,11 @@ Dynamic escalation policies allow different escalation behavior based on signal 
 - `notification_priority_policies` define priority-specific repetitions and handoff steps
 - Allows different escalation paths for HIGH, MEDIUM, and LOW priority signals
 - Steps without explicit priorities will apply to all priorities defined in `notification_priority_policies`
+
+## Import
+
+Escalation policies can be imported; use `<TeamID>:<EscationPolicyID>` as the import ID. For example:
+
+```shell
+terraform import firehydrant_escalation_policy.example_rule 3638b647-b99c-5051-b715-eda2c912c42e:12345678-90ab-cdef-1234-567890abcdef
+```
