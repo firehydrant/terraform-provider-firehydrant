@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
@@ -21,7 +22,7 @@ func resourceEscalationPolicy() *schema.Resource {
 		ReadContext:   readResourceFireHydrantEscalationPolicy,
 		DeleteContext: deleteResourceFireHydrantEscalationPolicy,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: importResourceFireHydrantEscalationPolicy,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -673,4 +674,26 @@ func getStepsFromResourceDataUpdateSDK(d *schema.ResourceData) []components.Upda
 	}
 
 	return steps
+}
+
+func importResourceFireHydrantEscalationPolicy(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+	teamID, id, err := resourceFireHydrantEscalationPolicyParseId(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	d.Set("team_id", teamID)
+	d.SetId(id)
+
+	return []*schema.ResourceData{d}, nil
+}
+
+func resourceFireHydrantEscalationPolicyParseId(id string) (string, string, error) {
+	parts := strings.SplitN(id, ":", 2)
+
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", fmt.Errorf("unexpected format of ID (%s), expected Team_ID:Signal_Rule_ID", id)
+	}
+
+	return parts[0], parts[1], nil
 }

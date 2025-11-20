@@ -1,3 +1,9 @@
+## 0.14.12
+
+ENHANCEMENTS:
+
+* `firehydrant_escalation_policy` and `firehydrant_signal_rule` now support imports.
+
 ## 0.14.11
 
 BUG FIXES:
