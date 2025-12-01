@@ -67,7 +67,7 @@ func (c *RESTRunbookActionsClient) Get(ctx context.Context, runbookType string, 
 	}
 
 	for _, action := range runbookActionResponse.Actions {
-		if action.Slug == actionSlug && action.Integration.Slug == integrationSlug {
+		if action.Slug == actionSlug && action.Integration != nil && action.Integration.Slug == integrationSlug {
 			return &action, nil
 		}
 	}
