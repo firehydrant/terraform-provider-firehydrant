@@ -27,8 +27,8 @@ func expectedRotationResponse() *RotationResponse {
 		},
 		Members: []RotationMember{
 			{
-				ID:   "77779528-690b-4161-84ca-312e932c626e",
-				Name: "Frederick Graff",
+				UserID: func() *string { s := "77779528-690b-4161-84ca-312e932c626e"; return &s }(),
+				Name:   func() *string { s := "Frederick Graff"; return &s }(),
 			},
 		},
 		Restrictions: []RotationRestriction{
@@ -132,7 +132,7 @@ func TestRotationUpdateHasEffectiveAt(t *testing.T) {
 		Name:             "A pleasant on-call schedule",
 		Description:      "Managed by Terraform. Contact @platform-eng for changes.",
 		SlackUserGroupID: "slack-group-1",
-		Members:          []RotationMember{{ID: "77779528-690b-4161-84ca-312e932c626e"}},
+		Members:          []RotationMember{{UserID: func() *string { s := "77779528-690b-4161-84ca-312e932c626e"; return &s }()}},
 	}
 	if _, err := c.Rotations().Update(context.TODO(), "team-id", "schedule-id", "rotation-id", updateReq); err != nil {
 		t.Fatalf("error retrieving on-call schedule: %s", err.Error())

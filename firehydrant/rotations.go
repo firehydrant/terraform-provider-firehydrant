@@ -2,6 +2,7 @@ package firehydrant
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -30,8 +31,31 @@ type RotationStrategy struct {
 }
 
 type RotationMember struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	UserID *string `json:"user_id,omitempty"` // Used for requests, and populated from "id" in responses
+	Name   *string `json:"name,omitempty"`    // Only in responses
+}
+
+// UnmarshalJSON custom unmarshaler to handle both "id" (response) and "user_id" (request)
+// Requests to the rotations api accept a user_id but responses use the generic SuccicentEntity
+// which has an id field, so we use a custom unmarshaller to handle both cases and keep terraform state in sync
+func (m *RotationMember) UnmarshalJSON(data []byte) error {
+	// Define a temporary struct to handle both field names
+	var temp struct {
+		UserID *string `json:"user_id"`
+		ID     *string `json:"id"`
+		Name   *string `json:"name"`
+	}
+
+	if err := json.Unmarshal(data, &temp); err != nil {
+		return err
+	}
+
+	if temp.ID != nil {
+		m.UserID = temp.ID
+	}
+
+	m.Name = temp.Name
+	return nil
 }
 
 type RotationResponse struct {

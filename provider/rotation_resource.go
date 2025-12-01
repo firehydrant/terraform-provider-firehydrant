@@ -73,8 +73,16 @@ func resourceRotation() *schema.Resource {
 			},
 			"members": {
 				Type:     schema.TypeList,
-				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"user_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the user to add to the rotation. You can use the firehydrant_user data source to look up a user by email/name. Leave empty to create an unassigned slot in the rotation.",
+						},
+					},
+				},
 			},
 			"strategy": {
 				Type:     schema.TypeList, // Using TypeList to simulate a map
@@ -189,11 +197,19 @@ func readResourceFireHydrantRotation(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("Error reading rotation %s: %v", id, err)
 	}
 
-	outputMemberIDs := []string{}
-	memberIDs := rotation.Members
-	for _, memberID := range memberIDs {
-		if v := memberID.ID; v != "" {
-			outputMemberIDs = append(outputMemberIDs, memberID.ID)
+	members := make([]map[string]interface{}, 0)
+	if rotation.Members != nil {
+		for _, member := range rotation.Members {
+			if member.UserID != nil && *member.UserID != "" {
+				members = append(members, map[string]interface{}{
+					"user_id": *member.UserID,
+				})
+			} else {
+				// Include unassigned slots as empty string to preserve rotation order
+				members = append(members, map[string]interface{}{
+					"user_id": "",
+				})
+			}
 		}
 	}
 
@@ -204,7 +220,7 @@ func readResourceFireHydrantRotation(ctx context.Context, d *schema.ResourceData
 		"enable_slack_channel_notifications": rotation.EnableSlackChannelNotifications,
 		"prevent_shift_deletion":             rotation.PreventShiftDeletion,
 		"color":                              rotation.Color,
-		"members":                            outputMemberIDs,
+		"members":                            members,
 		"strategy":                           rotationStrategyToMap(rotation.Strategy),
 		"restrictions":                       rotationRestrictionsToData(rotation.Restrictions),
 	}
@@ -239,12 +255,35 @@ func createResourceFireHydrantRotation(ctx context.Context, d *schema.ResourceDa
 		"schedule_id": scheduleID,
 	})
 
-	inputMemberIDs := d.Get("members").([]interface{})
+	inputMembers := d.Get("members").([]interface{})
 	memberIDs := []firehydrant.RotationMember{}
-	for _, memberID := range inputMemberIDs {
-		if v, ok := memberID.(string); ok && v != "" {
-			memberIDs = append(memberIDs, firehydrant.RotationMember{ID: v})
+	for _, member := range inputMembers {
+		var userID *string
+
+		if member == nil {
+			// Member block is nil - treat as unassigned slot
+			memberIDs = append(memberIDs, firehydrant.RotationMember{UserID: nil})
+			continue
 		}
+
+		memberMap, ok := member.(map[string]interface{})
+		if !ok {
+			return diag.Errorf("Invalid member format: expected map, got %T", member)
+		}
+
+		// user_id field is required in member block
+		userIDVal, exists := memberMap["user_id"]
+		if !exists {
+			return diag.Errorf("member block must include user_id field (use empty string for unassigned slots)")
+		}
+
+		// Check if user_id is non-empty
+		if userIDStr, ok := userIDVal.(string); ok && userIDStr != "" {
+			userID = &userIDStr
+		}
+		// If userID is empty string or not a string, userID stays nil (unassigned slot)
+
+		memberIDs = append(memberIDs, firehydrant.RotationMember{UserID: userID})
 	}
 
 	// Gather values from API response
@@ -367,22 +406,53 @@ func updateResourceFireHydrantRotation(ctx context.Context, d *schema.ResourceDa
 				"effective_at": updateRequest.EffectiveAt,
 			})
 		} else {
-			tflog.Debug(ctx, "Provided effective_at is in the past, update will take effect immediately", map[string]interface{}{
-				"effective_at": effectiveAtStr,
-				"now":          time.Now().Format(time.RFC3339),
+			// effective_at is in the past, update to now
+			effectiveAtFormatted := time.Now().Format(time.RFC3339)
+			updateRequest.EffectiveAt = effectiveAtFormatted
+			tflog.Info(ctx, "Provided effective_at is in the past, update will take effect immediately", map[string]interface{}{
+				"provided_effective_at": effectiveAtStr,
+				"effective_at":          effectiveAtFormatted,
 			})
 		}
 	}
 
-	// Get member IDs
-	inputMemberIDs := d.Get("members").([]interface{})
+	inputMembers := d.Get("members").([]interface{})
 	members := []firehydrant.RotationMember{}
-	for _, memberID := range inputMemberIDs {
-		if v, ok := memberID.(string); ok && v != "" {
-			members = append(members, firehydrant.RotationMember{ID: v})
+	for _, member := range inputMembers {
+		var userID *string
+
+		if member == nil {
+			// Member block is nil - treat as unassigned slot
+			members = append(members, firehydrant.RotationMember{UserID: nil})
+			continue
 		}
+
+		memberMap, ok := member.(map[string]interface{})
+		if !ok {
+			return diag.Errorf("Invalid member format: expected map, got %T", member)
+		}
+
+		// user_id field is required in member block
+		userIDVal, exists := memberMap["user_id"]
+		if !exists {
+			return diag.Errorf("member block must include user_id field (use empty string for unassigned slots)")
+		}
+
+		// Check if user_id is non-empty
+		if userIDStr, ok := userIDVal.(string); ok && userIDStr != "" {
+			userID = &userIDStr
+		}
+		// If userID is empty string or not a string, userID stays nil (unassigned slot)
+
+		members = append(members, firehydrant.RotationMember{UserID: userID})
 	}
+	// Always set members, even if empty, to allow clearing members
 	updateRequest.Members = members
+
+	// If we're updating members, effective_at is required by the API
+	if updateRequest.EffectiveAt == "" && d.HasChange("members") {
+		return diag.Errorf("effective_at is required when updating rotation members. Please specify when the member changes should take effect.")
+	}
 
 	// Get strategy configuration
 	if v, ok := d.GetOk("strategy"); ok {

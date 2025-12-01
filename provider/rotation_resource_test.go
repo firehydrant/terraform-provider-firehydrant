@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 
 	"regexp"
 	"testing"
@@ -184,7 +185,11 @@ func TestOfflineRotationReadMemberID(t *testing.T) {
 		"name":        "test-rotation",
 		"description": "test-description",
 		"time_zone":   "America/New_York",
-		"members":     []interface{}{"member-1"},
+		"members": []interface{}{
+			map[string]interface{}{
+				"user_id": "member-1",
+			},
+		},
 	})
 
 	d := readResourceFireHydrantRotation(context.Background(), r, c)
@@ -192,17 +197,22 @@ func TestOfflineRotationReadMemberID(t *testing.T) {
 		t.Fatalf("error reading rotation: %v", d)
 	}
 
-	memberIDs := r.Get("members").([]interface{})
-	if len(memberIDs) != 1 {
-		t.Fatalf("expected 1 member ID, got %d", len(memberIDs))
+	members := r.Get("members").([]interface{})
+	if len(members) != 1 {
+		t.Fatalf("expected 1 member, got %d", len(members))
 	}
 
-	memberID, ok := memberIDs[0].(string)
+	memberMap, ok := members[0].(map[string]interface{})
 	if !ok {
-		t.Fatalf("expected member ID to be a string, got %T: %v", memberIDs[0], memberIDs[0])
+		t.Fatalf("expected member to be a map, got %T: %v", members[0], members[0])
 	}
-	if memberID != "member-1" {
-		t.Fatalf("expected member ID to be member-1, got %s", memberIDs[0].(string))
+
+	userID, ok := memberMap["user_id"].(string)
+	if !ok {
+		t.Fatalf("expected user_id to be a string, got %T: %v", memberMap["user_id"], memberMap["user_id"])
+	}
+	if userID != "member-1" {
+		t.Fatalf("expected user_id to be member-1, got %s", userID)
 	}
 }
 
@@ -221,7 +231,11 @@ func TestOfflineRotationCreate(t *testing.T) {
 		"name":        "test-rotation",
 		"description": "test-description",
 		"time_zone":   "America/New_York",
-		"member_ids":  []interface{}{"member-1"},
+		"members": []interface{}{
+			map[string]interface{}{
+				"user_id": "member-1",
+			},
+		},
 	})
 
 	d := createResourceFireHydrantRotation(context.Background(), r, c)
@@ -229,17 +243,28 @@ func TestOfflineRotationCreate(t *testing.T) {
 		t.Fatalf("error creating rotation: %v", d)
 	}
 
-	memberIDs := r.Get("members").([]interface{})
-	if len(memberIDs) != 1 {
-		t.Fatalf("expected 1 member ID, got %d", len(memberIDs))
+	// Read the resource to populate members in state (as Terraform would do)
+	d = readResourceFireHydrantRotation(context.Background(), r, c)
+	if d.HasError() {
+		t.Fatalf("error reading rotation: %v", d)
 	}
 
-	memberID, ok := memberIDs[0].(string)
-	if !ok {
-		t.Fatalf("expected member ID to be a string, got %T: %v", memberIDs[0], memberIDs[0])
+	members := r.Get("members").([]interface{})
+	if len(members) != 1 {
+		t.Fatalf("expected 1 member, got %d", len(members))
 	}
-	if memberID != "member-1" {
-		t.Fatalf("expected member ID to be member-1, got %s", memberIDs[0].(string))
+
+	memberMap, ok := members[0].(map[string]interface{})
+	if !ok {
+		t.Fatalf("expected member to be a map, got %T: %v", members[0], members[0])
+	}
+
+	userID, ok := memberMap["user_id"].(string)
+	if !ok {
+		t.Fatalf("expected user_id to be a string, got %T: %v", memberMap["user_id"], memberMap["user_id"])
+	}
+	if userID != "member-1" {
+		t.Fatalf("expected user_id to be member-1, got %s", userID)
 	}
 }
 
@@ -616,4 +641,196 @@ func TestAccRotationResourceImport_basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccRotationResource_members(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedScheduleID := getSharedOnCallScheduleID(t)
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+	futureTime := time.Now().Add(24 * time.Hour).Format(time.RFC3339) // Tomorrow
+
+	existingUser := os.Getenv("EXISTING_USER_EMAIL")
+
+	// Get a second user - use the same user for simplicity, but in real scenarios would be different
+	// The API allows the same user to be added multiple times
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: sharedProviderFactories(),
+		CheckDestroy:      testAccCheckRotationResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				// Step 1: Create rotation with 2 members
+				Config: testAccRotationConfig_withTwoMembers(rName, sharedTeamID, sharedScheduleID, existingUser),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "id"),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "name", fmt.Sprintf("test-rotation-members-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "members.#", "2"),
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.0.user_id"),
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.1.user_id"),
+				),
+			},
+			{
+				// Step 2: Remove one member (go from 2 to 1)
+				Config: testAccRotationConfig_withMember(rName, sharedTeamID, sharedScheduleID, existingUser, futureTime),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "id"),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "members.#", "1"),
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.0.user_id"),
+				),
+			},
+			{
+				// Step 3: Add member back (go from 1 to 2)
+				Config: testAccRotationConfig_withTwoMembers(rName, sharedTeamID, sharedScheduleID, existingUser, futureTime),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "id"),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "members.#", "2"),
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.0.user_id"),
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.1.user_id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccRotationResource_membersWithUnassignedSlot(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedScheduleID := getSharedOnCallScheduleID(t)
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
+	existingUser := os.Getenv("EXISTING_USER_EMAIL")
+	if existingUser == "" {
+		existingUser = "ops+terraform-ci@firehydrant.io"
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: sharedProviderFactories(),
+		CheckDestroy:      testAccCheckRotationResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				// Step 1: Create rotation with a member, unassigned slot, and another member
+				Config: testAccRotationConfig_withUnassignedSlot(rName, sharedTeamID, sharedScheduleID, existingUser),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "id"),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "name", fmt.Sprintf("test-rotation-members-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "members.#", "3"),
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.0.user_id"),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "members.1.user_id", ""), // Unassigned slot
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.2.user_id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccRotationConfig_withTwoMembers(rName, sharedTeamID, sharedScheduleID, userEmail string, effectiveAt ...string) string {
+	effectiveAtStr := ""
+	if len(effectiveAt) > 0 && effectiveAt[0] != "" {
+		effectiveAtStr = fmt.Sprintf("\n\t\teffective_at = \"%s\"", effectiveAt[0])
+	}
+
+	return fmt.Sprintf(`
+	data "firehydrant_user" "test_user" {
+		email = "%s"
+	}
+
+	resource "firehydrant_rotation" "test_rotation_members" {
+	  team_id = "%s"
+		schedule_id = "%s"
+		name = "test-rotation-members-%s"
+		description = "test-description-%s"
+		time_zone = "America/New_York"
+
+		enable_slack_channel_notifications = false
+		prevent_shift_deletion = true
+		color = "#3192ff"
+
+		members {
+			user_id = data.firehydrant_user.test_user.id
+		}
+
+		members {
+			user_id = data.firehydrant_user.test_user.id
+		}
+
+		strategy {
+			type         = "weekly"
+			handoff_time = "10:00:00"
+			handoff_day  = "thursday"
+		}%s
+	}
+	`, userEmail, sharedTeamID, sharedScheduleID, rName, rName, effectiveAtStr)
+}
+
+func testAccRotationConfig_withUnassignedSlot(rName, sharedTeamID, sharedScheduleID, userEmail string) string {
+	return fmt.Sprintf(`
+	data "firehydrant_user" "test_user" {
+		email = "%s"
+	}
+
+	resource "firehydrant_rotation" "test_rotation_members" {
+	  team_id = "%s"
+		schedule_id = "%s"
+		name = "test-rotation-members-%s"
+		description = "test-description-%s"
+		time_zone = "America/New_York"
+
+		enable_slack_channel_notifications = false
+		prevent_shift_deletion = true
+		color = "#3192ff"
+
+		members {
+			user_id = data.firehydrant_user.test_user.id
+		}
+
+		members {
+			user_id = ""
+		}
+
+		members {
+			user_id = data.firehydrant_user.test_user.id
+		}
+
+		strategy {
+			type         = "weekly"
+			handoff_time = "10:00:00"
+			handoff_day  = "thursday"
+		}
+	}
+	`, userEmail, sharedTeamID, sharedScheduleID, rName, rName)
+}
+
+func testAccRotationConfig_withMember(rName, sharedTeamID, sharedScheduleID, userEmail string, effectiveAt ...string) string {
+	effectiveAtStr := ""
+	if len(effectiveAt) > 0 && effectiveAt[0] != "" {
+		effectiveAtStr = fmt.Sprintf("\n\t\teffective_at = \"%s\"", effectiveAt[0])
+	}
+
+	return fmt.Sprintf(`
+	data "firehydrant_user" "test_user" {
+		email = "%s"
+	}
+
+	resource "firehydrant_rotation" "test_rotation_members" {
+	  team_id = "%s"
+		schedule_id = "%s"
+		name = "test-rotation-members-%s"
+		description = "test-description-%s"
+		time_zone = "America/New_York"
+
+		enable_slack_channel_notifications = false
+		prevent_shift_deletion = true
+		color = "#3192ff"
+
+		members {
+			user_id = data.firehydrant_user.test_user.id
+		}
+
+		strategy {
+			type         = "weekly"
+			handoff_time = "10:00:00"
+			handoff_day  = "thursday"
+		}%s
+	}
+	`, userEmail, sharedTeamID, sharedScheduleID, rName, rName, effectiveAtStr)
 }
