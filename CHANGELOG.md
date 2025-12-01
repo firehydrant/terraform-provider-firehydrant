@@ -1,3 +1,9 @@
+## 0.14.12
+
+BUG FIXES:
+
+* Fixed an error accessing AutoAddRespondingTeam on Functionalities
+
 ## 0.14.11
 
 BUG FIXES:
