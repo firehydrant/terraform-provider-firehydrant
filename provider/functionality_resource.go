@@ -93,11 +93,21 @@ func readResourceFireHydrantFunctionality(ctx context.Context, d *schema.Resourc
 		return diag.Errorf("Error unmarshalling labels for functionality %s: %v", functionalityID, err)
 	}
 
+	description := ""
+	if functionalityResponse.Description != nil {
+		description = *functionalityResponse.Description
+	}
+
+	autoAddRespondingTeam := false
+	if functionalityResponse.AutoAddRespondingTeam != nil {
+		autoAddRespondingTeam = *functionalityResponse.AutoAddRespondingTeam
+	}
+
 	// Gather values from API response
 	attributes := map[string]interface{}{
 		"name":                     *functionalityResponse.Name,
-		"description":              *functionalityResponse.Description,
-		"auto_add_responding_team": *functionalityResponse.AutoAddRespondingTeam,
+		"description":              description,
+		"auto_add_responding_team": autoAddRespondingTeam,
 		"labels":                   labelsMap,
 	}
 

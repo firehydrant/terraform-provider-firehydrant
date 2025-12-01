@@ -123,6 +123,35 @@ func TestAccFunctionalityResourceImport_allAttributes(t *testing.T) {
 	})
 }
 
+func TestAccFunctionalityResource_withoutAutoAddRespondingTeam(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: sharedProviderFactories(),
+		CheckDestroy:      testAccCheckFunctionalityResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccFunctionalityResourceConfig_withoutAutoAddRespondingTeam(rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionalityResourceExistsWithAttributes_withoutAutoAddRespondingTeam("firehydrant_functionality.test_functionality"),
+					resource.TestCheckResourceAttrSet("firehydrant_functionality.test_functionality", "id"),
+					resource.TestCheckResourceAttr(
+						"firehydrant_functionality.test_functionality", "name", fmt.Sprintf("test-functionality-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_functionality.test_functionality", "auto_add_responding_team", "false"),
+				),
+			},
+			{
+				Config: testAccFunctionalityResourceConfig_withoutAutoAddRespondingTeam(rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckFunctionalityResourceExistsWithAttributes_withoutAutoAddRespondingTeam("firehydrant_functionality.test_functionality"),
+					resource.TestCheckResourceAttr("firehydrant_functionality.test_functionality", "auto_add_responding_team", "false"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckFunctionalityResourceExistsWithAttributes_basic(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		functionalityResource, ok := s.RootModule().Resources[resourceName]
@@ -193,6 +222,47 @@ func testAccCheckFunctionalityResourceExistsWithAttributes_update(resourceName s
 		// TODO: Check the service ids
 		if len(functionalityResponse.Services) != 2 {
 			return fmt.Errorf("Unexpected number of service_ids. Expected: 2, got: %v", len(functionalityResponse.Services))
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckFunctionalityResourceExistsWithAttributes_withoutAutoAddRespondingTeam(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		functionalityResource, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resourceName)
+		}
+		if functionalityResource.Primary.ID == "" {
+			return fmt.Errorf("No ID is set")
+		}
+
+		client, err := getAccTestClient()
+		if err != nil {
+			return err
+		}
+
+		// This read operation would have crashed before the fix if AutoAddRespondingTeam was nil
+		functionalityResponse, err := client.Sdk.CatalogEntries.GetFunctionality(context.TODO(), functionalityResource.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		expected, got := functionalityResource.Primary.Attributes["name"], *functionalityResponse.Name
+		if expected != got {
+			return fmt.Errorf("Unexpected name. Expected: %s, got: %s", expected, got)
+		}
+
+		// Verify that auto_add_responding_team is handled correctly even if nil from API
+		// The fix should default it to false when nil
+		autoAddRespondingTeam := false
+		if functionalityResponse.AutoAddRespondingTeam != nil {
+			autoAddRespondingTeam = *functionalityResponse.AutoAddRespondingTeam
+		}
+		expectedBool, gotBool := functionalityResource.Primary.Attributes["auto_add_responding_team"], fmt.Sprintf("%t", autoAddRespondingTeam)
+		if expectedBool != gotBool {
+			return fmt.Errorf("Unexpected auto_add_responding_team. Expected: %s, got: %s", expectedBool, gotBool)
 		}
 
 		return nil
@@ -276,4 +346,14 @@ resource "firehydrant_functionality" "test_functionality" {
   ]
   auto_add_responding_team = true
 }`, rName, rName, rName, rName, rName, rName, rName)
+}
+
+func testAccFunctionalityResourceConfig_withoutAutoAddRespondingTeam(rName string) string {
+	return fmt.Sprintf(`
+resource "firehydrant_functionality" "test_functionality" {
+  name = "test-functionality-%s"
+  labels = {
+    test1 = "test-label1-foo",
+  }
+}`, rName)
 }
