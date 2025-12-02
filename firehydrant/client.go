@@ -71,7 +71,6 @@ type Client interface {
 	// Signals
 	IngestURL() IngestURLClient
 	Transposers() TransposersClient
-	Rotations() Rotations
 	Roles() Roles
 	Permissions() Permissions
 }
@@ -221,10 +220,6 @@ func (c *APIClient) Transposers() TransposersClient {
 
 func (c *APIClient) StatusUpdateTemplates() StatusUpdateTemplates {
 	return &RESTStatusUpdateTemplateClient{client: c}
-}
-
-func (c *APIClient) Rotations() Rotations {
-	return &RESTRotationsClient{client: c}
 }
 
 func (c *APIClient) Roles() Roles {

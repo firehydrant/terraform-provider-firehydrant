@@ -2,15 +2,18 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"strings"
 
 	"regexp"
 	"testing"
 	"time"
 
+	fhsdk "github.com/firehydrant/firehydrant-go-sdk"
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -134,13 +137,14 @@ func testAccCheckRotationResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			// Normally we'd check if err == nil here, because we'd expect a 404 if we try to get a resource
-			// that has been deleted. However, the rotation API will still return deleted/archived rotations
-			// instead of returning 404. So, to check for rotations that are deleted, we have to check
-			// for rotations that have a DiscardedAt timestamp
-			_, err := client.Rotations().Get(context.TODO(), stateResource.Primary.Attributes["team_id"], stateResource.Primary.Attributes["schedule_id"], stateResource.Primary.ID)
-			if err != nil && !errors.Is(err, firehydrant.ErrorNotFound) {
+			// Check if the rotation still exists
+			_, err := client.Sdk.Signals.GetOnCallScheduleRotation(context.TODO(), stateResource.Primary.ID, stateResource.Primary.Attributes["team_id"], stateResource.Primary.Attributes["schedule_id"])
+			if err == nil {
 				return fmt.Errorf("Rotation %s still exists", stateResource.Primary.ID)
+			}
+			errStr := err.Error()
+			if !strings.Contains(errStr, "404") && !strings.Contains(errStr, "record not found") {
+				return fmt.Errorf("Error checking rotation %s: %v", stateResource.Primary.ID, err)
 			}
 		}
 
@@ -150,7 +154,11 @@ func testAccCheckRotationResourceDestroy() resource.TestCheckFunc {
 
 func offlineRotationMockServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.Write([]byte(`{
+		w.Header().Set("Content-Type", "application/json")
+
+		// Handle GET request for reading rotation
+		if req.Method == "GET" {
+			w.Write([]byte(`{
   "id": "rotation-id",
   "name": "A pleasant rotation",
   "description": "Managed by Terraform. Contact @platform-eng for changes.",
@@ -164,8 +172,50 @@ func offlineRotationMockServer() *httptest.Server {
     "id": "team-1",
     "name": "Philadelphia"
   },
-  "time_zone": "America/New_York"
+  "time_zone": "America/New_York",
+  "enable_slack_channel_notifications": false,
+  "prevent_shift_deletion": false,
+  "strategy": {
+    "type": "weekly",
+    "handoff_time": "10:00:00",
+    "handoff_day": "thursday"
+  },
+  "restrictions": [],
+  "created_at": "2025-01-01T00:00:00Z",
+  "updated_at": "2025-01-01T00:00:00Z"
 }`))
+		} else if req.Method == "POST" {
+			// Handle POST request for creating rotation
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(`{
+  "id": "rotation-id",
+  "name": "A pleasant rotation",
+  "description": "Managed by Terraform. Contact @platform-eng for changes.",
+  "members": [
+    {
+      "id": "member-1",
+      "name": "Frederick Graff"
+    }
+  ],
+  "team": {
+    "id": "team-1",
+    "name": "Philadelphia"
+  },
+  "time_zone": "America/New_York",
+  "enable_slack_channel_notifications": false,
+  "prevent_shift_deletion": false,
+  "strategy": {
+    "type": "weekly",
+    "handoff_time": "10:00:00",
+    "handoff_day": "thursday"
+  },
+  "restrictions": [],
+  "created_at": "2025-01-01T00:00:00Z",
+  "updated_at": "2025-01-01T00:00:00Z"
+}`))
+		} else {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
 	}))
 }
 
@@ -173,36 +223,49 @@ func TestOfflineRotationReadMemberID(t *testing.T) {
 	ts := offlineRotationMockServer()
 	defer ts.Close()
 
-	c, err := firehydrant.NewRestClient("test-token-very-authorized", firehydrant.WithBaseURL(ts.URL))
-	if err != nil {
-		t.Fatalf("Received error initializing API client: %s", err.Error())
-		return
-	}
+	client := &firehydrant.APIClient{}
+	client.Sdk = fhsdk.New(
+		fhsdk.WithServerURL(ts.URL),
+		fhsdk.WithSecurity(components.Security{
+			APIKey: "test-token-very-authorized",
+		}),
+	)
+
 	r := schema.TestResourceDataRaw(t, resourceRotation().Schema, map[string]interface{}{
 		"team_id":     "team-1",
 		"schedule_id": "schedule-1",
+		"id":          "rotation-id",
 		"name":        "test-rotation",
 		"description": "test-description",
 		"time_zone":   "America/New_York",
-		"members":     []interface{}{"member-1"},
+		"members": []interface{}{
+			map[string]interface{}{
+				"user_id": "member-1",
+			},
+		},
 	})
 
-	d := readResourceFireHydrantRotation(context.Background(), r, c)
+	d := readResourceFireHydrantRotation(context.Background(), r, client)
 	if d.HasError() {
 		t.Fatalf("error reading rotation: %v", d)
 	}
 
-	memberIDs := r.Get("members").([]interface{})
-	if len(memberIDs) != 1 {
-		t.Fatalf("expected 1 member ID, got %d", len(memberIDs))
+	members := r.Get("members").([]interface{})
+	if len(members) != 1 {
+		t.Fatalf("expected 1 member, got %d", len(members))
 	}
 
-	memberID, ok := memberIDs[0].(string)
+	memberMap, ok := members[0].(map[string]interface{})
 	if !ok {
-		t.Fatalf("expected member ID to be a string, got %T: %v", memberIDs[0], memberIDs[0])
+		t.Fatalf("expected member to be a map, got %T: %v", members[0], members[0])
 	}
-	if memberID != "member-1" {
-		t.Fatalf("expected member ID to be member-1, got %s", memberIDs[0].(string))
+
+	userID, ok := memberMap["user_id"].(string)
+	if !ok {
+		t.Fatalf("expected user_id to be a string, got %T: %v", memberMap["user_id"], memberMap["user_id"])
+	}
+	if userID != "member-1" {
+		t.Fatalf("expected user_id to be member-1, got %s", userID)
 	}
 }
 
@@ -210,36 +273,54 @@ func TestOfflineRotationCreate(t *testing.T) {
 	ts := offlineRotationMockServer()
 	defer ts.Close()
 
-	c, err := firehydrant.NewRestClient("test-token-very-authorized", firehydrant.WithBaseURL(ts.URL))
-	if err != nil {
-		t.Fatalf("Received error initializing API client: %s", err.Error())
-		return
-	}
+	client := &firehydrant.APIClient{}
+	client.Sdk = fhsdk.New(
+		fhsdk.WithServerURL(ts.URL),
+		fhsdk.WithSecurity(components.Security{
+			APIKey: "test-token-very-authorized",
+		}),
+	)
+
 	r := schema.TestResourceDataRaw(t, resourceRotation().Schema, map[string]interface{}{
 		"team_id":     "team-1",
 		"schedule_id": "schedule-1",
 		"name":        "test-rotation",
 		"description": "test-description",
 		"time_zone":   "America/New_York",
-		"member_ids":  []interface{}{"member-1"},
+		"members": []interface{}{
+			map[string]interface{}{
+				"user_id": "member-1",
+			},
+		},
 	})
 
-	d := createResourceFireHydrantRotation(context.Background(), r, c)
+	d := createResourceFireHydrantRotation(context.Background(), r, client)
 	if d.HasError() {
 		t.Fatalf("error creating rotation: %v", d)
 	}
 
-	memberIDs := r.Get("members").([]interface{})
-	if len(memberIDs) != 1 {
-		t.Fatalf("expected 1 member ID, got %d", len(memberIDs))
+	// Read the resource to populate members in state (as Terraform would do)
+	d = readResourceFireHydrantRotation(context.Background(), r, client)
+	if d.HasError() {
+		t.Fatalf("error reading rotation: %v", d)
 	}
 
-	memberID, ok := memberIDs[0].(string)
-	if !ok {
-		t.Fatalf("expected member ID to be a string, got %T: %v", memberIDs[0], memberIDs[0])
+	members := r.Get("members").([]interface{})
+	if len(members) != 1 {
+		t.Fatalf("expected 1 member, got %d", len(members))
 	}
-	if memberID != "member-1" {
-		t.Fatalf("expected member ID to be member-1, got %s", memberIDs[0].(string))
+
+	memberMap, ok := members[0].(map[string]interface{})
+	if !ok {
+		t.Fatalf("expected member to be a map, got %T: %v", members[0], members[0])
+	}
+
+	userID, ok := memberMap["user_id"].(string)
+	if !ok {
+		t.Fatalf("expected user_id to be a string, got %T: %v", memberMap["user_id"], memberMap["user_id"])
+	}
+	if userID != "member-1" {
+		t.Fatalf("expected user_id to be member-1, got %s", userID)
 	}
 }
 
@@ -616,4 +697,196 @@ func TestAccRotationResourceImport_basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccRotationResource_members(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedScheduleID := getSharedOnCallScheduleID(t)
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+	futureTime := time.Now().Add(24 * time.Hour).Format(time.RFC3339) // Tomorrow
+
+	existingUser := os.Getenv("EXISTING_USER_EMAIL")
+
+	// Get a second user - use the same user for simplicity, but in real scenarios would be different
+	// The API allows the same user to be added multiple times
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: sharedProviderFactories(),
+		CheckDestroy:      testAccCheckRotationResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				// Step 1: Create rotation with 2 members
+				Config: testAccRotationConfig_withTwoMembers(rName, sharedTeamID, sharedScheduleID, existingUser),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "id"),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "name", fmt.Sprintf("test-rotation-members-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "members.#", "2"),
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.0.user_id"),
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.1.user_id"),
+				),
+			},
+			{
+				// Step 2: Remove one member (go from 2 to 1)
+				Config: testAccRotationConfig_withMember(rName, sharedTeamID, sharedScheduleID, existingUser, futureTime),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "id"),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "members.#", "1"),
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.0.user_id"),
+				),
+			},
+			{
+				// Step 3: Add member back (go from 1 to 2)
+				Config: testAccRotationConfig_withTwoMembers(rName, sharedTeamID, sharedScheduleID, existingUser, futureTime),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "id"),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "members.#", "2"),
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.0.user_id"),
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.1.user_id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccRotationResource_membersWithUnassignedSlot(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	sharedScheduleID := getSharedOnCallScheduleID(t)
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
+	existingUser := os.Getenv("EXISTING_USER_EMAIL")
+	if existingUser == "" {
+		existingUser = "ops+terraform-ci@firehydrant.io"
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: sharedProviderFactories(),
+		CheckDestroy:      testAccCheckRotationResourceDestroy(),
+		Steps: []resource.TestStep{
+			{
+				// Step 1: Create rotation with a member, unassigned slot, and another member
+				Config: testAccRotationConfig_withUnassignedSlot(rName, sharedTeamID, sharedScheduleID, existingUser),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "id"),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "name", fmt.Sprintf("test-rotation-members-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "members.#", "3"),
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.0.user_id"),
+					resource.TestCheckResourceAttr("firehydrant_rotation.test_rotation_members", "members.1.user_id", ""), // Unassigned slot
+					resource.TestCheckResourceAttrSet("firehydrant_rotation.test_rotation_members", "members.2.user_id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccRotationConfig_withTwoMembers(rName, sharedTeamID, sharedScheduleID, userEmail string, effectiveAt ...string) string {
+	effectiveAtStr := ""
+	if len(effectiveAt) > 0 && effectiveAt[0] != "" {
+		effectiveAtStr = fmt.Sprintf("\n\t\teffective_at = \"%s\"", effectiveAt[0])
+	}
+
+	return fmt.Sprintf(`
+	data "firehydrant_user" "test_user" {
+		email = "%s"
+	}
+
+	resource "firehydrant_rotation" "test_rotation_members" {
+	  team_id = "%s"
+		schedule_id = "%s"
+		name = "test-rotation-members-%s"
+		description = "test-description-%s"
+		time_zone = "America/New_York"
+
+		enable_slack_channel_notifications = false
+		prevent_shift_deletion = true
+		color = "#3192ff"
+
+		members {
+			user_id = data.firehydrant_user.test_user.id
+		}
+
+		members {
+			user_id = data.firehydrant_user.test_user.id
+		}
+
+		strategy {
+			type         = "weekly"
+			handoff_time = "10:00:00"
+			handoff_day  = "thursday"
+		}%s
+	}
+	`, userEmail, sharedTeamID, sharedScheduleID, rName, rName, effectiveAtStr)
+}
+
+func testAccRotationConfig_withUnassignedSlot(rName, sharedTeamID, sharedScheduleID, userEmail string) string {
+	return fmt.Sprintf(`
+	data "firehydrant_user" "test_user" {
+		email = "%s"
+	}
+
+	resource "firehydrant_rotation" "test_rotation_members" {
+	  team_id = "%s"
+		schedule_id = "%s"
+		name = "test-rotation-members-%s"
+		description = "test-description-%s"
+		time_zone = "America/New_York"
+
+		enable_slack_channel_notifications = false
+		prevent_shift_deletion = true
+		color = "#3192ff"
+
+		members {
+			user_id = data.firehydrant_user.test_user.id
+		}
+
+		members {
+			user_id = ""
+		}
+
+		members {
+			user_id = data.firehydrant_user.test_user.id
+		}
+
+		strategy {
+			type         = "weekly"
+			handoff_time = "10:00:00"
+			handoff_day  = "thursday"
+		}
+	}
+	`, userEmail, sharedTeamID, sharedScheduleID, rName, rName)
+}
+
+func testAccRotationConfig_withMember(rName, sharedTeamID, sharedScheduleID, userEmail string, effectiveAt ...string) string {
+	effectiveAtStr := ""
+	if len(effectiveAt) > 0 && effectiveAt[0] != "" {
+		effectiveAtStr = fmt.Sprintf("\n\t\teffective_at = \"%s\"", effectiveAt[0])
+	}
+
+	return fmt.Sprintf(`
+	data "firehydrant_user" "test_user" {
+		email = "%s"
+	}
+
+	resource "firehydrant_rotation" "test_rotation_members" {
+	  team_id = "%s"
+		schedule_id = "%s"
+		name = "test-rotation-members-%s"
+		description = "test-description-%s"
+		time_zone = "America/New_York"
+
+		enable_slack_channel_notifications = false
+		prevent_shift_deletion = true
+		color = "#3192ff"
+
+		members {
+			user_id = data.firehydrant_user.test_user.id
+		}
+
+		strategy {
+			type         = "weekly"
+			handoff_time = "10:00:00"
+			handoff_day  = "thursday"
+		}%s
+	}
+	`, userEmail, sharedTeamID, sharedScheduleID, rName, rName, effectiveAtStr)
 }

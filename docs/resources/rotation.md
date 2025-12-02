@@ -33,10 +33,13 @@ resource "firehydrant_rotation" "new-rotation" {
   team_id     = data.firehydrant_team.example-team.id
   schedule_id = data.firehydrant_on_call_schedule.example-schedule.id
 
-  members = [
-    data.firehydrant_user.my-user-1.id,
-    data.firehydrant_user.my-user-2.id,
-  ]
+  members {
+    user_id = data.firehydrant_user.my-user-1.id
+  }
+
+  members {
+    user_id = data.firehydrant_user.my-user-2.id
+  }
 
   time_zone                          = "America/New_York"
   slack_user_group_id                = "S01JBG0RHUM"
@@ -63,6 +66,12 @@ resource "firehydrant_rotation" "new-rotation" {
     start_time = "12:00:00"
     end_time = "23:00:00"
   }
+
+  # effective_at is required when updating rotation members
+  # This will schedule the member changes to take effect at a future time
+  # If not provided when updating members, an error will be returned
+  # If set to athe current time or time in the past, the rotation will be effective immediately
+  effective_at = "2024-12-25T10:00:00Z"
 }
 ```
 
@@ -74,7 +83,8 @@ The following arguments are supported:
 * `description` - (Optional) A description for the rotation.
 * `team_id` - (Required) The ID of the team that the rotation belongs to.
 * `schedule_id` - (Required) The ID of the on-call schedule that the rotation belongs to.
-* `members` - (Optional) An ordered list of user IDs that are on-call for the rotation.
+* `members` - (Optional) An ordered list of member objects that specify users on-call for the rotation. Each member object supports:
+  * `user_id` - (Required) The ID of the user to add to the rotation. You can use the `firehydrant_user` data source to look up a user by email/name.
 * `time_zone` - (Required) The time zone that the rotation is in.
 * `slack_user_group_id` - (Optional) The ID of the Slack user group that the rotation is associated with.
 * `enable_slack_channel_notifications` - (Optional, defaults to false) A boolean to define if FireHydrant should notify the team's Slack channel when handoffs occur.
@@ -84,7 +94,7 @@ The following arguments are supported:
 * `strategy` - (Required) A block to define the strategy for the rotation.
 * `start_time` - (Optional) An ISO8601 time string specifying when the initial rotation should start. This value is only used if the rotation's strategy type is "custom".
 * `restrictions` - (Optional) A block to define a restriction for the rotation.
-* `effective_at` - (Optional) The date and time that the rotation becomes effective. Must be in `YYYY-MM-DDTHH:MM:SSZ` format. Defaults to the current date and time. If set to the past, the rotation will be effective immediately. This attribute is not stored in Terraform state.
+* `effective_at` - (Optional) The date and time that the rotation becomes effective. Must be in RFC3339 format (e.g., `2024-01-15T10:00:00Z`). **Required when updating rotation members.** If not provided when updating members, an error will be returned. If set to a time in the past, the rotation will be effective immediately (the time will be automatically adjusted to the current time). This attribute is not stored in Terraform state.
 
 The `strategy` block supports:
 

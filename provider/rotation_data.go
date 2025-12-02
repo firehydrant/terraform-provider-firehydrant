@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
+	"github.com/firehydrant/firehydrant-go-sdk/models/sdkerrors"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -50,7 +52,7 @@ func dataSourceRotation() *schema.Resource {
 }
 
 func dataFireHydrantRotation(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	id := d.Get("id").(string)
 	teamID := d.Get("team_id").(string)
@@ -60,8 +62,11 @@ func dataFireHydrantRotation(ctx context.Context, d *schema.ResourceData, m inte
 		"team_id":     teamID,
 		"schedule_id": scheduleID,
 	})
-	rotation, err := firehydrantAPIClient.Rotations().Get(ctx, teamID, scheduleID, id)
+	rotation, err := client.Sdk.Signals.GetOnCallScheduleRotation(ctx, id, teamID, scheduleID)
 	if err != nil {
+		if sdkErr, ok := err.(*sdkerrors.SDKError); ok && sdkErr.StatusCode == 404 {
+			return diag.Errorf("Rotation %s not found", id)
+		}
 		return diag.Errorf("Error reading rotation %s for schedule %s for team %s: %v", id, scheduleID, teamID, err)
 	}
 
@@ -76,19 +81,29 @@ func dataFireHydrantRotation(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	// Set the schedule's ID in state
-	d.SetId(rotation.ID)
+	d.SetId(*rotation.GetID())
 
 	return diag.Diagnostics{}
 }
 
-func dataFireHydrantRotationToAttributesMap(teamID string, scheduleID string, rotation *firehydrant.RotationResponse) map[string]interface{} {
-	return map[string]interface{}{
-		"id":                  rotation.ID,
-		"team_id":             teamID,
-		"schedule_id":         scheduleID,
-		"name":                rotation.Name,
-		"description":         rotation.Description,
-		"time_zone":           rotation.TimeZone,
-		"slack_user_group_id": rotation.SlackUserGroupID,
+func dataFireHydrantRotationToAttributesMap(teamID string, scheduleID string, rotation *components.SignalsAPIOnCallRotationEntity) map[string]interface{} {
+	attributes := map[string]interface{}{
+		"id":          *rotation.GetID(),
+		"team_id":     teamID,
+		"schedule_id": scheduleID,
+		"name":        *rotation.GetName(),
+		"time_zone":   *rotation.GetTimeZone(),
 	}
+
+	// Handle optional description field
+	if description := rotation.GetDescription(); description != nil {
+		attributes["description"] = *description
+	}
+
+	// Handle optional slack_user_group_id field
+	if slackUserGroupID := rotation.GetSlackUserGroupID(); slackUserGroupID != nil && *slackUserGroupID != "" {
+		attributes["slack_user_group_id"] = *slackUserGroupID
+	}
+
+	return attributes
 }
