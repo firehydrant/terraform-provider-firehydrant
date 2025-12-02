@@ -97,6 +97,40 @@ func TestErrors(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("messages as string", func(t *testing.T) {
+		// Test case for when API returns messages as a string instead of array
+		jsonData := []byte(`{"error":"test error","detail":"test detail","messages":"single message string"}`)
+		apiError := &APIError{}
+
+		err := json.Unmarshal(jsonData, apiError)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		expected := &APIError{
+			Error:    "test error",
+			Detail:   "test detail",
+			Messages: []string{"single message string"},
+		}
+		got := apiError
+		if expected.Error != got.Error {
+			t.Errorf("unexpected Error\nexpected: %s\ngot: %s", expected.Error, got.Error)
+		}
+		if expected.Detail != got.Detail {
+			t.Errorf("unexpected Detail\nexpected: %s\ngot: %s", expected.Detail, got.Detail)
+		}
+
+		if len(expected.Messages) != len(got.Messages) {
+			t.Errorf("unexpected Messages length\nexpected: %d\ngot: %d", len(expected.Messages), len(got.Messages))
+		}
+
+		for index := range expected.Messages {
+			if expected.Messages[index] != got.Messages[index] {
+				t.Errorf("unexpected Messages[%d]\nexpected: %s\ngot: %s", index, expected.Messages[index], got.Messages[index])
+			}
+		}
+	})
 }
 
 func TestErrors_String(t *testing.T) {
