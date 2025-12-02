@@ -12,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	fhsdk "github.com/firehydrant/firehydrant-go-sdk"
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -152,7 +154,11 @@ func testAccCheckRotationResourceDestroy() resource.TestCheckFunc {
 
 func offlineRotationMockServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.Write([]byte(`{
+		w.Header().Set("Content-Type", "application/json")
+
+		// Handle GET request for reading rotation
+		if req.Method == "GET" {
+			w.Write([]byte(`{
   "id": "rotation-id",
   "name": "A pleasant rotation",
   "description": "Managed by Terraform. Contact @platform-eng for changes.",
@@ -166,8 +172,50 @@ func offlineRotationMockServer() *httptest.Server {
     "id": "team-1",
     "name": "Philadelphia"
   },
-  "time_zone": "America/New_York"
+  "time_zone": "America/New_York",
+  "enable_slack_channel_notifications": false,
+  "prevent_shift_deletion": false,
+  "strategy": {
+    "type": "weekly",
+    "handoff_time": "10:00:00",
+    "handoff_day": "thursday"
+  },
+  "restrictions": [],
+  "created_at": "2025-01-01T00:00:00Z",
+  "updated_at": "2025-01-01T00:00:00Z"
 }`))
+		} else if req.Method == "POST" {
+			// Handle POST request for creating rotation
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(`{
+  "id": "rotation-id",
+  "name": "A pleasant rotation",
+  "description": "Managed by Terraform. Contact @platform-eng for changes.",
+  "members": [
+    {
+      "id": "member-1",
+      "name": "Frederick Graff"
+    }
+  ],
+  "team": {
+    "id": "team-1",
+    "name": "Philadelphia"
+  },
+  "time_zone": "America/New_York",
+  "enable_slack_channel_notifications": false,
+  "prevent_shift_deletion": false,
+  "strategy": {
+    "type": "weekly",
+    "handoff_time": "10:00:00",
+    "handoff_day": "thursday"
+  },
+  "restrictions": [],
+  "created_at": "2025-01-01T00:00:00Z",
+  "updated_at": "2025-01-01T00:00:00Z"
+}`))
+		} else {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
 	}))
 }
 
@@ -175,14 +223,18 @@ func TestOfflineRotationReadMemberID(t *testing.T) {
 	ts := offlineRotationMockServer()
 	defer ts.Close()
 
-	c, err := firehydrant.NewRestClient("test-token-very-authorized", firehydrant.WithBaseURL(ts.URL))
-	if err != nil {
-		t.Fatalf("Received error initializing API client: %s", err.Error())
-		return
-	}
+	client := &firehydrant.APIClient{}
+	client.Sdk = fhsdk.New(
+		fhsdk.WithServerURL(ts.URL),
+		fhsdk.WithSecurity(components.Security{
+			APIKey: "test-token-very-authorized",
+		}),
+	)
+
 	r := schema.TestResourceDataRaw(t, resourceRotation().Schema, map[string]interface{}{
 		"team_id":     "team-1",
 		"schedule_id": "schedule-1",
+		"id":          "rotation-id",
 		"name":        "test-rotation",
 		"description": "test-description",
 		"time_zone":   "America/New_York",
@@ -193,7 +245,7 @@ func TestOfflineRotationReadMemberID(t *testing.T) {
 		},
 	})
 
-	d := readResourceFireHydrantRotation(context.Background(), r, c)
+	d := readResourceFireHydrantRotation(context.Background(), r, client)
 	if d.HasError() {
 		t.Fatalf("error reading rotation: %v", d)
 	}
@@ -221,11 +273,14 @@ func TestOfflineRotationCreate(t *testing.T) {
 	ts := offlineRotationMockServer()
 	defer ts.Close()
 
-	c, err := firehydrant.NewRestClient("test-token-very-authorized", firehydrant.WithBaseURL(ts.URL))
-	if err != nil {
-		t.Fatalf("Received error initializing API client: %s", err.Error())
-		return
-	}
+	client := &firehydrant.APIClient{}
+	client.Sdk = fhsdk.New(
+		fhsdk.WithServerURL(ts.URL),
+		fhsdk.WithSecurity(components.Security{
+			APIKey: "test-token-very-authorized",
+		}),
+	)
+
 	r := schema.TestResourceDataRaw(t, resourceRotation().Schema, map[string]interface{}{
 		"team_id":     "team-1",
 		"schedule_id": "schedule-1",
@@ -239,13 +294,13 @@ func TestOfflineRotationCreate(t *testing.T) {
 		},
 	})
 
-	d := createResourceFireHydrantRotation(context.Background(), r, c)
+	d := createResourceFireHydrantRotation(context.Background(), r, client)
 	if d.HasError() {
 		t.Fatalf("error creating rotation: %v", d)
 	}
 
 	// Read the resource to populate members in state (as Terraform would do)
-	d = readResourceFireHydrantRotation(context.Background(), r, c)
+	d = readResourceFireHydrantRotation(context.Background(), r, client)
 	if d.HasError() {
 		t.Fatalf("error reading rotation: %v", d)
 	}
