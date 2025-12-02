@@ -33,14 +33,13 @@ resource "firehydrant_rotation" "new-rotation" {
   team_id     = data.firehydrant_team.example-team.id
   schedule_id = data.firehydrant_on_call_schedule.example-schedule.id
 
-  members = [
-    {
-      user_id = data.firehydrant_user.my-user-1.id
-    },
-    {
-      user_id = data.firehydrant_user.my-user-2.id
-    }
-  ]
+  members {
+    user_id = data.firehydrant_user.my-user-1.id
+  }
+
+  members {
+    user_id = data.firehydrant_user.my-user-2.id
+  }
 
   time_zone                          = "America/New_York"
   slack_user_group_id                = "S01JBG0RHUM"
