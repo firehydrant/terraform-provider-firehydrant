@@ -1,3 +1,13 @@
+## 0.15.0
+
+BREAKING CHANGES:
+
+* Setting a member with an empty string as user_id will now create a blank rotation shift. Previously these would be filtered out, moving forward users will be able to intentionally set to blank rotation shifts as a method to create a placeholder/gap in a rotation.
+
+BUG FIXES:
+
+* Fixes an error accessing and managing rotation members.
+
 ## 0.14.12
 
 BUG FIXES:
