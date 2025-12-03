@@ -1,3 +1,13 @@
+## 0.14.13
+
+BUG FIXES:
+
+* Fixes an error accessing and managing rotation members.
+
+ENHANCEMENTS:
+
+* Allows setting blank rotation shifts by including a member with user_id as an empty string.
+
 ## 0.14.12
 
 BUG FIXES:
