@@ -81,11 +81,16 @@ func readResourceFireHydrantPriority(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("Error reading priority %s: %v", priorityID, err)
 	}
 
+	description := ""
+	if response.Description != nil {
+		description = *response.Description
+	}
+
 	// Gather values from the API response
 	attributes := map[string]interface{}{
 		"slug":        response.Slug,
 		"default":     response.Default,
-		"description": response.Description,
+		"description": description,
 	}
 
 	// Set the resource attributes to the values we got from the API
