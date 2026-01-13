@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"time"
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -113,6 +114,8 @@ func dataFireHydrantRole(ctx context.Context, d *schema.ResourceData, m interfac
 	for i, p := range role.Permissions {
 		permissionSlugs[i] = *p.Slug
 	}
+	createdAtString := role.CreatedAt.Format(time.RFC3339)
+	updatedAtString := role.UpdatedAt.Format(time.RFC3339)
 
 	// Set all computed attributes
 	attributes := map[string]interface{}{
@@ -124,8 +127,8 @@ func dataFireHydrantRole(ctx context.Context, d *schema.ResourceData, m interfac
 
 		"built_in":   *role.BuiltIn,
 		"read_only":  *role.ReadOnly,
-		"created_at": *role.CreatedAt,
-		"updated_at": *role.UpdatedAt,
+		"created_at": createdAtString,
+		"updated_at": updatedAtString,
 	}
 
 	for key, value := range attributes {
