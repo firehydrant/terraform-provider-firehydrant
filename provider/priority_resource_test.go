@@ -170,7 +170,7 @@ func testAccCheckPriorityResourceExistsWithAttributes_basic(resourceSlug string)
 			return fmt.Errorf("Unexpected default. Expected: %s, got: %s", expected, got)
 		}
 
-		if priorityResponse.Description != nil || *priorityResponse.Description != "" {
+		if *priorityResponse.Description != "" {
 			return fmt.Errorf("Unexpected description. Expected no description, got: %s", *priorityResponse.Description)
 		}
 
