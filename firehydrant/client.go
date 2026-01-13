@@ -70,7 +70,6 @@ type Client interface {
 	// Signals
 	IngestURL() IngestURLClient
 	Transposers() TransposersClient
-	Permissions() Permissions
 }
 
 type transportWithUserAgent struct {
@@ -213,10 +212,6 @@ func (c *APIClient) Transposers() TransposersClient {
 
 func (c *APIClient) StatusUpdateTemplates() StatusUpdateTemplates {
 	return &RESTStatusUpdateTemplateClient{client: c}
-}
-
-func (c *APIClient) Permissions() Permissions {
-	return &RESTPermissionsClient{client: c}
 }
 
 // GetUsers gets matching users in FireHydrant
