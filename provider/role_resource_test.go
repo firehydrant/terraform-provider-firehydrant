@@ -87,7 +87,7 @@ func testAccCheckRoleResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			_, err := client.Roles().Get(context.TODO(), stateResource.Primary.ID)
+			_, err := client.Sdk.Roles.GetRole(context.TODO(), stateResource.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("Role %s still exists", stateResource.Primary.ID)
 			}
