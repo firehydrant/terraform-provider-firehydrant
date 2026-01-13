@@ -188,7 +188,7 @@ func updateResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, 
 			permissions := v.(*schema.Set).List()
 			permissionSlugs := make([]components.UpdateRolePermission, len(permissions))
 			for i, p := range permissions {
-				permissionSlugs[i] = p.(components.UpdateRolePermission)
+				permissionSlugs[i] = components.UpdateRolePermission(p.(string))
 			}
 			updateReq.Permissions = permissionSlugs
 		} else {
