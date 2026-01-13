@@ -89,9 +89,11 @@ func dataFireHydrantPermissions(ctx context.Context, d *schema.ResourceData, m i
 			"description":           *permission.Description,
 			"category_display_name": *permission.CategoryDisplayName,
 			"category_slug":         *permission.CategorySlug,
-			"parent_slug":           *permission.ParentSlug,
 			"available":             *permission.Available,
 			"dependency_slugs":      schema.NewSet(schema.HashString, convertStringSliceToInterface(permission.DependencySlugs)),
+		}
+		if pslug := permission.ParentSlug; pslug != nil {
+			permissions[i]["parent_slug"] = *pslug
 		}
 	}
 
