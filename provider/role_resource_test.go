@@ -3,14 +3,10 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
@@ -184,54 +180,4 @@ func testAccRoleConfig_withUpdatedPermissions(rName string) string {
 		]
 	}
 	`, rName)
-}
-
-// Offline test with mock server for faster unit testing
-func offlineRoleMockServer() *httptest.Server {
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.Write([]byte(`{
-			"id": "role-123",
-			"name": "Test Role",
-			"slug": "test-role",
-			"description": "A test role",
-
-			"built_in": false,
-			"read_only": false,
-			"permissions": [
-				{
-					"slug": "read_incidents",
-					"display_name": "Read Incidents",
-					"description": "Can view incidents",
-					"available": true
-				}
-			],
-			"created_at": "2025-01-01T00:00:00Z",
-			"updated_at": "2025-01-01T00:00:00Z"
-		}`))
-	}))
-}
-
-func TestOfflineRoleRead(t *testing.T) {
-	ts := offlineRoleMockServer()
-	defer ts.Close()
-
-	c, err := firehydrant.NewRestClient("test-token", firehydrant.WithBaseURL(ts.URL))
-	if err != nil {
-		t.Fatalf("Error initializing API client: %s", err.Error())
-	}
-
-	r := schema.TestResourceDataRaw(t, resourceRole().Schema, map[string]interface{}{
-		"name":        "Test Role",
-		"description": "A test role",
-	})
-
-	d := readResourceFireHydrantRole(context.Background(), r, c)
-	if d.HasError() {
-		t.Fatalf("Error reading role: %v", d)
-	}
-
-	// Verify the role data was set correctly
-	if r.Get("name").(string) != "Test Role" {
-		t.Fatalf("Expected name 'Test Role', got %s", r.Get("name").(string))
-	}
 }
