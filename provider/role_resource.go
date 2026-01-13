@@ -100,7 +100,7 @@ func createResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, 
 		permissions := v.(*schema.Set).List()
 		permissionSlugs := make([]components.CreateRolePermission, len(permissions))
 		for i, p := range permissions {
-			permissionSlugs[i] = p.(components.CreateRolePermission)
+			permissionSlugs[i] = components.CreateRolePermission(p.(string))
 		}
 		createReq.Permissions = permissionSlugs
 	}
