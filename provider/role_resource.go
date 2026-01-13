@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -143,6 +144,9 @@ func readResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, m 
 		permissionSlugs[i] = *p.Slug
 	}
 
+	createdAtString := role.CreatedAt.Format(time.RFC3339)
+	updatedAtString := role.UpdatedAt.Format(time.RFC3339)
+
 	// Update state with current values
 	attributes := map[string]interface{}{
 		"name":        *role.Name,
@@ -152,8 +156,8 @@ func readResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, m 
 
 		"built_in":   *role.BuiltIn,
 		"read_only":  *role.ReadOnly,
-		"created_at": *role.CreatedAt,
-		"updated_at": *role.UpdatedAt,
+		"created_at": createdAtString,
+		"updated_at": updatedAtString,
 	}
 
 	for key, value := range attributes {
