@@ -155,23 +155,23 @@ func testAccCheckPriorityResourceExistsWithAttributes_basic(resourceSlug string)
 			return err
 		}
 
-		priorityResponse, err := client.Priorities().Get(context.TODO(), priorityResource.Primary.ID)
+		priorityResponse, err := client.Sdk.IncidentSettings.GetPriority(context.TODO(), priorityResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		expected, got := priorityResource.Primary.Attributes["slug"], priorityResponse.Slug
+		expected, got := priorityResource.Primary.Attributes["slug"], *priorityResponse.Slug
 		if expected != got {
 			return fmt.Errorf("Unexpected slug. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = priorityResource.Primary.Attributes["default"], fmt.Sprintf("%t", priorityResponse.Default)
+		expected, got = priorityResource.Primary.Attributes["default"], fmt.Sprintf("%t", *priorityResponse.Default)
 		if expected != got {
 			return fmt.Errorf("Unexpected default. Expected: %s, got: %s", expected, got)
 		}
 
-		if priorityResponse.Description != "" {
-			return fmt.Errorf("Unexpected description. Expected no description, got: %s", priorityResponse.Description)
+		if *priorityResponse.Description != "" {
+			return fmt.Errorf("Unexpected description. Expected no description, got: %s", *priorityResponse.Description)
 		}
 
 		return nil
@@ -193,22 +193,22 @@ func testAccCheckPriorityResourceExistsWithAttributes_update(resourceSlug string
 			return err
 		}
 
-		priorityResponse, err := client.Priorities().Get(context.TODO(), priorityResource.Primary.ID)
+		priorityResponse, err := client.Sdk.IncidentSettings.GetPriority(context.TODO(), priorityResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		expected, got := priorityResource.Primary.Attributes["slug"], priorityResponse.Slug
+		expected, got := priorityResource.Primary.Attributes["slug"], *priorityResponse.Slug
 		if expected != got {
 			return fmt.Errorf("Unexpected slug. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = priorityResource.Primary.Attributes["default"], fmt.Sprintf("%t", priorityResponse.Default)
+		expected, got = priorityResource.Primary.Attributes["default"], fmt.Sprintf("%t", *priorityResponse.Default)
 		if expected != got {
 			return fmt.Errorf("Unexpected default. Expected: %s, got: %s", expected, got)
 		}
 
-		expected, got = priorityResource.Primary.Attributes["description"], priorityResponse.Description
+		expected, got = priorityResource.Primary.Attributes["description"], *priorityResponse.Description
 		if expected != got {
 			return fmt.Errorf("Unexpected description. Expected: %s, got: %s", expected, got)
 		}
@@ -233,7 +233,7 @@ func testAccCheckPriorityResourceDestroy() resource.TestCheckFunc {
 				return fmt.Errorf("No instance ID is set")
 			}
 
-			_, err := client.Priorities().Get(context.TODO(), stateResource.Primary.ID)
+			_, err := client.Sdk.IncidentSettings.GetPriority(context.TODO(), stateResource.Primary.ID)
 			if err == nil {
 				return fmt.Errorf("Priority %s still exists", stateResource.Primary.ID)
 			}

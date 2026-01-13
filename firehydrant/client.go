@@ -56,7 +56,6 @@ var _ Client = &APIClient{}
 type Client interface {
 	Ping(ctx context.Context) (*PingResponse, error)
 
-	Priorities() PrioritiesClient
 	Runbooks() RunbooksClient
 	RunbookActions() RunbookActionsClient
 	ServiceDependencies() ServiceDependenciesClient
@@ -171,11 +170,6 @@ func (c *APIClient) Ping(ctx context.Context) (*PingResponse, error) {
 	}
 
 	return pingResponse, nil
-}
-
-// Priorities returns a PrioritiesClient interface for interacting with priorities in FireHydrant
-func (c *APIClient) Priorities() PrioritiesClient {
-	return &RESTPrioritiesClient{client: c}
 }
 
 // Runbooks returns a RunbooksClient interface for interacting with runbooks in FireHydrant

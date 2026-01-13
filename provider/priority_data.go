@@ -36,22 +36,22 @@ func dataSourcePriority() *schema.Resource {
 
 func dataFireHydrantPriority(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Get the API client
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	// Get the priority
 	slug := d.Get("slug").(string)
 	tflog.Debug(ctx, fmt.Sprintf("Read priority: %s", slug), map[string]interface{}{
 		"id": slug,
 	})
-	priorityResponse, err := firehydrantAPIClient.Priorities().Get(ctx, slug)
+	response, err := client.Sdk.IncidentSettings.GetPriority(ctx, slug)
 	if err != nil {
 		return diag.Errorf("Error reading priority %s: %v", slug, err)
 	}
 
 	// Gather values from API response
 	attributes := map[string]interface{}{
-		"description": priorityResponse.Description,
-		"default":     priorityResponse.Default,
+		"description": response.Description,
+		"default":     response.Default,
 	}
 
 	// Set the data source attributes to the values we got from the API
@@ -62,7 +62,7 @@ func dataFireHydrantPriority(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	// Set the priority's ID in state
-	d.SetId(priorityResponse.Slug)
+	d.SetId(*response.Slug)
 
 	return diag.Diagnostics{}
 }
