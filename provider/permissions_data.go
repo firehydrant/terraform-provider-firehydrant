@@ -71,11 +71,11 @@ func dataSourcePermissions() *schema.Resource {
 }
 
 func dataFireHydrantPermissions(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	tflog.Debug(ctx, "Reading all permissions")
 
-	permissionsResp, err := firehydrantAPIClient.Permissions().List(ctx)
+	permissionsResp, err := client.Sdk.Permissions.ListPermissions(ctx)
 	if err != nil {
 		return diag.Errorf("Error reading permissions: %v", err)
 	}
@@ -84,14 +84,16 @@ func dataFireHydrantPermissions(ctx context.Context, d *schema.ResourceData, m i
 	permissions := make([]map[string]interface{}, len(permissionsResp.Data))
 	for i, permission := range permissionsResp.Data {
 		permissions[i] = map[string]interface{}{
-			"slug":                  permission.Slug,
-			"display_name":          permission.DisplayName,
-			"description":           permission.Description,
-			"category_display_name": permission.CategoryDisplayName,
-			"category_slug":         permission.CategorySlug,
-			"parent_slug":           permission.ParentSlug,
-			"available":             permission.Available,
+			"slug":                  *permission.Slug,
+			"display_name":          *permission.DisplayName,
+			"description":           *permission.Description,
+			"category_display_name": *permission.CategoryDisplayName,
+			"category_slug":         *permission.CategorySlug,
+			"available":             *permission.Available,
 			"dependency_slugs":      schema.NewSet(schema.HashString, convertStringSliceToInterface(permission.DependencySlugs)),
+		}
+		if pslug := permission.ParentSlug; pslug != nil {
+			permissions[i]["parent_slug"] = *pslug
 		}
 	}
 

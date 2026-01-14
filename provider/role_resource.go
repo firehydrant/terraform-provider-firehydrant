@@ -3,7 +3,9 @@ package provider
 import (
 	"context"
 	"errors"
+	"time"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -73,7 +75,7 @@ func resourceRole() *schema.Resource {
 }
 
 func createResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	name := d.Get("name").(string)
 	tflog.Debug(ctx, "Create role", map[string]interface{}{
@@ -81,48 +83,50 @@ func createResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, 
 	})
 
 	// Build create request
-	createReq := firehydrant.CreateRoleRequest{
+	createReq := components.CreateRole{
 		Name: name,
 	}
 
 	if v, ok := d.GetOk("slug"); ok {
-		createReq.Slug = v.(string)
+		slug := v.(string)
+		createReq.Slug = &slug
 	}
 
 	if v, ok := d.GetOk("description"); ok {
-		createReq.Description = v.(string)
+		desc := v.(string)
+		createReq.Description = &desc
 	}
 
 	if v, ok := d.GetOk("permissions"); ok {
 		permissions := v.(*schema.Set).List()
-		permissionSlugs := make([]string, len(permissions))
+		permissionSlugs := make([]components.CreateRolePermission, len(permissions))
 		for i, p := range permissions {
-			permissionSlugs[i] = p.(string)
+			permissionSlugs[i] = components.CreateRolePermission(p.(string))
 		}
 		createReq.Permissions = permissionSlugs
 	}
 
 	// Create the role
-	role, err := firehydrantAPIClient.Roles().Create(ctx, createReq)
+	role, err := client.Sdk.Roles.CreateRole(ctx, createReq)
 	if err != nil {
 		return diag.Errorf("Error creating role %s: %v", name, err)
 	}
 
 	// Set the role ID in state
-	d.SetId(role.ID)
+	d.SetId(*role.ID)
 
 	return readResourceFireHydrantRole(ctx, d, m)
 }
 
 func readResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	id := d.Id()
 	tflog.Debug(ctx, "Read role", map[string]interface{}{
 		"id": id,
 	})
 
-	role, err := firehydrantAPIClient.Roles().Get(ctx, id)
+	role, err := client.Sdk.Roles.GetRole(ctx, id)
 	if err != nil {
 		if errors.Is(err, firehydrant.ErrorNotFound) {
 			tflog.Debug(ctx, "Role not found, removing from state", map[string]interface{}{
@@ -137,20 +141,23 @@ func readResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, m 
 	// Extract permission slugs from the full permission objects
 	permissionSlugs := make([]string, len(role.Permissions))
 	for i, p := range role.Permissions {
-		permissionSlugs[i] = p.Slug
+		permissionSlugs[i] = *p.Slug
 	}
+
+	createdAtString := role.CreatedAt.Format(time.RFC3339)
+	updatedAtString := role.UpdatedAt.Format(time.RFC3339)
 
 	// Update state with current values
 	attributes := map[string]interface{}{
-		"name":        role.Name,
-		"slug":        role.Slug,
-		"description": role.Description,
+		"name":        *role.Name,
+		"slug":        *role.Slug,
+		"description": *role.Description,
 		"permissions": schema.NewSet(schema.HashString, convertStringSliceToInterface(permissionSlugs)),
 
-		"built_in":   role.BuiltIn,
-		"read_only":  role.ReadOnly,
-		"created_at": role.CreatedAt,
-		"updated_at": role.UpdatedAt,
+		"built_in":   *role.BuiltIn,
+		"read_only":  *role.ReadOnly,
+		"created_at": createdAtString,
+		"updated_at": updatedAtString,
 	}
 
 	for key, value := range attributes {
@@ -163,33 +170,34 @@ func readResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func updateResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	id := d.Id()
 	tflog.Debug(ctx, "Update role", map[string]interface{}{
 		"id": id,
 	})
 
-	updateReq := firehydrant.UpdateRoleRequest{}
+	updateReq := components.UpdateRole{}
 
 	updateReq.Name = d.Get("name").(string)
-	updateReq.Description = d.Get("description").(string)
+	desc := d.Get("description").(string)
+	updateReq.Description = &desc
 
 	if d.HasChange("permissions") {
 		if v, ok := d.GetOk("permissions"); ok {
 			permissions := v.(*schema.Set).List()
-			permissionSlugs := make([]string, len(permissions))
+			permissionSlugs := make([]components.UpdateRolePermission, len(permissions))
 			for i, p := range permissions {
-				permissionSlugs[i] = p.(string)
+				permissionSlugs[i] = components.UpdateRolePermission(p.(string))
 			}
 			updateReq.Permissions = permissionSlugs
 		} else {
 			// If permissions set is removed, send empty array
-			updateReq.Permissions = []string{}
+			updateReq.Permissions = []components.UpdateRolePermission{}
 		}
 	}
 
-	_, err := firehydrantAPIClient.Roles().Update(ctx, id, updateReq)
+	_, err := client.Sdk.Roles.UpdateRole(ctx, id, updateReq)
 	if err != nil {
 		return diag.Errorf("Error updating role %s: %v", id, err)
 	}
@@ -198,14 +206,14 @@ func updateResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, 
 }
 
 func deleteResourceFireHydrantRole(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
 	id := d.Id()
 	tflog.Debug(ctx, "Delete role", map[string]interface{}{
 		"id": id,
 	})
 
-	err := firehydrantAPIClient.Roles().Delete(ctx, id)
+	err := client.Sdk.Roles.DeleteRole(ctx, id)
 	if err != nil {
 		return diag.Errorf("Error deleting role %s: %v", id, err)
 	}

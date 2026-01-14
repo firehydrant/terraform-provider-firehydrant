@@ -2,7 +2,9 @@ package provider
 
 import (
 	"context"
+	"time"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -72,9 +74,9 @@ func dataSourceRole() *schema.Resource {
 }
 
 func dataFireHydrantRole(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	firehydrantAPIClient := m.(firehydrant.Client)
+	client := m.(*firehydrant.APIClient)
 
-	var role *firehydrant.RoleResponse
+	var role *components.PublicAPIV1RoleEntity
 	var err error
 
 	// Determine lookup method
@@ -85,7 +87,7 @@ func dataFireHydrantRole(ctx context.Context, d *schema.ResourceData, m interfac
 			"id": roleID,
 		})
 
-		role, err = firehydrantAPIClient.Roles().Get(ctx, roleID)
+		role, err = client.Sdk.Roles.GetRole(ctx, roleID)
 		if err != nil {
 			return diag.Errorf("Error reading role %s: %v", roleID, err)
 		}
@@ -96,7 +98,7 @@ func dataFireHydrantRole(ctx context.Context, d *schema.ResourceData, m interfac
 			"slug": roleSlug,
 		})
 
-		role, err = findRoleBySlug(ctx, firehydrantAPIClient, roleSlug)
+		role, err = findRoleBySlug(ctx, client, roleSlug)
 		if err != nil {
 			return diag.Errorf("Error finding role with slug %s: %v", roleSlug, err)
 		}
@@ -110,46 +112,48 @@ func dataFireHydrantRole(ctx context.Context, d *schema.ResourceData, m interfac
 	// Extract permission slugs
 	permissionSlugs := make([]string, len(role.Permissions))
 	for i, p := range role.Permissions {
-		permissionSlugs[i] = p.Slug
+		permissionSlugs[i] = *p.Slug
 	}
+	createdAtString := role.CreatedAt.Format(time.RFC3339)
+	updatedAtString := role.UpdatedAt.Format(time.RFC3339)
 
 	// Set all computed attributes
 	attributes := map[string]interface{}{
-		"id":          role.ID,
-		"name":        role.Name,
-		"slug":        role.Slug,
-		"description": role.Description,
+		"id":          *role.ID,
+		"name":        *role.Name,
+		"slug":        *role.Slug,
+		"description": *role.Description,
 		"permissions": schema.NewSet(schema.HashString, convertStringSliceToInterface(permissionSlugs)),
 
-		"built_in":   role.BuiltIn,
-		"read_only":  role.ReadOnly,
-		"created_at": role.CreatedAt,
-		"updated_at": role.UpdatedAt,
+		"built_in":   *role.BuiltIn,
+		"read_only":  *role.ReadOnly,
+		"created_at": createdAtString,
+		"updated_at": updatedAtString,
 	}
 
 	for key, value := range attributes {
 		if err := d.Set(key, value); err != nil {
-			return diag.Errorf("Error setting %s for role %s: %v", key, role.ID, err)
+			return diag.Errorf("Error setting %s for role %s: %v", key, *role.ID, err)
 		}
 	}
 
 	// Set the data source ID
-	d.SetId(role.ID)
+	d.SetId(*role.ID)
 
 	return diag.Diagnostics{}
 }
 
 // findRoleBySlug searches for a role by slug since there's no direct API endpoint
-func findRoleBySlug(ctx context.Context, client firehydrant.Client, slug string) (*firehydrant.RoleResponse, error) {
+func findRoleBySlug(ctx context.Context, client *firehydrant.APIClient, slug string) (*components.PublicAPIV1RoleEntity, error) {
 	// List all roles and find the one with matching slug
 	// This is less efficient than direct lookup but necessary given API design
-	roles, err := client.Roles().List(ctx, firehydrant.RolesQuery{})
+	roles, err := client.Sdk.Roles.ListRoles(ctx, &slug, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, role := range roles.Data {
-		if role.Slug == slug {
+		if *role.Slug == slug {
 			return &role, nil
 		}
 	}
