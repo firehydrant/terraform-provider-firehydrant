@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/firehydrant-go-sdk/models/operations"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -56,15 +57,25 @@ func dataFireHydrantOnCallSchedules(ctx context.Context, d *schema.ResourceData,
 	if query != "" {
 		request.Query = &query
 	}
-	schedulesResponse, err := client.Sdk.Signals.ListTeamOnCallSchedules(ctx, request)
 
+	allSchedules, err := fetchAllPages(ctx,
+		func(ctx context.Context, req operations.ListTeamOnCallSchedulesRequest) ([]components.SignalsAPIOnCallScheduleEntity, *components.NullablePaginationEntity, error) {
+			resp, err := client.Sdk.Signals.ListTeamOnCallSchedules(ctx, req)
+			if err != nil {
+				return nil, nil, err
+			}
+			return resp.GetData(), resp.GetPagination(), nil
+		},
+		func(req *operations.ListTeamOnCallSchedulesRequest, page int) { req.Page = &page },
+		request,
+	)
 	if err != nil {
 		return diag.Errorf("Error reading on-call schedules: %v", err)
 	}
 
 	// Set the data source attributes to the values we got from the API
 	schedules := make([]interface{}, 0)
-	for _, schedule := range schedulesResponse.GetData() {
+	for _, schedule := range allSchedules {
 		schedules = append(schedules, dataFireHydrantOnCallScheduleToAttributesMap(teamID, schedule))
 	}
 	if err = d.Set("on_call_schedules", schedules); err != nil {

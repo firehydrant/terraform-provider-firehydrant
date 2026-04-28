@@ -1,3 +1,9 @@
+## Unreleased
+
+ENHANCEMENTS:
+
+* Pagination support for services, schedules, on_call_schedules and teams
+
 ## 0.15.0
 
 BREAKING CHANGES:

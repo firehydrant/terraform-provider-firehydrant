@@ -41,12 +41,24 @@ func dataFireHydrantSchedule(ctx context.Context, d *schema.ResourceData, m inte
 		"id": name,
 	})
 
-	scheduleResponse, err := client.Sdk.Teams.ListSchedules(ctx, &name, nil, nil)
+	type schedulePageRequest struct {
+		Page *int
+	}
+
+	schedules, err := fetchAllPages(ctx,
+		func(ctx context.Context, req schedulePageRequest) ([]components.ScheduleEntity, *components.NullablePaginationEntity, error) {
+			resp, err := client.Sdk.Teams.ListSchedules(ctx, &name, req.Page, nil)
+			if err != nil {
+				return nil, nil, err
+			}
+			return resp.GetData(), resp.GetPagination(), nil
+		},
+		func(req *schedulePageRequest, page int) { req.Page = &page },
+		schedulePageRequest{},
+	)
 	if err != nil {
 		return diag.Errorf("Error fetching schedule '%s': %v", name, err)
 	}
-
-	schedules := scheduleResponse.GetData()
 	if len(schedules) == 0 {
 		return diag.Errorf("Did not find schedule matching '%s'", name)
 	}

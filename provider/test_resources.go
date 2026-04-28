@@ -288,12 +288,22 @@ func (r *SharedTestResources) LoadFromAPI() error {
 // loadTeamsFromAPI discovers teams with tf-test-shared- prefix
 func (r *SharedTestResources) loadTeamsFromAPI(ctx context.Context, client *firehydrant.APIClient) error {
 	request := operations.ListTeamsRequest{}
-	teamsResponse, err := client.Sdk.Teams.ListTeams(ctx, request)
+	allTeams, err := fetchAllPages(ctx,
+		func(ctx context.Context, req operations.ListTeamsRequest) ([]components.TeamEntity, *components.NullablePaginationEntity, error) {
+			resp, err := client.Sdk.Teams.ListTeams(ctx, req)
+			if err != nil {
+				return nil, nil, err
+			}
+			return resp.GetData(), resp.GetPagination(), nil
+		},
+		func(req *operations.ListTeamsRequest, page int) { req.Page = &page },
+		request,
+	)
 	if err != nil {
 		return err
 	}
 
-	for _, team := range teamsResponse.GetData() {
+	for _, team := range allTeams {
 		if team.GetName() != nil && len(*team.GetName()) > 12 && (*team.GetName())[:12] == "tf-test-shared" {
 			r.Teams[*team.GetName()] = *team.GetID()
 		}
