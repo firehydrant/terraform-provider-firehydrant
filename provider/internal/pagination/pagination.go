@@ -6,6 +6,7 @@ import (
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	"github.com/firehydrant/terraform-provider-firehydrant/provider/internal/ptr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
@@ -33,7 +34,7 @@ type PaginateResponse[TEntity any] interface {
 // Paginate is the function that will paginate the API response for SDK-based calls to the API
 func Paginate[TRequest any, TEntity any](ctx context.Context, options PaginateRequestOptions[TRequest, TEntity]) ([]TEntity, diag.Diagnostics) {
 	results := []TEntity{}
-	page := toIntPointer(1)
+	page := ptr.Of(1)
 
 	for page != nil {
 		if options.GetPageDelay > 0 {
@@ -61,8 +62,4 @@ func Paginate[TRequest any, TEntity any](ctx context.Context, options PaginateRe
 	}
 	return results, nil
 
-}
-
-func toIntPointer(v int) *int {
-	return &v
 }

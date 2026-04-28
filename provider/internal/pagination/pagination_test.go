@@ -7,6 +7,7 @@ import (
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	"github.com/firehydrant/terraform-provider-firehydrant/provider/internal/ptr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
@@ -38,7 +39,7 @@ func TestPaginate_Success(t *testing.T) {
 	}
 	requestFunc := func(ctx context.Context, client *firehydrant.APIClient, request *testRequest) (PaginateResponse[int], diag.Diagnostics) {
 		if request.Page == nil || *request.Page == 1 {
-			return &testResponse{Items: page1Items, Pagination: &components.NullablePaginationEntity{Next: toIntPointer(2)}}, nil
+			return &testResponse{Items: page1Items, Pagination: &components.NullablePaginationEntity{Next: ptr.Of(2)}}, nil
 		} else if *request.Page == 2 {
 			return &testResponse{Items: page2Items}, nil
 		}
@@ -119,7 +120,7 @@ func TestPaginateRequest_ErrorOnSecondPage(t *testing.T) {
 	}
 	requestFunc := func(ctx context.Context, client *firehydrant.APIClient, request *testRequest) (PaginateResponse[int], diag.Diagnostics) {
 		if request.Page == nil || *request.Page == 1 {
-			return &testResponse{Items: []int{1, 2}, Pagination: &components.NullablePaginationEntity{Next: toIntPointer(2)}}, nil
+			return &testResponse{Items: []int{1, 2}, Pagination: &components.NullablePaginationEntity{Next: ptr.Of(2)}}, nil
 		} else if *request.Page == 2 {
 			return nil, diag.Errorf("test error")
 		}
