@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/operations"
@@ -70,14 +71,24 @@ func dataFireHydrantServices(ctx context.Context, d *schema.ResourceData, m inte
 		request.Labels = &labelsStr
 	}
 
-	servicesResponse, err := client.Sdk.CatalogEntries.ListServices(ctx, request)
+	allServices, err := fetchAllPages(ctx,
+		func(ctx context.Context, req operations.ListServicesRequest) ([]components.ServiceEntity, *components.NullablePaginationEntity, error) {
+			resp, err := client.Sdk.CatalogEntries.ListServices(ctx, req)
+			if err != nil {
+				return nil, nil, err
+			}
+			return resp.Data, resp.Pagination, nil
+		},
+		func(req *operations.ListServicesRequest, page int) { req.Page = &page },
+		request,
+	)
 	if err != nil {
 		return diag.Errorf("Error reading services: %v", err)
 	}
 
 	// Set the data source attributes to the values we got from the API
 	services := make([]interface{}, 0)
-	for _, service := range servicesResponse.Data {
+	for _, service := range allServices {
 		// Unmarshal labels from SDK struct to map[string]string
 		labelsMap, err := unmarshalLabels(service.Labels)
 		if err != nil {

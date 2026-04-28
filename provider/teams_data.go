@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/firehydrant-go-sdk/models/operations"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -47,14 +48,24 @@ func dataFireHydrantTeams(ctx context.Context, d *schema.ResourceData, m interfa
 		request.Query = &query
 	}
 
-	teamsResponse, err := client.Sdk.Teams.ListTeams(ctx, request)
+	allTeams, err := fetchAllPages(ctx,
+		func(ctx context.Context, req operations.ListTeamsRequest) ([]components.TeamEntity, *components.NullablePaginationEntity, error) {
+			resp, err := client.Sdk.Teams.ListTeams(ctx, req)
+			if err != nil {
+				return nil, nil, err
+			}
+			return resp.GetData(), resp.GetPagination(), nil
+		},
+		func(req *operations.ListTeamsRequest, page int) { req.Page = &page },
+		request,
+	)
 	if err != nil {
 		return diag.Errorf("Error reading teams: %v", err)
 	}
 
 	// Set the data source attributes to the values we got from the API
 	teams := make([]interface{}, 0)
-	for _, team := range teamsResponse.GetData() {
+	for _, team := range allTeams {
 		attributes := map[string]interface{}{
 			"id":          *team.GetID(),
 			"name":        *team.GetName(),
