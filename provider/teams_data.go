@@ -62,6 +62,8 @@ func dataFireHydrantTeams(ctx context.Context, d *schema.ResourceData, m interfa
 			}
 			return response, nil
 		},
+		// This API has strict rate limiting. This delay will keep us under the limit.
+		GetPageDelay: time.Millisecond * 550,
 	}
 	teamsResponse, err := pagination.Paginate(ctx, opts)
 	if err != nil {

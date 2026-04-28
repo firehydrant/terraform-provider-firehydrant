@@ -2,6 +2,7 @@ package pagination
 
 import (
 	"context"
+	"time"
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -18,6 +19,8 @@ type PaginateRequestOptions[TRequest any, TEntity any] struct {
 	SetRequestPageFunc func(request *TRequest, page *int)
 	// GetPageFunc is the function to use to get the page from the API
 	GetPageFunc func(ctx context.Context, client *firehydrant.APIClient, request *TRequest) (PaginateResponse[TEntity], diag.Diagnostics)
+	// GetPageDelay is an optional duration to sleep between pages to avoid rate limits
+	GetPageDelay time.Duration
 }
 
 // PaginateResponse is an interface that the response from the API must implement.
@@ -33,6 +36,9 @@ func Paginate[TRequest any, TEntity any](ctx context.Context, options PaginateRe
 	page := toIntPointer(1)
 
 	for page != nil {
+		if options.GetPageDelay > 0 {
+			time.Sleep(options.GetPageDelay)
+		}
 		if options.SetRequestPageFunc != nil {
 			options.SetRequestPageFunc(options.Request, page)
 		}
