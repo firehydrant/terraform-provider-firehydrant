@@ -5,8 +5,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/firehydrant-go-sdk/models/operations"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	"github.com/firehydrant/terraform-provider-firehydrant/provider/internal/pagination"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -47,14 +49,28 @@ func dataFireHydrantTeams(ctx context.Context, d *schema.ResourceData, m interfa
 		request.Query = &query
 	}
 
-	teamsResponse, err := client.Sdk.Teams.ListTeams(ctx, request)
+	opts := pagination.PaginateRequestOptions[operations.ListTeamsRequest, components.TeamEntity]{
+		Client:  client,
+		Request: &request,
+		SetRequestPageFunc: func(request *operations.ListTeamsRequest, page *int) {
+			request.Page = page
+		},
+		GetPageFunc: func(ctx context.Context, client *firehydrant.APIClient, request *operations.ListTeamsRequest) (pagination.PaginateResponse[components.TeamEntity], diag.Diagnostics) {
+			response, err := client.Sdk.Teams.ListTeams(ctx, *request)
+			if err != nil {
+				return nil, diag.Errorf("Error reading teams: %v", err)
+			}
+			return response, nil
+		},
+	}
+	teamsResponse, err := pagination.Paginate(ctx, opts)
 	if err != nil {
 		return diag.Errorf("Error reading teams: %v", err)
 	}
 
 	// Set the data source attributes to the values we got from the API
 	teams := make([]interface{}, 0)
-	for _, team := range teamsResponse.GetData() {
+	for _, team := range teamsResponse {
 		attributes := map[string]interface{}{
 			"id":          *team.GetID(),
 			"name":        *team.GetName(),
