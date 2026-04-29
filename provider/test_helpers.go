@@ -6,6 +6,7 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -82,6 +83,8 @@ func sharedProviderFactories() map[string]func() (*schema.Provider, error) {
 			// Return provider with pre-configured client
 			p := Provider()
 			p.ConfigureContextFunc = func(ctx context.Context, rd *schema.ResourceData) (interface{}, diag.Diagnostics) {
+				// Sleep to avoid concurrency issues
+				time.Sleep(550 * time.Millisecond)
 				// Skip normal setup, return shared client
 				return client, nil
 			}
