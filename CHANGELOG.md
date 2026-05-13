@@ -1,3 +1,9 @@
+## Unreleased
+
+ENHANCEMENTS:
+
+* `firehydrant_on_call_schedule` now accepts `rotation_name` and `rotation_description` attributes that override the name/description of the initial rotation FireHydrant creates alongside the schedule. Without these, the initial rotation inherits the schedule's name, which makes layer-style rotations indistinguishable from the schedule itself in the UI. Both attributes are `ForceNew`.
+
 ## 0.15.0
 
 BREAKING CHANGES:

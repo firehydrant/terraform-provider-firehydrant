@@ -140,6 +140,86 @@ func testAccOnCallScheduleConfig_restrictions(rName, sharedTeamID string) string
 	`, sharedTeamID, rName, rName)
 }
 
+func TestAccOnCallScheduleResource_rotationName(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: sharedProviderFactories(),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckOnCallScheduleResourceDestroy(),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOnCallScheduleConfig_rotationName(rName, sharedTeamID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_rotation_name", "id"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_rotation_name", "name", fmt.Sprintf("test-rotation-name-schedule-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_rotation_name", "rotation_name", "Primary"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_rotation_name", "rotation_description", "first rotation under this schedule"),
+					testAccCheckOnCallScheduleInitialRotationName("firehydrant_on_call_schedule.test_rotation_name", "Primary"),
+				),
+			},
+		},
+	})
+}
+
+func testAccOnCallScheduleConfig_rotationName(rName, sharedTeamID string) string {
+	return fmt.Sprintf(`
+	resource "firehydrant_on_call_schedule" "test_rotation_name" {
+		team_id              = "%s"
+		name                 = "test-rotation-name-schedule-%s"
+		description          = "test-description-%s"
+		time_zone            = "America/New_York"
+		rotation_name        = "Primary"
+		rotation_description = "first rotation under this schedule"
+
+		strategy {
+			type         = "weekly"
+			handoff_time = "10:00:00"
+			handoff_day  = "thursday"
+		}
+	}
+	`, sharedTeamID, rName, rName)
+}
+
+func testAccCheckOnCallScheduleInitialRotationName(resourceName, expectedRotationName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		stateResource, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("not found in state: %s", resourceName)
+		}
+		scheduleID := stateResource.Primary.ID
+		teamID := stateResource.Primary.Attributes["team_id"]
+		if scheduleID == "" || teamID == "" {
+			return fmt.Errorf("missing schedule_id or team_id for %s", resourceName)
+		}
+
+		client, err := getAccTestClient()
+		if err != nil {
+			return err
+		}
+		schedule, err := client.Sdk.Signals.GetTeamOnCallSchedule(context.Background(), teamID, scheduleID, nil, nil)
+		if err != nil {
+			return fmt.Errorf("fetching schedule %s: %w", scheduleID, err)
+		}
+		// FireHydrant always creates exactly one rotation alongside a schedule on create.
+		rotations := schedule.GetRotations()
+		if len(rotations) != 1 {
+			return fmt.Errorf("expected exactly 1 initial rotation for schedule %s, got %d", scheduleID, len(rotations))
+		}
+		actualName := ""
+		if rotations[0].Name != nil {
+			actualName = *rotations[0].Name
+		}
+		if actualName != expectedRotationName {
+			return fmt.Errorf("initial rotation name mismatch for schedule %s: want %q, got %q", scheduleID, expectedRotationName, actualName)
+		}
+		return nil
+	}
+}
+
 func testAccCheckOnCallScheduleResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client, err := getAccTestClient()

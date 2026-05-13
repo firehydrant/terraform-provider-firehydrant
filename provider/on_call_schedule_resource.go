@@ -40,6 +40,20 @@ func resourceOnCallSchedule() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"rotation_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Description: "Name for the initial rotation that FireHydrant creates alongside the schedule. " +
+					"If not provided, the schedule's name is used (which means the initial rotation appears " +
+					"under the same label as the schedule itself in the UI).",
+			},
+			"rotation_description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Description for the initial rotation that FireHydrant creates alongside the schedule. Falls back to the schedule's description when not provided.",
+			},
 			"member_ids": {
 				Type:          schema.TypeList,
 				Elem:          &schema.Schema{Type: schema.TypeString},
@@ -205,6 +219,18 @@ func createResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 	if v, ok := d.GetOk("slack_user_group_id"); ok && v.(string) != "" {
 		slackUserGroupID := v.(string)
 		onCallSchedule.SlackUserGroupID = &slackUserGroupID
+	}
+
+	// Optional overrides for the schedule's initial rotation. FireHydrant always
+	// creates one rotation alongside the schedule; without these, that rotation
+	// inherits the schedule's name and description.
+	if v, ok := d.GetOk("rotation_name"); ok && v.(string) != "" {
+		rotationName := v.(string)
+		onCallSchedule.RotationName = &rotationName
+	}
+	if v, ok := d.GetOk("rotation_description"); ok && v.(string) != "" {
+		rotationDescription := v.(string)
+		onCallSchedule.RotationDescription = &rotationDescription
 	}
 
 	if onCallSchedule.Strategy.Type != "" {

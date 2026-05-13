@@ -99,6 +99,8 @@ The following arguments are supported:
 * `restrictions` - (Optional) A block to define a restriction for the on-call schedule.
 * `effective_at` - (Optional) The date and time that the on-call schedule becomes effective. Must be in `YYYY-MM-DDTHH:MM:SSZ` format. Defaults to the current date and time. If set to the past, the schedule will be effective immediately. This attribute is not stored in Terraform state.
 * `start_time` - (Optional) An ISO8601 time string specifying when the initial rotation should start. This value is only used if the rotation's strategy type is "custom".
+* `rotation_name` - (Optional, ForceNew) Name for the initial rotation FireHydrant creates alongside the schedule. When omitted, the rotation inherits the schedule's name. Useful when modeling a source system whose schedules contain named layers (e.g. PagerDuty), so the layer keeps its name in FireHydrant.
+* `rotation_description` - (Optional, ForceNew) Description for the initial rotation. Falls back to the schedule's description when omitted.
 
 The `strategy` block supports:
 
