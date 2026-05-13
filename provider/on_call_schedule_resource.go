@@ -45,14 +45,17 @@ func resourceOnCallSchedule() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				Description: "Name for the initial rotation that FireHydrant creates alongside the schedule. " +
-					"If not provided, the schedule's name is used (which means the initial rotation appears " +
-					"under the same label as the schedule itself in the UI).",
+					"Only consulted at schedule-create time; changes force replacement of the whole schedule, " +
+					"so use the firehydrant_rotation resource to rename the rotation after create. " +
+					"When omitted, the rotation inherits the schedule's name.",
 			},
 			"rotation_description": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "Description for the initial rotation that FireHydrant creates alongside the schedule. Falls back to the schedule's description when not provided.",
+				Description: "Description for the initial rotation that FireHydrant creates alongside the schedule. " +
+					"Only consulted at schedule-create time; use the firehydrant_rotation resource to update " +
+					"the rotation's description after create. Falls back to the schedule's description when not provided.",
 			},
 			"member_ids": {
 				Type:          schema.TypeList,
