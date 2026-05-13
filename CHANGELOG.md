@@ -1,3 +1,9 @@
+## 0.15.1
+
+ENHANCEMENTS:
+
+* `firehydrant_on_call_schedule` now accepts `rotation_name` and `rotation_description` attributes that override the name/description of the schedule's primary rotation. Without these, the rotation inherits the schedule's name, which makes layer-style rotations indistinguishable from the schedule itself in the UI. Both attributes are read back from the API on refresh and update the rotation in place via the schedule's PATCH endpoint when changed.
+
 ## 0.15.0
 
 BREAKING CHANGES:

@@ -40,6 +40,22 @@ func resourceOnCallSchedule() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"rotation_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				Description: "Name of the schedule's primary rotation (the rotation FireHydrant " +
+					"creates alongside the schedule itself). Set this to override the default " +
+					"(which inherits the schedule's name). Tracked in state; mutations are sent " +
+					"to the schedule's PATCH endpoint.",
+			},
+			"rotation_description": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				Description: "Description of the schedule's primary rotation. Set this to override " +
+					"the default (which inherits the schedule's description). Tracked in state.",
+			},
 			"member_ids": {
 				Type:          schema.TypeList,
 				Elem:          &schema.Schema{Type: schema.TypeString},
@@ -207,6 +223,18 @@ func createResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 		onCallSchedule.SlackUserGroupID = &slackUserGroupID
 	}
 
+	// Optional overrides for the schedule's initial rotation. FireHydrant always
+	// creates one rotation alongside the schedule; without these, that rotation
+	// inherits the schedule's name and description.
+	if v, ok := d.GetOk("rotation_name"); ok && v.(string) != "" {
+		rotationName := v.(string)
+		onCallSchedule.RotationName = &rotationName
+	}
+	if v, ok := d.GetOk("rotation_description"); ok && v.(string) != "" {
+		rotationDescription := v.(string)
+		onCallSchedule.RotationDescription = &rotationDescription
+	}
+
 	if onCallSchedule.Strategy.Type != "" {
 		isCustomStrategy := onCallSchedule.Strategy.Type == "custom"
 		if isCustomStrategy {
@@ -293,6 +321,15 @@ func readResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Resour
 		attributes["slack_user_group_id"] = *slackUserGroupID
 	}
 
+	if rotations := onCallSchedule.GetRotations(); len(rotations) > 0 {
+		if name := rotations[0].GetName(); name != nil {
+			attributes["rotation_name"] = *name
+		}
+		if description := rotations[0].GetDescription(); description != nil {
+			attributes["rotation_description"] = *description
+		}
+	}
+
 	// Set the data source attributes to the values we got from the API
 	for key, val := range attributes {
 		if err := d.Set(key, val); err != nil {
@@ -324,6 +361,15 @@ func updateResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 	updateRequest := components.UpdateTeamOnCallSchedule{
 		Name:        &name,
 		Description: &description,
+	}
+
+	if v, ok := d.GetOk("rotation_name"); ok && v.(string) != "" {
+		rotationName := v.(string)
+		updateRequest.RotationName = &rotationName
+	}
+	if v, ok := d.GetOk("rotation_description"); ok && v.(string) != "" {
+		rotationDescription := v.(string)
+		updateRequest.RotationDescription = &rotationDescription
 	}
 
 	// Get slack_user_group_id if set

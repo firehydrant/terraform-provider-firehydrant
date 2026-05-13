@@ -140,6 +140,121 @@ func testAccOnCallScheduleConfig_restrictions(rName, sharedTeamID string) string
 	`, sharedTeamID, rName, rName)
 }
 
+func TestAccOnCallScheduleResource_rotationName(t *testing.T) {
+	sharedTeamID := getSharedTeamID(t)
+	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
+
+	var initialRotationID string
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testFireHydrantIsSetup(t) },
+		ProviderFactories: sharedProviderFactories(),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckOnCallScheduleResourceDestroy(),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOnCallScheduleConfig_rotationName(rName, sharedTeamID, "Primary", "first rotation under this schedule"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("firehydrant_on_call_schedule.test_rotation_name", "id"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_rotation_name", "name", fmt.Sprintf("test-rotation-name-schedule-%s", rName)),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_rotation_name", "rotation_name", "Primary"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_rotation_name", "rotation_description", "first rotation under this schedule"),
+					testAccCheckPrimaryRotation("firehydrant_on_call_schedule.test_rotation_name", "Primary", "first rotation under this schedule", &initialRotationID),
+				),
+			},
+			{
+				// Mutate rotation_name/rotation_description in place. Asserts no replacement (same rotation ID) and the new values landed.
+				Config: testAccOnCallScheduleConfig_rotationName(rName, sharedTeamID, "Secondary", "renamed in place"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_rotation_name", "rotation_name", "Secondary"),
+					resource.TestCheckResourceAttr("firehydrant_on_call_schedule.test_rotation_name", "rotation_description", "renamed in place"),
+					testAccCheckPrimaryRotation("firehydrant_on_call_schedule.test_rotation_name", "Secondary", "renamed in place", &initialRotationID),
+				),
+			},
+		},
+	})
+}
+
+func testAccOnCallScheduleConfig_rotationName(rName, sharedTeamID, rotationName, rotationDescription string) string {
+	return fmt.Sprintf(`
+	resource "firehydrant_on_call_schedule" "test_rotation_name" {
+		team_id              = "%s"
+		name                 = "test-rotation-name-schedule-%s"
+		description          = "test-description-%s"
+		time_zone            = "America/New_York"
+		rotation_name        = "%s"
+		rotation_description = "%s"
+
+		strategy {
+			type         = "weekly"
+			handoff_time = "10:00:00"
+			handoff_day  = "thursday"
+		}
+	}
+	`, sharedTeamID, rName, rName, rotationName, rotationDescription)
+}
+
+// testAccCheckPrimaryRotation verifies the schedule has exactly one rotation whose name and description match the expected values.
+// On the first invocation (when *capturedID is empty) it records the rotation ID; on subsequent invocations it asserts the ID
+// hasn't changed, which proves the rotation was updated in place rather than destroyed and recreated.
+func testAccCheckPrimaryRotation(resourceName, expectedName, expectedDescription string, capturedID *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		stateResource, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("not found in state: %s", resourceName)
+		}
+		scheduleID := stateResource.Primary.ID
+		teamID := stateResource.Primary.Attributes["team_id"]
+		if scheduleID == "" || teamID == "" {
+			return fmt.Errorf("missing schedule_id or team_id for %s", resourceName)
+		}
+
+		client, err := getAccTestClient()
+		if err != nil {
+			return err
+		}
+		schedule, err := client.Sdk.Signals.GetTeamOnCallSchedule(context.Background(), teamID, scheduleID, nil, nil)
+		if err != nil {
+			return fmt.Errorf("fetching schedule %s: %w", scheduleID, err)
+		}
+		// FireHydrant always creates exactly one rotation alongside a schedule on create.
+		rotations := schedule.GetRotations()
+		if len(rotations) != 1 {
+			return fmt.Errorf("expected exactly 1 rotation for schedule %s, got %d", scheduleID, len(rotations))
+		}
+
+		gotID := ""
+		if rotations[0].ID != nil {
+			gotID = *rotations[0].ID
+		}
+		gotName := ""
+		if rotations[0].Name != nil {
+			gotName = *rotations[0].Name
+		}
+		gotDescription := ""
+		if rotations[0].Description != nil {
+			gotDescription = *rotations[0].Description
+		}
+
+		if gotName != expectedName {
+			return fmt.Errorf("rotation name mismatch for schedule %s: want %q, got %q", scheduleID, expectedName, gotName)
+		}
+		if gotDescription != expectedDescription {
+			return fmt.Errorf("rotation description mismatch for schedule %s: want %q, got %q", scheduleID, expectedDescription, gotDescription)
+		}
+
+		if capturedID != nil {
+			if *capturedID == "" {
+				*capturedID = gotID
+			} else if *capturedID != gotID {
+				return fmt.Errorf("rotation ID changed for schedule %s: want %q (in-place update), got %q (replacement)", scheduleID, *capturedID, gotID)
+			}
+		}
+		return nil
+	}
+}
+
 func testAccCheckOnCallScheduleResourceDestroy() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client, err := getAccTestClient()
