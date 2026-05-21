@@ -134,6 +134,7 @@ data "firehydrant_escalation_policy" "test_escalation_policy" {
 }
 
 func TestAccEscalationPolicyDataSource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -163,6 +164,7 @@ func TestAccEscalationPolicyDataSource_basic(t *testing.T) {
 }
 
 func TestAccEscalationPolicyDataSource_dynamic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccEnvironmentResource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -32,6 +33,7 @@ func TestAccEnvironmentResource_basic(t *testing.T) {
 }
 
 func TestAccEnvironmentResource_update(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -74,6 +76,7 @@ func TestAccEnvironmentResource_update(t *testing.T) {
 }
 
 func TestAccEnvironmentResourceImport_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -93,6 +96,7 @@ func TestAccEnvironmentResourceImport_basic(t *testing.T) {
 }
 
 func TestAccEnvironmentResourceImport_allAttributes(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

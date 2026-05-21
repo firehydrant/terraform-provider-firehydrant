@@ -14,6 +14,7 @@ import (
 )
 
 func TestAccFireHydrantSignalRule_basic(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -57,6 +58,7 @@ func TestAccFireHydrantSignalRule_basic(t *testing.T) {
 }
 
 func TestAccFireHydrantSignalRule_invalidPriority(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -74,6 +76,7 @@ func TestAccFireHydrantSignalRule_invalidPriority(t *testing.T) {
 }
 
 func TestAccFireHydrantSignalRule_createIncidentConditionWhen(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -121,6 +124,7 @@ func testAccFireHydrantSignalRuleConfigBasic(rName, priority, sharedTeamID strin
 }
 
 func TestAccFireHydrantSignalRule_IncidentTypeIDMissing(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -142,6 +146,7 @@ func TestAccFireHydrantSignalRule_IncidentTypeIDMissing(t *testing.T) {
 }
 
 func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -179,6 +184,7 @@ func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
 }
 
 func TestAccFireHydrantSignalRule_withoutNotificationPriorityOverride(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 

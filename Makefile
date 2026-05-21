@@ -35,7 +35,7 @@ test: fmtcheck
 
 .PHONY: testacc
 testacc: fmtcheck
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 15m
+	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 15m -parallel 4
 
 # Local
 .PHONY: local

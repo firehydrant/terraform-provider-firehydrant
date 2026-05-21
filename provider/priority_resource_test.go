@@ -13,6 +13,7 @@ import (
 )
 
 func TestAccPriorityResource_basic(t *testing.T) {
+	t.Parallel()
 	rSlug := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{
@@ -36,6 +37,7 @@ func TestAccPriorityResource_basic(t *testing.T) {
 }
 
 func TestAccPriorityResource_update(t *testing.T) {
+	t.Parallel()
 	rSlug := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 	rSlugUpdated := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 
@@ -84,6 +86,7 @@ func TestAccPriorityResource_update(t *testing.T) {
 }
 
 func TestAccPriorityResource_validateSchemaAttributesSlug(t *testing.T) {
+	t.Parallel()
 	rSlug := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{
@@ -103,6 +106,7 @@ func TestAccPriorityResource_validateSchemaAttributesSlug(t *testing.T) {
 }
 
 func TestAccPriorityResourceImport_basic(t *testing.T) {
+	t.Parallel()
 	rSlug := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{
@@ -122,6 +126,7 @@ func TestAccPriorityResourceImport_basic(t *testing.T) {
 }
 
 func TestAccPriorityResourceImport_allAttributes(t *testing.T) {
+	t.Parallel()
 	rSlug := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{

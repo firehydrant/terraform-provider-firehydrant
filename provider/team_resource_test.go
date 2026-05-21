@@ -12,6 +12,7 @@ import (
 )
 
 func TestAccTeamResource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -33,6 +34,7 @@ func TestAccTeamResource_basic(t *testing.T) {
 }
 
 func TestAccTeamResource_update(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -75,6 +77,7 @@ func TestAccTeamResource_update(t *testing.T) {
 }
 
 func TestAccTeamResourceImport_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -95,6 +98,7 @@ func TestAccTeamResourceImport_basic(t *testing.T) {
 }
 
 func TestAccTeamResource_withMembership(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	// Use existing user from environment variable with fallback

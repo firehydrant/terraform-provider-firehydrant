@@ -14,6 +14,7 @@ import (
 )
 
 func TestAccLifecycleMilestoneResource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -38,6 +39,7 @@ func TestAccLifecycleMilestoneResource_basic(t *testing.T) {
 }
 
 func TestAccLifecycleMilestoneResource_update(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -81,6 +83,7 @@ func TestAccLifecycleMilestoneResource_update(t *testing.T) {
 }
 
 func TestAccLifecycleMilestoneResourceImport_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

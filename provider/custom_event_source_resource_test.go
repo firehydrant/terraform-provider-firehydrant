@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccCustomEventSourceResource_basic(t *testing.T) {
+	t.Parallel()
 	slug := "tf-acc-" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
@@ -38,6 +39,7 @@ func TestAccCustomEventSourceResource_basic(t *testing.T) {
 }
 
 func TestAccCustomEventSourceResource_update(t *testing.T) {
+	t.Parallel()
 	slug := "tf-acc-" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
@@ -170,6 +172,7 @@ resource "firehydrant_custom_event_source" "foo_transposer" {
 }
 
 func TestAccCustomEventSourceResourceImport_basic(t *testing.T) {
+	t.Parallel()
 	slug := "tf-acc-" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },

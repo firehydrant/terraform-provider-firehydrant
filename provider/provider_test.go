@@ -62,6 +62,7 @@ func defaultProviderFactories() map[string]func() (*schema.Provider, error) {
 }
 
 func TestAccService(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 

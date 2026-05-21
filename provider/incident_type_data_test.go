@@ -9,6 +9,7 @@ import (
 )
 
 func TestAccIncidentTypeDataSource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -31,6 +32,7 @@ func TestAccIncidentTypeDataSource_basic(t *testing.T) {
 }
 
 func TestAccIncidentTypeDataSource_allAttributes(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

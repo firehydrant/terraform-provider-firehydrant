@@ -12,6 +12,7 @@ import (
 )
 
 func TestAccEscalationPolicyResource_basic(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	sharedScheduleID := getSharedOnCallScheduleID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
@@ -38,6 +39,7 @@ func TestAccEscalationPolicyResource_basic(t *testing.T) {
 }
 
 func TestAccEscalationPolicyResource_dynamicWithPriorityPolicies(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	sharedScheduleID := getSharedOnCallScheduleID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
@@ -83,6 +85,7 @@ func TestAccEscalationPolicyResource_dynamicWithPriorityPolicies(t *testing.T) {
 }
 
 func TestAccEscalationPolicyResource_dynamicWithHandoffSteps(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	sharedScheduleID := getSharedOnCallScheduleID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)

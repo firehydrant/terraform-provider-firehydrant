@@ -12,6 +12,7 @@ import (
 )
 
 func TestAccInboundEmailResource_basic(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -44,6 +45,7 @@ func TestAccInboundEmailResource_basic(t *testing.T) {
 }
 
 func TestAccInboundEmailResource_update(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -79,6 +81,7 @@ func TestAccInboundEmailResource_update(t *testing.T) {
 //failure isn't blocking other work
 
 func TestAccInboundEmailResource_no_target(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 

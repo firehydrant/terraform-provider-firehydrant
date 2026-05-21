@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccServiceDependencyResource_basic(t *testing.T) {
+	t.Parallel()
 	sharedServiceID1 := getSharedServiceID(t)
 	sharedServiceID2 := getSharedServiceID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -34,6 +35,7 @@ func TestAccServiceDependencyResource_basic(t *testing.T) {
 }
 
 func TestAccServiceDependencyResource_update(t *testing.T) {
+	t.Parallel()
 	sharedServiceID1 := getSharedServiceID(t)
 	sharedServiceID2 := getSharedServiceID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -78,6 +80,7 @@ func TestAccServiceDependencyResource_update(t *testing.T) {
 }
 
 func TestAccServiceDependencyResourceImport_basic(t *testing.T) {
+	t.Parallel()
 	sharedServiceID1 := getSharedServiceID(t)
 	sharedServiceID2 := getSharedServiceID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -99,6 +102,7 @@ func TestAccServiceDependencyResourceImport_basic(t *testing.T) {
 }
 
 func TestAccServiceDependencyResourceImport_allAttributes(t *testing.T) {
+	t.Parallel()
 	sharedServiceID1 := getSharedServiceID(t)
 	sharedServiceID2 := getSharedServiceID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)

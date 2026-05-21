@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccTaskListResource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -36,6 +37,7 @@ func TestAccTaskListResource_basic(t *testing.T) {
 }
 
 func TestAccTaskListResource_update(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -96,6 +98,7 @@ func TestAccTaskListResource_update(t *testing.T) {
 }
 
 func TestAccTaskListResourceImport_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -115,6 +118,7 @@ func TestAccTaskListResourceImport_basic(t *testing.T) {
 }
 
 func TestAccTaskListResourceImport_allAttributes(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

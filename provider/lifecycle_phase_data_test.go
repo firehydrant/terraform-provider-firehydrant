@@ -8,6 +8,7 @@ import (
 )
 
 func TestAccLifecyclePhaseDataSource_basic(t *testing.T) {
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),
@@ -24,6 +25,7 @@ func TestAccLifecyclePhaseDataSource_basic(t *testing.T) {
 }
 
 func TestAccLifecyclePhaseDataSource_invalid(t *testing.T) {
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: defaultProviderFactories(),

@@ -15,6 +15,7 @@ import (
 )
 
 func TestAccSeverityResource_basic(t *testing.T) {
+	t.Parallel()
 	rSlug := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{
@@ -38,6 +39,7 @@ func TestAccSeverityResource_basic(t *testing.T) {
 }
 
 func TestAccSeverityResource_update(t *testing.T) {
+	t.Parallel()
 	rSlug := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 	rSlugUpdated := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 
@@ -86,6 +88,7 @@ func TestAccSeverityResource_update(t *testing.T) {
 }
 
 func TestAccSeverityResource_validateSchemaAttributesSlug(t *testing.T) {
+	t.Parallel()
 	rSlug := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{
@@ -105,6 +108,7 @@ func TestAccSeverityResource_validateSchemaAttributesSlug(t *testing.T) {
 }
 
 func TestAccSeverityResourceImport_basic(t *testing.T) {
+	t.Parallel()
 	rSlug := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{
@@ -124,6 +128,7 @@ func TestAccSeverityResourceImport_basic(t *testing.T) {
 }
 
 func TestAccSeverityResourceImport_allAttributes(t *testing.T) {
+	t.Parallel()
 	rSlug := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{

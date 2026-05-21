@@ -15,6 +15,7 @@ import (
 )
 
 func TestAccRunbookResource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -47,6 +48,7 @@ func TestAccRunbookResource_basic(t *testing.T) {
 }
 
 func TestAccRunbookResource_update(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -127,6 +129,7 @@ func TestAccRunbookResource_update(t *testing.T) {
 }
 
 func TestAccRunbookResource_validateSchemaAttributesStepsConfig(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -142,6 +145,7 @@ func TestAccRunbookResource_validateSchemaAttributesStepsConfig(t *testing.T) {
 }
 
 func TestAccRunbookResource_validateSchemaAttributesAttachmentRule(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -157,6 +161,7 @@ func TestAccRunbookResource_validateSchemaAttributesAttachmentRule(t *testing.T)
 }
 
 func TestAccRunbookResource_validateSchemaAttributesStepsRule(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -172,6 +177,7 @@ func TestAccRunbookResource_validateSchemaAttributesStepsRule(t *testing.T) {
 }
 
 func TestAccRunbookResource_validateSchemaAttributesStepsRepeatsDuration(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -187,6 +193,7 @@ func TestAccRunbookResource_validateSchemaAttributesStepsRepeatsDuration(t *test
 }
 
 func TestAccRunbookResourceImport_validateSchemaAttributesStepsRepeats(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -202,6 +209,7 @@ func TestAccRunbookResourceImport_validateSchemaAttributesStepsRepeats(t *testin
 }
 
 func TestAccRunbookResourceImport_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -221,6 +229,7 @@ func TestAccRunbookResourceImport_basic(t *testing.T) {
 }
 
 func TestAccRunbookResourceImport_allAttributes(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 

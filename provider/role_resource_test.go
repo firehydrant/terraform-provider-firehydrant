@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccRoleResource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -44,6 +45,7 @@ func TestAccRoleResource_basic(t *testing.T) {
 }
 
 func TestAccRoleResource_withPermissions(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccSeverityDataSource_basic(t *testing.T) {
+	t.Parallel()
 	slug := "TESTSEV" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
@@ -33,6 +34,7 @@ func TestAccSeverityDataSource_basic(t *testing.T) {
 }
 
 func TestAccSeverityDataSource_allAttributes(t *testing.T) {
+	t.Parallel()
 	slug := "TESTSEV" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },

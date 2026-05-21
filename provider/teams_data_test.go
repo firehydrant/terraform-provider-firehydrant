@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccTeamsDataSource_QueryMatch(t *testing.T) {
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
@@ -28,6 +29,7 @@ func TestAccTeamsDataSource_QueryMatch(t *testing.T) {
 }
 
 func TestAccTeamsDataSource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

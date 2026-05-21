@@ -7,6 +7,7 @@ import (
 )
 
 func TestAccRoleDataSource_basic(t *testing.T) {
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
@@ -28,6 +29,7 @@ func TestAccRoleDataSource_basic(t *testing.T) {
 }
 
 func TestAccRoleDataSource_builtIn(t *testing.T) {
+	t.Parallel()
 	// Test looking up a built-in role that should always exist
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
