@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -12,7 +13,7 @@ import (
 
 func TestAccSeverityDataSource_basic(t *testing.T) {
 	t.Parallel()
-	slug := "TESTSEV" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
+	slug := "TESTSEV" + strings.ToUpper(acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum))
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
@@ -35,7 +36,7 @@ func TestAccSeverityDataSource_basic(t *testing.T) {
 
 func TestAccSeverityDataSource_allAttributes(t *testing.T) {
 	t.Parallel()
-	slug := "TESTSEV" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
+	slug := "TESTSEV" + strings.ToUpper(acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum))
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
