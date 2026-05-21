@@ -668,7 +668,7 @@ func TestAccOnCallScheduleResource_effectiveAt(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
-		CheckDestroy: testAccCheckOnCallScheduleResourceDestroy(),
+		CheckDestroy:      testAccCheckOnCallScheduleResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
 				// Initial schedule setup
@@ -744,7 +744,7 @@ func TestAccOnCallScheduleResourceImport_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
-		CheckDestroy: testAccCheckOnCallScheduleResourceDestroy(),
+		CheckDestroy:      testAccCheckOnCallScheduleResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOnCallScheduleConfig_basic(rName, sharedTeamID),
