@@ -17,7 +17,7 @@ func TestMain(m *testing.M) {
 	var exitCode int
 
 	// Only initialize shared resources for acceptance tests
-	if os.Getenv("TF_ACC") == "true" {
+	if os.Getenv("TF_ACC") != "" {
 		ctx := context.Background()
 		client, err := getAccTestClient()
 		if err != nil {
