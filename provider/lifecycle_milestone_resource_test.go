@@ -196,7 +196,6 @@ resource "firehydrant_lifecycle_milestone" "new_milestone" {
   name        = "Test Milestone %s"
   description = "test description %s"
 	phase_id    = data.firehydrant_lifecycle_phase.started.id
-	position    = 1
 }`, rName, rName)
 }
 
