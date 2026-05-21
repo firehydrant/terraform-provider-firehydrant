@@ -14,7 +14,9 @@ import (
 )
 
 func TestAccLifecycleMilestoneResource_basic(t *testing.T) {
-	t.Parallel()
+	// Not parallel: lifecycle_milestone position is server-assigned within a
+	// shared phase. Concurrent milestone creation in the "started" phase
+	// produces nondeterministic positions and causes refresh-plan drift.
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -39,7 +41,7 @@ func TestAccLifecycleMilestoneResource_basic(t *testing.T) {
 }
 
 func TestAccLifecycleMilestoneResource_update(t *testing.T) {
-	t.Parallel()
+	// See TestAccLifecycleMilestoneResource_basic for why these tests are serial.
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -83,7 +85,7 @@ func TestAccLifecycleMilestoneResource_update(t *testing.T) {
 }
 
 func TestAccLifecycleMilestoneResourceImport_basic(t *testing.T) {
-	t.Parallel()
+	// See TestAccLifecycleMilestoneResource_basic for why these tests are serial.
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

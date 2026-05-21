@@ -45,7 +45,6 @@ func resourceLifecycleMilestone() *schema.Resource {
 			"position": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				Computed: true,
 			},
 			"auto_assign_timestamp_on_create": {
 				Type:     schema.TypeString,
