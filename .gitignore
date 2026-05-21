@@ -2,3 +2,4 @@ bin/
 dist/
 local/bin/terraform-provider-firehydrant
 local/examples/**/*
+docs/superpowers/
