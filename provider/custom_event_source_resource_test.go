@@ -5,25 +5,27 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccCustomEventSourceResource_basic(t *testing.T) {
+	slug := "tf-acc-" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckCustomEventSourceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCustomEventSourceResourceConfig_basic(),
+				Config: testAccCustomEventSourceResourceConfig_basic(slug),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckCustomEventSourceResourceExistsWithAttributes_basic("firehydrant_custom_event_source.foo_transposer"),
 					resource.TestCheckResourceAttrSet("firehydrant_custom_event_source.foo_transposer", "id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_custom_event_source.foo_transposer", "name", "The Foo Transposer"),
 					resource.TestCheckResourceAttr(
-						"firehydrant_custom_event_source.foo_transposer", "slug", "foo"),
+						"firehydrant_custom_event_source.foo_transposer", "slug", slug),
 					resource.TestCheckResourceAttr(
 						"firehydrant_custom_event_source.foo_transposer", "description", "This is the foo transposer"),
 					resource.TestCheckResourceAttr(
@@ -36,20 +38,21 @@ func TestAccCustomEventSourceResource_basic(t *testing.T) {
 }
 
 func TestAccCustomEventSourceResource_update(t *testing.T) {
+	slug := "tf-acc-" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckCustomEventSourceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCustomEventSourceResourceConfig_basic(),
+				Config: testAccCustomEventSourceResourceConfig_basic(slug),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckCustomEventSourceResourceExistsWithAttributes_basic("firehydrant_custom_event_source.foo_transposer"),
 					resource.TestCheckResourceAttrSet("firehydrant_custom_event_source.foo_transposer", "id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_custom_event_source.foo_transposer", "name", "The Foo Transposer"),
 					resource.TestCheckResourceAttr(
-						"firehydrant_custom_event_source.foo_transposer", "slug", "foo"),
+						"firehydrant_custom_event_source.foo_transposer", "slug", slug),
 					resource.TestCheckResourceAttr(
 						"firehydrant_custom_event_source.foo_transposer", "description", "This is the foo transposer"),
 					resource.TestCheckResourceAttr(
@@ -58,14 +61,14 @@ func TestAccCustomEventSourceResource_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCustomEventSourceResourceConfig_update(),
+				Config: testAccCustomEventSourceResourceConfig_update(slug),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckCustomEventSourceResourceExistsWithAttributes_basic("firehydrant_custom_event_source.foo_transposer"),
 					resource.TestCheckResourceAttrSet("firehydrant_custom_event_source.foo_transposer", "id"),
 					resource.TestCheckResourceAttr(
 						"firehydrant_custom_event_source.foo_transposer", "name", "The Foo Transposer"),
 					resource.TestCheckResourceAttr(
-						"firehydrant_custom_event_source.foo_transposer", "slug", "foo"),
+						"firehydrant_custom_event_source.foo_transposer", "slug", slug),
 					resource.TestCheckResourceAttr(
 						"firehydrant_custom_event_source.foo_transposer", "description", "A new foo transposer description"),
 					resource.TestCheckResourceAttr(
@@ -146,35 +149,35 @@ func testAccCheckCustomEventSourceResourceDestroy() resource.TestCheckFunc {
 	}
 }
 
-func testAccCustomEventSourceResourceConfig_basic() string {
-	return `
+func testAccCustomEventSourceResourceConfig_basic(slug string) string {
+	return fmt.Sprintf(`
 resource "firehydrant_custom_event_source" "foo_transposer" {
   name = "The Foo Transposer"
-	slug = "foo"
+	slug = "%s"
 	description = "This is the foo transposer"
 	javascript = "function transpose(input) {\n  return input.data;\n}"
-}`
+}`, slug)
 }
 
-func testAccCustomEventSourceResourceConfig_update() string {
-	return `
+func testAccCustomEventSourceResourceConfig_update(slug string) string {
+	return fmt.Sprintf(`
 resource "firehydrant_custom_event_source" "foo_transposer" {
   name = "The Foo Transposer"
-	slug = "foo"
+	slug = "%s"
 	description = "A new foo transposer description"
 	javascript = "function transpose(input) {\n  return input.foo;\n}"
-}`
+}`, slug)
 }
 
 func TestAccCustomEventSourceResourceImport_basic(t *testing.T) {
-
+	slug := "tf-acc-" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
 		CheckDestroy:      testAccCheckCustomEventSourceResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCustomEventSourceResourceConfig_basic(),
+				Config: testAccCustomEventSourceResourceConfig_basic(slug),
 			},
 			{
 				ResourceName:      "firehydrant_custom_event_source.foo_transposer",
