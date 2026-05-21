@@ -5,11 +5,26 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
+
+// escalationPolicySettleDelay is a deliberate pause before the test
+// framework runs `terraform destroy`. The backend occasionally returns
+// 500s when delete arrives faster than its workers can finish processing
+// the preceding create/update. Used as a Check on the final step so the
+// sleep happens AFTER asserts and BEFORE destroy.
+const escalationPolicySettleDelay = 3 * time.Second
+
+func sleepBeforeDestroy(d time.Duration) resource.TestCheckFunc {
+	return func(*terraform.State) error {
+		time.Sleep(d)
+		return nil
+	}
+}
 
 func TestAccEscalationPolicyResource_basic(t *testing.T) {
 	t.Parallel()
@@ -32,6 +47,7 @@ func TestAccEscalationPolicyResource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "step.0.timeout", "PT1M"),
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "step.0.targets.0.type", "OnCallSchedule"),
 					resource.TestCheckResourceAttrSet("firehydrant_escalation_policy.test_escalation_policy", "step.0.targets.0.id"),
+					sleepBeforeDestroy(escalationPolicySettleDelay),
 				),
 			},
 		},
@@ -78,6 +94,7 @@ func TestAccEscalationPolicyResource_dynamicWithPriorityPolicies(t *testing.T) {
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.0.repetitions", "3"),
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.1.priority", "MEDIUM"),
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.1.repetitions", "1"),
+					sleepBeforeDestroy(escalationPolicySettleDelay),
 				),
 			},
 		},
@@ -106,6 +123,7 @@ func TestAccEscalationPolicyResource_dynamicWithHandoffSteps(t *testing.T) {
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.0.repetitions", "2"),
 					resource.TestCheckResourceAttr("firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.0.handoff_step.0.target_type", "Team"),
 					resource.TestCheckResourceAttrSet("firehydrant_escalation_policy.test_escalation_policy", "notification_priority_policies.0.handoff_step.0.target_id"),
+					sleepBeforeDestroy(escalationPolicySettleDelay),
 				),
 			},
 		},
