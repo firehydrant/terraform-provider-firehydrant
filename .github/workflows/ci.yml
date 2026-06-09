@@ -25,20 +25,35 @@ jobs:
           echo "Job originally triggered by ${{ github.actor }}"
           exit 1
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{  github.event.pull_request.head.sha }}
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
           go-version: 1.24
+
+      # Install terraform once and point the acceptance-test harness at it.
+      # Without TF_ACC_TERRAFORM_PATH, terraform-plugin-sdk downloads its own
+      # binary into /tmp at test time, and parallel tests race the download
+      # ("text file busy"). terraform_wrapper must stay off so the env var
+      # points at the real binary, not the wrapper script.
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Point acceptance tests at installed terraform
+        run: echo "TF_ACC_TERRAFORM_PATH=$(which terraform)" >> "$GITHUB_ENV"
 
       - name: Build
         run: make build
 
       - name: Test
-        run: go test -v -timeout=25m ./...
+        # -parallel 4 pins test parallelism (default is runner core count);
+        # keep in sync with `make testacc`.
+        run: go test -v -timeout=25m -parallel 4 ./...
         timeout-minutes: 25
         env:
           TF_ACC: 'true'
