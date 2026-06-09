@@ -14,15 +14,19 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	var exitCode int
+	// os.Exit skips deferred functions, so all setup/cleanup lives in
+	// testMain where defers run before the exit code is returned.
+	os.Exit(testMain(m))
+}
 
+func testMain(m *testing.M) int {
 	// Only initialize shared resources for acceptance tests
 	if os.Getenv("TF_ACC") != "" {
 		ctx := context.Background()
 		client, err := getAccTestClient()
 		if err != nil {
 			fmt.Printf("Failed to get test client: %v\n", err)
-			os.Exit(1)
+			return 1
 		}
 
 		// Get shared resources (loads from env or API)
@@ -48,9 +52,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// Run all tests
-	exitCode = m.Run()
-
-	os.Exit(exitCode)
+	return m.Run()
 }
 
 func defaultProviderFactories() map[string]func() (*schema.Provider, error) {

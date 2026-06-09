@@ -13,8 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
+// Signal rule tests run serially (no t.Parallel): every rule mutation
+// triggers a Temporal config-sync workflow keyed by the organization ID, so
+// rule tests contend org-wide regardless of which team they use. Temporal
+// admits ~1 start of a given workflow ID per second, and concurrent rule
+// mutations exhaust the API's retry budget and return 500s.
+
 func TestAccFireHydrantSignalRule_basic(t *testing.T) {
-	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -58,7 +63,6 @@ func TestAccFireHydrantSignalRule_basic(t *testing.T) {
 }
 
 func TestAccFireHydrantSignalRule_invalidPriority(t *testing.T) {
-	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -76,7 +80,6 @@ func TestAccFireHydrantSignalRule_invalidPriority(t *testing.T) {
 }
 
 func TestAccFireHydrantSignalRule_createIncidentConditionWhen(t *testing.T) {
-	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -124,7 +127,6 @@ func testAccFireHydrantSignalRuleConfigBasic(rName, priority, sharedTeamID strin
 }
 
 func TestAccFireHydrantSignalRule_IncidentTypeIDMissing(t *testing.T) {
-	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -146,7 +148,6 @@ func TestAccFireHydrantSignalRule_IncidentTypeIDMissing(t *testing.T) {
 }
 
 func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
-	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -184,7 +185,6 @@ func TestAccFireHydrantSignalRule_NotificationPriorityAddRemove(t *testing.T) {
 }
 
 func TestAccFireHydrantSignalRule_withoutNotificationPriorityOverride(t *testing.T) {
-	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 

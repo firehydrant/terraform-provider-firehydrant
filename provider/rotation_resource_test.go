@@ -21,8 +21,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
+// Rotation tests run serially (no t.Parallel): every rotation mutation
+// triggers a Temporal config-sync workflow keyed by the schedule ID, and all
+// of these tests share one schedule. Temporal admits ~1 start of a given
+// workflow ID per second, so concurrent rotation mutations on the shared
+// schedule exhaust the API's retry budget and return 500s.
+
 func TestAccRotationResource_basic(t *testing.T) {
-	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	sharedScheduleID := getSharedOnCallScheduleID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
@@ -326,7 +331,6 @@ func TestOfflineRotationCreate(t *testing.T) {
 }
 
 func TestAccRotationResource_updateHandoffAndRestrictions(t *testing.T) {
-	t.Parallel()
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -477,7 +481,6 @@ func testAccRotationConfig_withHandoffAndRestrictions(rName, handoffDay, handoff
 }
 
 func TestAccRotationResource_scheduleModifications(t *testing.T) {
-	t.Parallel()
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -579,7 +582,6 @@ func testAccRotationConfig_withBusinessHours(rName, handoffDay, handoffTime stri
 }
 
 func TestAccRotationResource_effectiveAt(t *testing.T) {
-	t.Parallel()
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 	futureTime := time.Now().Add(24 * time.Hour).Format(time.RFC3339) // Tomorrow
 	pastTime := time.Now().Add(-24 * time.Hour).Format(time.RFC3339)  // Yesterday
@@ -673,7 +675,6 @@ func testAccRotationConfig_withEffectiveAt(rName, handoffDay, handoffTime, effec
 }
 
 func TestAccRotationResourceImport_basic(t *testing.T) {
-	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	sharedScheduleID := getSharedOnCallScheduleID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
@@ -705,7 +706,6 @@ func TestAccRotationResourceImport_basic(t *testing.T) {
 }
 
 func TestAccRotationResource_members(t *testing.T) {
-	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	sharedScheduleID := getSharedOnCallScheduleID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
@@ -755,7 +755,6 @@ func TestAccRotationResource_members(t *testing.T) {
 }
 
 func TestAccRotationResource_membersWithUnassignedSlot(t *testing.T) {
-	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	sharedScheduleID := getSharedOnCallScheduleID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
