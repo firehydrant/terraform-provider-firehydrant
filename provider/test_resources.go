@@ -11,6 +11,7 @@ import (
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/firehydrant-go-sdk/models/operations"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 )
 
 // SharedTestResources holds references to pre-existing production resources
@@ -99,9 +100,11 @@ func getSharedTestResources() (*SharedTestResources, error) {
 // InitializeSharedResources creates shared test resources if they don't exist
 // Called once at the start of test run via TestMain
 func (r *SharedTestResources) InitializeSharedResources(ctx context.Context, client *firehydrant.APIClient) error {
+	runID := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
+
 	// Create default team if not in env
 	if len(r.Teams) == 0 {
-		teamID, err := r.createSharedTeam(ctx, client, fmt.Sprintf("tf-test-shared-default-%d", time.Now().Unix()))
+		teamID, err := r.createSharedTeam(ctx, client, fmt.Sprintf("tf-test-shared-default-%s", runID))
 		if err != nil {
 			return fmt.Errorf("could not create shared team: %w", err)
 		}
@@ -111,7 +114,7 @@ func (r *SharedTestResources) InitializeSharedResources(ctx context.Context, cli
 
 	// Create default on-call schedule if not in env
 	if len(r.OnCallSchedules) == 0 {
-		scheduleID, err := r.createSharedOnCallSchedule(ctx, client, fmt.Sprintf("tf-test-shared-schedule-%d", time.Now().Unix()), r.Teams["default"])
+		scheduleID, err := r.createSharedOnCallSchedule(ctx, client, fmt.Sprintf("tf-test-shared-schedule-%s", runID), r.Teams["default"])
 		if err != nil {
 			return fmt.Errorf("could not create shared on-call schedule: %w", err)
 		}
@@ -121,7 +124,7 @@ func (r *SharedTestResources) InitializeSharedResources(ctx context.Context, cli
 
 	// Create default incident role if not in env
 	if len(r.IncidentRoles) == 0 {
-		roleID, err := r.createSharedIncidentRole(ctx, client, fmt.Sprintf("tf-test-shared-role-%d", time.Now().Unix()))
+		roleID, err := r.createSharedIncidentRole(ctx, client, fmt.Sprintf("tf-test-shared-role-%s", runID))
 		if err != nil {
 			return fmt.Errorf("could not create shared incident role: %w", err)
 		}
@@ -131,7 +134,7 @@ func (r *SharedTestResources) InitializeSharedResources(ctx context.Context, cli
 
 	// Create default service if not in env
 	if len(r.Services) == 0 {
-		serviceID, err := r.createSharedService(ctx, client, fmt.Sprintf("tf-test-shared-service-%d", time.Now().Unix()))
+		serviceID, err := r.createSharedService(ctx, client, fmt.Sprintf("tf-test-shared-service-%s", runID))
 		if err != nil {
 			return fmt.Errorf("could not create shared service: %w", err)
 		}
@@ -141,7 +144,7 @@ func (r *SharedTestResources) InitializeSharedResources(ctx context.Context, cli
 
 	// Create second shared service for dependency tests
 	if _, exists := r.Services["service2"]; !exists {
-		serviceID, err := r.createSharedService(ctx, client, fmt.Sprintf("tf-test-shared-service-2-%d", time.Now().Unix()))
+		serviceID, err := r.createSharedService(ctx, client, fmt.Sprintf("tf-test-shared-service-2-%s", runID))
 		if err != nil {
 			return fmt.Errorf("could not create shared service 2: %w", err)
 		}
@@ -151,7 +154,7 @@ func (r *SharedTestResources) InitializeSharedResources(ctx context.Context, cli
 
 	// Create second shared team for tests that need multiple teams
 	if _, exists := r.Teams["team2"]; !exists {
-		teamID, err := r.createSharedTeam(ctx, client, fmt.Sprintf("tf-test-shared-team2-%d", time.Now().Unix()))
+		teamID, err := r.createSharedTeam(ctx, client, fmt.Sprintf("tf-test-shared-team2-%s", runID))
 		if err != nil {
 			return fmt.Errorf("could not create shared team 2: %w", err)
 		}

@@ -10,6 +10,7 @@ import (
 )
 
 func TestAccPriorityDataSource_basic(t *testing.T) {
+	t.Parallel()
 	rSlug := strings.ToUpper(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{

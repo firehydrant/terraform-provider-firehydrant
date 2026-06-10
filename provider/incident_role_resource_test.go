@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccIncidentRoleResource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -36,6 +37,7 @@ func TestAccIncidentRoleResource_basic(t *testing.T) {
 }
 
 func TestAccIncidentRoleResource_update(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -88,6 +90,7 @@ func TestAccIncidentRoleResource_update(t *testing.T) {
 }
 
 func TestAccIncidentRoleResourceImport_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -107,6 +110,7 @@ func TestAccIncidentRoleResourceImport_basic(t *testing.T) {
 }
 
 func TestAccIncidentRoleResourceImport_allAttributes(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

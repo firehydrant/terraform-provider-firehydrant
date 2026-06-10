@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccServiceResource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -39,6 +40,7 @@ func TestAccServiceResource_basic(t *testing.T) {
 }
 
 func TestAccServiceResource_update(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	sharedTeamID2 := getSharedTeamID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -109,6 +111,7 @@ func TestAccServiceResource_update(t *testing.T) {
 }
 
 func TestAccServiceResource_updateLabels(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	sharedTeamID2 := getSharedTeamID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -193,6 +196,7 @@ func TestAccServiceResource_updateLabels(t *testing.T) {
 }
 
 func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	sharedTeamID2 := getSharedTeamID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -296,6 +300,7 @@ func TestAccServiceResource_updateOwnerIDAndTeamIDs(t *testing.T) {
 }
 
 func TestAccServiceResourceImport_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -315,6 +320,7 @@ func TestAccServiceResourceImport_basic(t *testing.T) {
 }
 
 func TestAccServiceResourceImport_allAttributes(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	sharedTeamID2 := getSharedTeamID2(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)

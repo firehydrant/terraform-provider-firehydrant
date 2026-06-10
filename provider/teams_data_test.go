@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccTeamsDataSource_QueryMatch(t *testing.T) {
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
@@ -28,6 +29,7 @@ func TestAccTeamsDataSource_QueryMatch(t *testing.T) {
 }
 
 func TestAccTeamsDataSource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -134,5 +136,9 @@ resource "firehydrant_team" "test_team" {
 
 data "firehydrant_teams" "all_teams" {
 	query = "test-team"
+
+	# The query string doesn't reference the resource, so without an explicit
+	# dependency Terraform may read this data source before the team exists.
+	depends_on = [firehydrant_team.test_team]
 }`, rName)
 }

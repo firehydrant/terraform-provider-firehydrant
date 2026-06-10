@@ -5,13 +5,22 @@ import (
 	"fmt"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
+// inboundEmailSettleDelay is a deliberate pause between successive writes
+// to firehydrant_inbound_email. The backend occasionally returns 500s when
+// updates arrive faster than its workers can process them. The sleep is a
+// pragmatic mitigation; remove when the backend can handle back-to-back
+// writes.
+const inboundEmailSettleDelay = 3 * time.Second
+
 func TestAccInboundEmailResource_basic(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -44,6 +53,7 @@ func TestAccInboundEmailResource_basic(t *testing.T) {
 }
 
 func TestAccInboundEmailResource_update(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -61,7 +71,8 @@ func TestAccInboundEmailResource_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccInboundEmailResourceConfig_update(rName, sharedTeamID),
+				PreConfig: func() { time.Sleep(inboundEmailSettleDelay) },
+				Config:    testAccInboundEmailResourceConfig_update(rName, sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckInboundEmailResourceExists("firehydrant_inbound_email.test"),
 					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "name", fmt.Sprintf("updated-inbound-email-%s", rName)),
@@ -79,6 +90,7 @@ func TestAccInboundEmailResource_update(t *testing.T) {
 //failure isn't blocking other work
 
 func TestAccInboundEmailResource_no_target(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -99,7 +111,8 @@ func TestAccInboundEmailResource_no_target(t *testing.T) {
 			},
 			// update the inbound email to have a target block
 			{
-				Config: testAccInboundEmailResourceConfig_basic(rName, sharedTeamID),
+				PreConfig: func() { time.Sleep(inboundEmailSettleDelay) },
+				Config:    testAccInboundEmailResourceConfig_basic(rName, sharedTeamID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckInboundEmailResourceExists("firehydrant_inbound_email.test"),
 					resource.TestCheckResourceAttr("firehydrant_inbound_email.test", "name", fmt.Sprintf("test-inbound-email-%s", rName)),

@@ -21,6 +21,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
+// Rotation tests run serially (no t.Parallel): every rotation mutation
+// triggers a Temporal config-sync workflow keyed by the schedule ID, and all
+// of these tests share one schedule. Temporal admits ~1 start of a given
+// workflow ID per second, so concurrent rotation mutations on the shared
+// schedule exhaust the API's retry budget and return 500s.
+
 func TestAccRotationResource_basic(t *testing.T) {
 	sharedTeamID := getSharedTeamID(t)
 	sharedScheduleID := getSharedOnCallScheduleID(t)

@@ -9,6 +9,7 @@ import (
 )
 
 func TestAccIncidentTypeDataSource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -31,6 +32,7 @@ func TestAccIncidentTypeDataSource_basic(t *testing.T) {
 }
 
 func TestAccIncidentTypeDataSource_allAttributes(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -69,8 +71,6 @@ func TestAccIncidentTypeDataSource_allAttributes(t *testing.T) {
 						"data.firehydrant_incident_type.test_incident_type", "template.0.team_ids.1"),
 					resource.TestCheckResourceAttrSet(
 						"data.firehydrant_incident_type.test_incident_type", "template.0.runbook_ids.0"),
-					resource.TestCheckResourceAttrSet(
-						"data.firehydrant_incident_type.test_incident_type", "template.0.runbook_ids.1"),
 				),
 			},
 		},
@@ -91,8 +91,10 @@ data "firehydrant_incident_type" "test_incident_type" {
 }`, rName, rName)
 }
 
-// TODO: add helpers for some static attributes (runbook_ids, severities, priorities, etc) so we aren't making a new
-// everything for testing every resource.  In the meantime, I'm hardcoding some shit from the acceptance test instance.
+// The runbooks and services these templates reference are created in-config so
+// the tests don't depend on org-specific fixture IDs. severity_slug/priority_slug
+// (SEV1/TESTPRIORITY) and the impact condition_id are still pre-existing platform
+// fixtures — see TESTS.md.
 
 func testAccIncidentTypeDataSourceConfig_allAttributes(rName string) string {
 	return fmt.Sprintf(`
@@ -107,6 +109,33 @@ resource "firehydrant_team" "test_team_2" {
 
 
 
+
+data "firehydrant_runbook_action" "create_incident_channel" {
+  slug             = "create_incident_channel"
+  integration_slug = "slack"
+}
+
+resource "firehydrant_runbook" "test_runbook_1" {
+  name = "test-runbook-1-%s"
+
+  steps {
+    name      = "Create Incident Channel"
+    action_id = data.firehydrant_runbook_action.create_incident_channel.id
+
+    config = jsonencode({
+      channel_name_format = "-inc-{{ number }}"
+    })
+  }
+}
+
+resource "firehydrant_service" "test_service_1" {
+  name = "test-service-1-%s"
+}
+
+resource "firehydrant_service" "test_service_2" {
+  name = "test-service-2-%s"
+}
+
 resource "firehydrant_incident_type" "test_incident_type" {
   name        = "test-incident-type-%s"
   description = "test-description-%s"
@@ -118,22 +147,25 @@ resource "firehydrant_incident_type" "test_incident_type" {
 		private_incident = false
 
 		tags = [ "foo", "bar" ]
-		runbook_ids = [ "88f9f172-cc07-477e-9a80-b1ae7669ec3d", "39de1363-4ae3-4aa3-913b-d63312c76afd" ]
+		# A single runbook on purpose: runbook_ids is an ordered list in the
+		# provider schema but the API returns set semantics, so two or more
+		# entries produce order-drift refresh plans.
+		runbook_ids = [ firehydrant_runbook.test_runbook_1.id ]
 		team_ids = [ firehydrant_team.test_team_1.id, firehydrant_team.test_team_2.id ]
 
 		impacts {
-          impact_id = "8c6731c8-a49a-415e-91c9-61378d526c58"
-            condition_id = "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"
-        }
-        
-        impacts {
-          impact_id = "500d9e2e-ea7c-4834-a81f-e336de24dbb1"
-            condition_id = "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"
-    }
+			impact_id    = firehydrant_service.test_service_1.id
+			condition_id = "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"
+		}
+
+		impacts {
+			impact_id    = firehydrant_service.test_service_2.id
+			condition_id = "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"
+		}
 	}
 }
 
 data "firehydrant_incident_type" "test_incident_type" {
   id = firehydrant_incident_type.test_incident_type.id
-}`, rName, rName, rName, rName)
+}`, rName, rName, rName, rName, rName, rName, rName)
 }

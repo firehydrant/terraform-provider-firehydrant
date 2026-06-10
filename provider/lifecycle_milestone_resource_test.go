@@ -14,6 +14,9 @@ import (
 )
 
 func TestAccLifecycleMilestoneResource_basic(t *testing.T) {
+	// Not parallel: lifecycle_milestone position is server-assigned within a
+	// shared phase. Concurrent milestone creation in the "started" phase
+	// produces nondeterministic positions and causes refresh-plan drift.
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -38,6 +41,7 @@ func TestAccLifecycleMilestoneResource_basic(t *testing.T) {
 }
 
 func TestAccLifecycleMilestoneResource_update(t *testing.T) {
+	// See TestAccLifecycleMilestoneResource_basic for why these tests are serial.
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -69,7 +73,7 @@ func TestAccLifecycleMilestoneResource_update(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"firehydrant_lifecycle_milestone.new_milestone", "description", fmt.Sprintf("test description %s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
-						"firehydrant_lifecycle_milestone.new_milestone", "slug", "test-milestone"),
+						"firehydrant_lifecycle_milestone.new_milestone", "slug", fmt.Sprintf("test-milestone-%s", rNameUpdated)),
 					resource.TestCheckResourceAttr(
 						"firehydrant_lifecycle_milestone.new_milestone", "position", "2"),
 					resource.TestCheckResourceAttr(
@@ -81,6 +85,7 @@ func TestAccLifecycleMilestoneResource_update(t *testing.T) {
 }
 
 func TestAccLifecycleMilestoneResourceImport_basic(t *testing.T) {
+	// See TestAccLifecycleMilestoneResource_basic for why these tests are serial.
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -206,8 +211,8 @@ resource "firehydrant_lifecycle_milestone" "new_milestone" {
   name        = "Test Milestone %s"
   description = "test description %s"
 	phase_id    = data.firehydrant_lifecycle_phase.started.id
-	slug        = "test-milestone"
+	slug        = "test-milestone-%s"
 	position    = 2
 	auto_assign_timestamp_on_create = "never_set_on_create"
-}`, rName, rName)
+}`, rName, rName, rName)
 }
