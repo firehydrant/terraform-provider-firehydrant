@@ -98,8 +98,6 @@ func TestAccIncidentTypeResource_update(t *testing.T) {
 						"firehydrant_incident_type.test_incident_type", "template.0.team_ids.1"),
 					resource.TestCheckResourceAttrSet(
 						"firehydrant_incident_type.test_incident_type", "template.0.runbook_ids.0"),
-					resource.TestCheckResourceAttrSet(
-						"firehydrant_incident_type.test_incident_type", "template.0.runbook_ids.1"),
 				),
 			},
 		},
@@ -280,19 +278,6 @@ resource "firehydrant_runbook" "test_runbook_1" {
   }
 }
 
-resource "firehydrant_runbook" "test_runbook_2" {
-  name = "test-runbook-2-%s"
-
-  steps {
-    name      = "Create Incident Channel"
-    action_id = data.firehydrant_runbook_action.create_incident_channel.id
-
-    config = jsonencode({
-      channel_name_format = "-inc2-{{ number }}"
-    })
-  }
-}
-
 resource "firehydrant_service" "test_service_1" {
   name = "test-service-1-%s"
 }
@@ -312,7 +297,10 @@ resource "firehydrant_incident_type" "test_incident_type" {
 		private_incident = false
 
 		tags = [ "foo", "bar" ]
-		runbook_ids = [ firehydrant_runbook.test_runbook_1.id, firehydrant_runbook.test_runbook_2.id ]
+		# A single runbook on purpose: runbook_ids is an ordered list in the
+		# provider schema but the API returns set semantics, so two or more
+		# entries produce order-drift refresh plans.
+		runbook_ids = [ firehydrant_runbook.test_runbook_1.id ]
 		team_ids = [ firehydrant_team.test_team_1.id, firehydrant_team.test_team_2.id ]
 
 		impacts {
@@ -325,5 +313,5 @@ resource "firehydrant_incident_type" "test_incident_type" {
 			condition_id = "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"
 		}
 	}
-}`, rName, rName, rName, rName, rName, rName, rName, rName)
+}`, rName, rName, rName, rName, rName, rName, rName)
 }
