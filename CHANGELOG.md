@@ -1,3 +1,9 @@
+## 0.15.2
+
+BUG FIXES:
+
+* `firehydrant_on_call_schedule` no longer silently drops `start_time` when the strategy is `weekly` or `daily`. The provider discarded the value for every non-`custom` strategy before sending the create request, so the schedule's initial rotation started its shifts at the strategy boundary (e.g. the beginning of the week) instead of the configured start time. Because the API does not echo `start_time` back, the drop never surfaced as a state diff.
+
 ## 0.15.1
 
 ENHANCEMENTS:

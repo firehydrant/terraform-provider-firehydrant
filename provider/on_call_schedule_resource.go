@@ -212,9 +212,15 @@ func createResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 			HandoffDay:    (*components.CreateTeamOnCallScheduleHandoffDay)(&handoffDay),
 			ShiftDuration: &shiftDuration,
 		},
-		StartTime:    &startTime,
 		MemberIds:    memberIDs,
 		Restrictions: oncallRestrictionsFromDataSDK(d),
+	}
+
+	// start_time seeds the initial rotation's first shift for every strategy
+	// type, not just custom. The API rejects an empty string, so only send it
+	// when configured.
+	if startTime != "" {
+		onCallSchedule.StartTime = &startTime
 	}
 
 	// Get slack_user_group_id if set and non-empty
@@ -258,7 +264,6 @@ func createResourceFireHydrantOnCallSchedule(ctx context.Context, d *schema.Reso
 
 			// Discard unused values to avoid ambiguity.
 			onCallSchedule.Strategy.ShiftDuration = nil
-			onCallSchedule.StartTime = nil
 		}
 	}
 
