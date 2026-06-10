@@ -6,6 +6,14 @@ on:
   pull_request_target:
     types: [opened, synchronize]
     branches: ['*']
+# Acceptance tests from every branch run against one shared FireHydrant org
+# with one API key. Concurrent runs trip the org's request rate limit (429s)
+# and contend on shared fixtures, so serialize runs repo-wide. New runs queue
+# rather than cancel in-flight ones; note GitHub keeps at most one queued run
+# per group, so a superseded queued run is marked cancelled and needs a re-run.
+concurrency:
+  group: acceptance-tests
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
