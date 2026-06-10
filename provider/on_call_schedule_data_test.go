@@ -120,6 +120,7 @@ func (s *testOnCallScheduleDataSuite) testResource(steps ...resource.TestStep) {
 /** Tests *************************************************************************************************************/
 
 func TestAccOnCallScheduleDataSource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

@@ -66,3 +66,16 @@ $ envchain YOUR_NAMESPACE_HERE make test
 ```sh
 $ make test
 ```
+
+## 3. Required platform fixtures
+
+Some acceptance tests depend on FireHydrant resources that the suite does NOT create automatically. Before running `make testacc` against a fresh account, ensure the following exist:
+
+| Resource type | Slug / identifier | Used by |
+|---------------|------------------|---------|
+| Severity      | `SEV1`           | `incident_type_resource_test.go`, `incident_type_data_test.go` |
+| Priority      | `TESTPRIORITY`   | `incident_type_resource_test.go`, `incident_type_data_test.go` |
+
+These can be created via the FireHydrant UI or API. They are read by tests but never mutated; one-time setup per test account is sufficient.
+
+> **Note:** These prerequisites are an artifact of the current test design — incident-type tests reference fixed slugs rather than creating their own severity/priority. A future refactor may move these into the shared-resource initialization in `provider/test_resources.go`.

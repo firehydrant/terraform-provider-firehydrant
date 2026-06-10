@@ -2,24 +2,28 @@ package provider
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccSeverityDataSource_basic(t *testing.T) {
+	t.Parallel()
+	slug := "TESTSEV" + strings.ToUpper(acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum))
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSeverityDataSourceConfig_basic(),
+				Config: testAccSeverityDataSourceConfig_basic(slug),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.firehydrant_severity.test_severity", "id"),
 					resource.TestCheckResourceAttr(
-						"data.firehydrant_severity.test_severity", "slug", "TESTSEVERITYBASIC"),
+						"data.firehydrant_severity.test_severity", "slug", slug),
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_severity.test_severity", "description", "test-description"),
 					resource.TestCheckResourceAttr(
@@ -31,16 +35,18 @@ func TestAccSeverityDataSource_basic(t *testing.T) {
 }
 
 func TestAccSeverityDataSource_allAttributes(t *testing.T) {
+	t.Parallel()
+	slug := "TESTSEV" + strings.ToUpper(acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum))
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSeverityDataSourceConfig_allAttributes(),
+				Config: testAccSeverityDataSourceConfig_allAttributes(slug),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.firehydrant_severity.test_severity", "id"),
 					resource.TestCheckResourceAttr(
-						"data.firehydrant_severity.test_severity", "slug", "TESTSEVERITYALL"),
+						"data.firehydrant_severity.test_severity", "slug", slug),
 					resource.TestCheckResourceAttr(
 						"data.firehydrant_severity.test_severity", "description", "test-description"),
 					resource.TestCheckResourceAttr(
@@ -51,27 +57,27 @@ func TestAccSeverityDataSource_allAttributes(t *testing.T) {
 	})
 }
 
-func testAccSeverityDataSourceConfig_basic() string {
-	return fmt.Sprintln(`
+func testAccSeverityDataSourceConfig_basic(slug string) string {
+	return fmt.Sprintf(`
 resource "firehydrant_severity" "test_severity" {
-  slug        = "TESTSEVERITYBASIC"
+  slug        = "%s"
   description = "test-description"
 }
 
 data "firehydrant_severity" "test_severity" {
   slug = firehydrant_severity.test_severity.id
-}`)
+}`, slug)
 }
 
-func testAccSeverityDataSourceConfig_allAttributes() string {
-	return fmt.Sprintln(`
+func testAccSeverityDataSourceConfig_allAttributes(slug string) string {
+	return fmt.Sprintf(`
 resource "firehydrant_severity" "test_severity" {
-  slug        = "TESTSEVERITYALL"
+  slug        = "%s"
   description = "test-description"
   type        = "gameday"
 }
 
 data "firehydrant_severity" "test_severity" {
   slug = firehydrant_severity.test_severity.id
-}`)
+}`, slug)
 }

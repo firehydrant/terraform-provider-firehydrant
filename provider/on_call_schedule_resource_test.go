@@ -93,6 +93,7 @@ func TestOfflineOnCallScheduleCreate_sendsStartTimeForWeeklyStrategy(t *testing.
 }
 
 func TestAccOnCallScheduleResource_basic(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -214,6 +215,7 @@ func testAccOnCallScheduleConfig_restrictions(rName, sharedTeamID string) string
 }
 
 func TestAccOnCallScheduleResource_rotationName(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -527,6 +529,7 @@ func TestOfflineOnCallScheduleCreateDeprecated(t *testing.T) {
 }
 
 func TestAccOnCallScheduleResource_updateHandoffAndRestrictions(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -642,6 +645,7 @@ func testAccOnCallScheduleConfig_withHandoffAndRestrictions(rName, handoffDay, h
 }
 
 func TestAccOnCallScheduleResource_scheduleModifications(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -728,6 +732,7 @@ func testAccOnCallScheduleConfig_withBusinessHours(rName, handoffDay, handoffTim
 }
 
 func TestAccOnCallScheduleResource_effectiveAt(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 	futureTime := time.Now().Add(24 * time.Hour).Format(time.RFC3339) // Tomorrow
@@ -736,10 +741,7 @@ func TestAccOnCallScheduleResource_effectiveAt(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckOnCallScheduleResourceDestroy(),
-			testAccCheckTeamResourceDestroy(),
-		),
+		CheckDestroy:      testAccCheckOnCallScheduleResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
 				// Initial schedule setup
@@ -806,6 +808,7 @@ func testAccOnCallScheduleConfig_withEffectiveAt(rName, handoffDay, handoffTime,
 }
 
 func TestAccOnCallScheduleResourceImport_basic(t *testing.T) {
+	t.Parallel()
 	sharedTeamID := getSharedTeamID(t)
 	rName := acctest.RandStringFromCharSet(20, acctest.CharSetAlphaNum)
 
@@ -814,10 +817,7 @@ func TestAccOnCallScheduleResourceImport_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testFireHydrantIsSetup(t) },
 		ProviderFactories: sharedProviderFactories(),
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			testAccCheckOnCallScheduleResourceDestroy(),
-			testAccCheckTeamResourceDestroy(),
-		),
+		CheckDestroy:      testAccCheckOnCallScheduleResourceDestroy(),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOnCallScheduleConfig_basic(rName, sharedTeamID),

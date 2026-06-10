@@ -11,6 +11,7 @@ import (
 )
 
 func TestAccFunctionalityResource_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -33,6 +34,7 @@ func TestAccFunctionalityResource_basic(t *testing.T) {
 }
 
 func TestAccFunctionalityResource_update(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	rNameUpdated := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
@@ -84,6 +86,7 @@ func TestAccFunctionalityResource_update(t *testing.T) {
 }
 
 func TestAccFunctionalityResourceImport_basic(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -104,6 +107,7 @@ func TestAccFunctionalityResourceImport_basic(t *testing.T) {
 }
 
 func TestAccFunctionalityResourceImport_allAttributes(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -124,6 +128,7 @@ func TestAccFunctionalityResourceImport_allAttributes(t *testing.T) {
 }
 
 func TestAccFunctionalityResource_withoutAutoAddRespondingTeam(t *testing.T) {
+	t.Parallel()
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{

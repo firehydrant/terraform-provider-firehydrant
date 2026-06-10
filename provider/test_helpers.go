@@ -55,7 +55,7 @@ func getAccTestClient() (*firehydrant.APIClient, error) {
 		}
 
 		// SDK ping (only if not in acceptance test mode)
-		if os.Getenv("TF_ACC") != "true" {
+		if os.Getenv("TF_ACC") == "" {
 			_, err = client.Sdk.AccountSettings.Ping(ctx)
 			if err != nil {
 				sharedProviderErr = fmt.Errorf("shared test SDK ping failed: %w", err)
