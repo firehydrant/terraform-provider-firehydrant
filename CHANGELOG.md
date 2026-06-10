@@ -1,4 +1,4 @@
-## Unreleased
+## 0.15.2
 
 BUG FIXES:
 
