@@ -261,6 +261,46 @@ resource "firehydrant_team" "test_team_2" {
 }
 
 
+
+data "firehydrant_runbook_action" "create_incident_channel" {
+  slug             = "create_incident_channel"
+  integration_slug = "slack"
+}
+
+resource "firehydrant_runbook" "test_runbook_1" {
+  name = "test-runbook-1-%s"
+
+  steps {
+    name      = "Create Incident Channel"
+    action_id = data.firehydrant_runbook_action.create_incident_channel.id
+
+    config = jsonencode({
+      channel_name_format = "-inc-{{ number }}"
+    })
+  }
+}
+
+resource "firehydrant_runbook" "test_runbook_2" {
+  name = "test-runbook-2-%s"
+
+  steps {
+    name      = "Create Incident Channel"
+    action_id = data.firehydrant_runbook_action.create_incident_channel.id
+
+    config = jsonencode({
+      channel_name_format = "-inc2-{{ number }}"
+    })
+  }
+}
+
+resource "firehydrant_service" "test_service_1" {
+  name = "test-service-1-%s"
+}
+
+resource "firehydrant_service" "test_service_2" {
+  name = "test-service-2-%s"
+}
+
 resource "firehydrant_incident_type" "test_incident_type" {
   name        = "test-incident-type-%s"
   description = "test-description-%s"
@@ -272,18 +312,18 @@ resource "firehydrant_incident_type" "test_incident_type" {
 		private_incident = false
 
 		tags = [ "foo", "bar" ]
-		runbook_ids = [ "88f9f172-cc07-477e-9a80-b1ae7669ec3d", "39de1363-4ae3-4aa3-913b-d63312c76afd" ]
+		runbook_ids = [ firehydrant_runbook.test_runbook_1.id, firehydrant_runbook.test_runbook_2.id ]
 		team_ids = [ firehydrant_team.test_team_1.id, firehydrant_team.test_team_2.id ]
 
 		impacts {
-          impact_id = "8c6731c8-a49a-415e-91c9-61378d526c58"
-            condition_id = "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"
-        }
-        
-        impacts {
-          impact_id = "500d9e2e-ea7c-4834-a81f-e336de24dbb1"
-            condition_id = "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"
-    }
+			impact_id    = firehydrant_service.test_service_1.id
+			condition_id = "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"
+		}
+
+		impacts {
+			impact_id    = firehydrant_service.test_service_2.id
+			condition_id = "99762c0c-1ee0-44a0-a3a7-d1316dd902ca"
+		}
 	}
-}`, rName, rName, rName, rName)
+}`, rName, rName, rName, rName, rName, rName, rName, rName)
 }
