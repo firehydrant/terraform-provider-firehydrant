@@ -48,4 +48,5 @@ The following arguments are supported:
   If set, the environment variable `FIREHYDRANT_API_KEY` will be used.
 * `firehydrant_base_url` - (Optional) The FireHydrant API URL to connect to.
   Defaults to `https://api.firehydrant.io/v1/`. If set, the environment variable 
-  `FIREHYDRANT_BASE_URL` will be used.
+  `FIREHYDRANT_BASE_URL` will be used.  For EU customers, this argument or the env 
+  var should be set to `https://api.eu.firehydrant.io/v1/`
