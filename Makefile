@@ -31,7 +31,7 @@ fmtcheck:
 .PHONY: test
 test: fmtcheck
 	go test -v $(TEST) || exit 1
-	echo $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=60s -parallel=4
+	echo $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
 .PHONY: testacc
 testacc: fmtcheck
