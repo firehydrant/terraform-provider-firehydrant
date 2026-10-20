@@ -1,4 +1,4 @@
-module github.com/firehydrant/terraform-provider-firehydrant
+module github.com/freshworks-oss/terraform-provider-firehydrant
 
 go 1.24.2
 

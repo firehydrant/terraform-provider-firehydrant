@@ -10,6 +10,9 @@ such as incident runbooks, services, teams, and more!
 
 Use the navigation on the left to read about the available resources and data sources.
 
+~> **Note** The source repository for this provider has moved to
+[github.com/freshworks-oss/terraform-provider-firehydrant](https://github.com/freshworks-oss/terraform-provider-firehydrant). The Terraform Registry address `firehydrant/firehydrant` continues to work, so existing configurations do not need to change. Please update any bookmarks and links to the new repository.
+
 ~> **Note** This provider is still at version zero. To make sure that new versions with 
 potentially breaking changes will not be automatically installed, you should 
 [constrain the acceptable provider versions](https://www.terraform.io/language/providers/requirements#version-constraints) 

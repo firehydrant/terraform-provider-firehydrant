@@ -3,7 +3,7 @@
 The following are basic example templates for creating new data sources and the tests
 that go with them.
 
-For more complex examples, see the task list or service data sources in this provider. 
+For more complex examples, see the task list or service data sources in this provider.
 
 ## Data source template
 
@@ -15,7 +15,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	"github.com/freshworks-oss/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"

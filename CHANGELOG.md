@@ -1,4 +1,4 @@
-## Unreleased
+## 0.15.5
 
 BUG FIXES:
 
@@ -29,6 +29,12 @@ BUG FIXES:
   strategy block, and for a custom rotation the irrelevant `handoff_day` was rejected by the API
   with `strategy[handoff_day] does not have a valid value` (HTTP 400). The update path now discards
   the fields that don't apply to the strategy type, matching the create path.
+
+NOTES:
+
+* The provider's source repository has moved to
+  [freshworks-oss/terraform-provider-firehydrant](https://github.com/freshworks-oss/terraform-provider-firehydrant).
+  The Terraform Registry address `firehydrant/firehydrant` continues to work, so existing configurations do not need to change. Please update any bookmarks and links to the new repository.
 
 ## 0.15.2
 

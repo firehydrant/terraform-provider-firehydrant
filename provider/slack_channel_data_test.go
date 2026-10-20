@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	"github.com/freshworks-oss/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 

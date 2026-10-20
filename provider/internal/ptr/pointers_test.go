@@ -3,7 +3,7 @@ package ptr_test
 import (
 	"testing"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/provider/internal/ptr"
+	"github.com/freshworks-oss/terraform-provider-firehydrant/provider/internal/ptr"
 )
 
 func TestOf_Int(t *testing.T) {

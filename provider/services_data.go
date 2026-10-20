@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	"github.com/freshworks-oss/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/operations"
 	"github.com/hashicorp/terraform-plugin-log/tflog"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	"github.com/freshworks-oss/terraform-provider-firehydrant/firehydrant"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
