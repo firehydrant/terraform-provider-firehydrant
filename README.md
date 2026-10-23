@@ -2,18 +2,25 @@
 
 ![Banner](images/terraform-firehydrant.png)
 
-![](https://github.com/firehydrant/terraform-provider-firehydrant/actions/workflows/ci.yml/badge.svg)
+![](https://github.com/freshworks-oss/terraform-provider-firehydrant/actions/workflows/ci.yml/badge.svg)
 
-Welcome to the FireHydrant Terraform provider! With this provider you can create and manage resources on 
-your [FireHydrant](https://www.firehydrant.io) organization such as incident runbooks, services, teams, 
+> [!IMPORTANT]
+> **This repository has moved.** 
+> 
+> The provider's source now lives at [github.com/freshworks-oss/terraform-provider-firehydrant](https://github.com/freshworks-oss/terraform-provider-firehydrant).
+> 
+> The Terraform Registry address `firehydrant/firehydrant` continues to work, so existing configurations do not need to change. Please update any bookmarks and links to the new repository. Issues, pull requests, releases, and tags moved with the repository.
+
+Welcome to the FireHydrant Terraform provider! With this provider you can create and manage resources on
+your [FireHydrant](https://www.firehydrant.io) organization such as incident runbooks, services, teams,
 and more!
 
-To view the full documentation of this provider, we recommend reading the documentation on the 
+To view the full documentation of this provider, we recommend reading the documentation on the
 [Terraform Registry](https://registry.terraform.io/providers/firehydrant/firehydrant/latest).
 
 ## Development
 
-For information on building the provider, contributing to it, running tests, and updating 
+For information on building the provider, contributing to it, running tests, and updating
 the changelog, see the [Contributing guide](./CONTRIBUTING.md).
 
 ## Releases

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
-	"github.com/firehydrant/terraform-provider-firehydrant/provider/internal/ptr"
+	"github.com/freshworks-oss/terraform-provider-firehydrant/firehydrant"
+	"github.com/freshworks-oss/terraform-provider-firehydrant/provider/internal/ptr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 

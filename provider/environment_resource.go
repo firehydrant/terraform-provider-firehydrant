@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
+	"github.com/freshworks-oss/terraform-provider-firehydrant/firehydrant"
 
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
 	"github.com/firehydrant/firehydrant-go-sdk/models/sdkerrors"
